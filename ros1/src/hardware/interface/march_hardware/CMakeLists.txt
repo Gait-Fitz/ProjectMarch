@@ -53,10 +53,12 @@ add_library(${PROJECT_NAME}
     include/${PROJECT_NAME}/communication/ethercat/pdo_types.h
     include/${PROJECT_NAME}/communication/ethercat/sdo_interface.h
     include/${PROJECT_NAME}/communication/ethercat/slave.h
-    include/${PROJECT_NAME}/imotioncube/actuation_mode.h
-    include/${PROJECT_NAME}/imotioncube/imotioncube.h
-    include/${PROJECT_NAME}/imotioncube/imotioncube_state.h
-    include/${PROJECT_NAME}/imotioncube/imotioncube_target_state.h
+    include/${PROJECT_NAME}/communication/endpoint/endpoint.h
+    include/${PROJECT_NAME}/communication/endpoint/ethercat_endpoint.h
+    include/${PROJECT_NAME}/motor_controller/imotioncube/actuation_mode.h
+    include/${PROJECT_NAME}/motor_controller/imotioncube/imotioncube.h
+    include/${PROJECT_NAME}/motor_controller/imotioncube/imotioncube_state.h
+    include/${PROJECT_NAME}/motor_controller/imotioncube/imotioncube_target_state.h
     include/${PROJECT_NAME}/joint.h
     include/${PROJECT_NAME}/march_robot.h
     include/${PROJECT_NAME}/power/boot_shutdown_offsets.h
@@ -76,8 +78,10 @@ add_library(${PROJECT_NAME}
     src/communication/ethercat/pdo_interface.cpp
     src/communication/ethercat/pdo_map.cpp
     src/communication/ethercat/sdo_interface.cpp
-    src/imotioncube/imotioncube.cpp
-    src/imotioncube/imotioncube_target_state.cpp
+    src/communication/endpoint/endpoint.cpp
+    src/communication/endpoint/ethercat_endpoint.cpp
+    src/motor_controller/imotioncube/imotioncube.cpp
+    src/motor_controller/imotioncube/imotioncube_target_state.cpp
     src/joint.cpp
     src/march_robot.cpp
     src/power/high_voltage.cpp
