@@ -7,6 +7,8 @@
 #include <vector>
 #include <cmath>
 
+#include <eigen3/Eigen/Dense>
+
 using namespace std;
 
 // Global variables used by the solver
@@ -72,6 +74,8 @@ void ModelPredictiveController::calculateControlInput() {
   // Shift states and control and prepare for the next iteration
   acado_shiftStates(2, 0, 0);
   acado_shiftControls(0);
+
+  Eigen::MatrixXd m(3,3);
 
 }
 

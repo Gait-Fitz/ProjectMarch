@@ -18,7 +18,9 @@ find_package(catkin REQUIRED
         pluginlib
         roscpp
         std_msgs
+        cmake_modules REQUIRED
 )
+find_package(Eigen3 REQUIRED)
 
 catkin_package(
     INCLUDE_DIRS include
@@ -33,6 +35,7 @@ catkin_package(
     pluginlib
     roscpp
     std_msgs
+    DEPENDS EIGEN3
 )
 
 ################
@@ -92,6 +95,7 @@ include_directories(
         ${QPOASES_DIR}
         ${QPOASES_DIR}/INCLUDE
         ${QPOASES_DIR}/SRC
+        ${Eigen3_INCLUDE_DIRS}
 )
 
 add_library(${PROJECT_NAME}
