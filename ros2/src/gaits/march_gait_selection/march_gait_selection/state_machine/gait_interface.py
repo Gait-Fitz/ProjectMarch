@@ -1,7 +1,8 @@
 from typing import Optional
 
 from march_gait_selection.state_machine.state_machine_input import TransitionRequest
-from march_shared_classes.gait.joint_trajectory import JointTrajectory
+from march_utility.gait.joint_trajectory import JointTrajectory
+from march_utility.utilities.duration import Duration
 
 
 class GaitInterface(object):
@@ -11,7 +12,7 @@ class GaitInterface(object):
     @property
     def name(self) -> str:
         """Returns the name of the gait."""
-        return ''
+        return ""
 
     @property
     def can_freeze(self) -> bool:
@@ -21,23 +22,23 @@ class GaitInterface(object):
     @property
     def subgait_name(self) -> str:
         """Returns the name of the currently executing trajectory."""
-        return ''
+        return ""
 
     @property
     def version(self) -> str:
         """Returns the version of the currently executing trajectory."""
-        return ''
+        return ""
 
     @property
-    def duration(self) -> float:
+    def duration(self) -> Duration:
         """Returns the duration in seconds of the currently executing trajectory
-         from the start of the gait."""
-        return 0.0
+        from the start of the gait."""
+        return Duration(0)
 
     @property
     def gait_type(self) -> str:
         """Returns a gait type of the currently executing trajectory."""
-        return ''
+        return ""
 
     @property
     def starting_position(self) -> dict:
@@ -54,10 +55,11 @@ class GaitInterface(object):
         optional starting trajectory."""
         return None
 
-    def update(self, elapsed_time: float) -> (JointTrajectory, bool):
+    def update(self, elapsed_time: Duration) -> (JointTrajectory, bool):
         """Called in a loop with the elapsed time since the last update.
 
         :param float elapsed_time: Elapsed time in seconds since the last update
+
         :returns A pair of a trajectory and a flag. The trajectory that will be
                  set as the new goal for the controller, can be None. The flag
                  indicates whether the gait has finished.
@@ -68,7 +70,8 @@ class GaitInterface(object):
         """Requests a special transition.
 
         :param TransitionRequest transition_request: request on what special
-        transition to perform
+               transition to perform
+
         :returns True when the request has been accepted, False otherwise.
         """
         return False
