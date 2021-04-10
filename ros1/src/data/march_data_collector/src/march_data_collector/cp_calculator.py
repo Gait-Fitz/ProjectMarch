@@ -142,10 +142,11 @@ class CPCalculator(object):
             self._capture_point_marker.pose.position.x = x_cp + static_foot_position.x
             self._capture_point_marker.pose.position.y = y_cp + static_foot_position.y
             self._capture_point_marker.pose.position.z = 0
-            rospy.loginfo('Capture point coordinate relative to the other foot ({x_f}, {y_f}). \n '
-                          'Capture point coordinate in world coordinates({x_w}, {y_w})'.
-                          format(x_f=x_cp, y_f=y_cp, x_w=self._capture_point_marker.pose.position.x,
-                                 y_w=self._capture_point_marker.pose.position.y))
+            rospy.loginfo(
+                f"Capture point coordinate relative to the other foot ({x_cp}, {y_cp}). \n "
+                f"Capture point coordinate in world coordinates({self._capture_point_marker.pose.position.x},"
+                f" {self._capture_point_marker.pose.position.y})"
+            )
 
             self.cp_publisher.publish(self._capture_point_marker)
         except tf2_ros.TransformException as e:
