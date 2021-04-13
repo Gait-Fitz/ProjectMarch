@@ -95,7 +95,7 @@ private:
     unsigned int num_joints_;
     double command;
 
-    std::vector<ModelPredictiveController> model_predictive_controllers_;
+    ModelPredictiveController model_predictive_controller;
     vector<double> state;
 
     std::unique_ptr<
