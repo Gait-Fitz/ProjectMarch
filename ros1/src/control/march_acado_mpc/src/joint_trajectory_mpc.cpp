@@ -47,7 +47,7 @@ std::vector<float> ModelPredictiveControllerInterface::getWeights(
     // Get Q and R from controller config
     std::vector<float> Q, Q_temp;
     std::vector<float> R, R_temp;
-    std::vector<float> W, W_temp;
+    std::vector<float> W;
 
     for (int i = 0; i < num_joints_; i++) {
 
