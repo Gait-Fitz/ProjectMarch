@@ -20,11 +20,6 @@ using namespace std;
 ACADOvariables acadoVariables = {};
 ACADOworkspace acadoWorkspace = {};
 
-ModelPredictiveController::ModelPredictiveController(std::vector<float> W)
-    : W_(W)
-{
-}
-
 void ModelPredictiveController::init()
 {
     // Initialize the solver
@@ -46,9 +41,6 @@ void ModelPredictiveController::init()
 
     // Reserve space for the inputs
     command.reserve(ACADO_NU);
-
-    // Assign the weighting matrix
-    assignWeightingMatrix(W_);
 
     // Warm-up the solver
     acado_preparationStep();

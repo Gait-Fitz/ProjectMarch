@@ -85,9 +85,6 @@ public:
      * \brief Shift the state and control acadoVariables
      */
     void shiftStatesAndControl();
-
-private:
-    std::vector<float> W_;
 };
 
 #endif
