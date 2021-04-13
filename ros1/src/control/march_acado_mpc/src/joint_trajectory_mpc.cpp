@@ -64,20 +64,17 @@ std::vector<float> ModelPredictiveControllerInterface::getWeights(
         R.reserve(R.size() + R_temp.size());
         R.insert(R.end(), R_temp.begin(), R_temp.end());
 
-        // Combine Q_temp and R_temp in W_temp
-        W_temp.reserve(Q_temp.size() + R_temp.size());
-        W_temp.insert(W_temp.end(), Q_temp.begin(), Q_temp.end());
-        W_temp.insert(W_temp.end(), R_temp.begin(), R_temp.end());
-
         // Check for validity of the weighting arrays
         ROS_WARN_STREAM_COND(Q_temp.empty(),
             joint_names[i] << ", Q array has not been supplied or is empty");
         ROS_WARN_STREAM_COND(R_temp.empty(),
             joint_names[i] << ", R array has not been supplied or is empty");
 
-        // Set WArray for the mpc msg
-        mpc_pub_->msg_.joint[i].tuning.weights.assign(
-            W_temp.begin(), W_temp.end());
+        // Set Q and R for the mpc msg
+        mpc_pub_->msg_.joint[i].tuning.q_weights.assign(
+            Q_temp.begin(), Q_temp.end());
+        mpc_pub_->msg_.joint[i].tuning.r_weights.assign(
+            R_temp.begin(), R_temp.end());
     }
 
     // Add Q and R to W
