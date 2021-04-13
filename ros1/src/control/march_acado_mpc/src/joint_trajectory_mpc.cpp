@@ -19,6 +19,7 @@ bool ModelPredictiveControllerInterface::init(
     joint_handles_ptr_ = &joint_handles;
     num_joints_ = joint_handles.size();
 
+    // Get the names of the joints to control
     std::vector<std::string> joint_names;
     ros::param::get("/march/joint_names", joint_names);
 
@@ -29,47 +30,63 @@ bool ModelPredictiveControllerInterface::init(
     initMpcMsg();
 
     // Initialize the model predictive controllers
-    for (unsigned int i = 0; i < num_joints_; ++i) {
-        model_predictive_controller.assignWeightingMatrix(
-            getQMatrix(joint_names[i]));
-        model_predictive_controller.joint_name = std::move(joint_names[i]);
-        model_predictive_controller.init();
-    }
+    model_predictive_controller.assignWeightingMatrix(getWeights(joint_names));
+    model_predictive_controller.joint_name = std::move(joint_names[0]);
+    model_predictive_controller.init();
 
     return true;
 }
 
 // Retrieve the weights from the parameter server for a joint.
 std::vector<float> ModelPredictiveControllerInterface::getWeights(
-    std::string joint_name)
+    std::vector<std::string> joint_names)
 {
     // get path to controller parameters
     std::string parameter_path = "/march/controller/trajectory";
 
     // Get Q and R from controller config
-    std::vector<float> Q;
-    std::vector<float> R;
+    std::vector<float> Q, Q_temp;
+    std::vector<float> R, R_temp;
+    std::vector<float> W, W_temp;
 
-    ros::param::get(parameter_path + "/weights/" + joint_name + "/Q", Q);
-    ros::param::get(parameter_path + "/weights/" + joint_name + "/R", R);
+    for (int i = 0; i < num_joints_; i++) {
+
+        ros::param::get(
+            parameter_path + "/weights/" + joint_names[i] + "/Q", Q_temp);
+        ros::param::get(
+            parameter_path + "/weights/" + joint_names[i] + "/R", R_temp);
+
+        // Add Q_temp to Q
+        Q.reserve(Q.size() + Q_temp.size());
+        Q.insert(Q.end(), Q_temp.begin(), Q_temp.end());
+
+        // Add R_temp to R
+        R.reserve(R.size() + R_temp.size());
+        R.insert(R.end(), R_temp.begin(), R_temp.end());
+
+        // Combine Q_temp and R_temp in W_temp
+        W_temp.reserve(Q_temp.size() + R_temp.size());
+        W_temp.insert(W_temp.end(), Q_temp.begin(), Q_temp.end());
+        W_temp.insert(W_temp.end(), R_temp.begin(), R_temp.end());
+
+        // Check for validity of the weighting arrays
+        ROS_WARN_STREAM_COND(Q_temp.empty(),
+            joint_names[i] << ", Q array has not been supplied or is empty");
+        ROS_WARN_STREAM_COND(R_temp.empty(),
+            joint_names[i] << ", R array has not been supplied or is empty");
+
+        // Set WArray for the mpc msg
+        mpc_pub_->msg_.joint[i].tuning.weights.assign(
+            W_temp.begin(), W_temp.end());
+    }
 
     // Add Q and R to W
-    std::vector<float> W;
-    W.insert(W.begin(), Q.begin(), Q.end());
+    W.reserve(Q.size() + R.size());
+    W.insert(W.end(), Q.begin(), Q.end());
     W.insert(W.end(), R.begin(), R.end());
 
-    // Check for validity of the weighting arrays
     ROS_WARN_STREAM_COND(
-        Q.empty(), joint_name << ", Q array has not been supplied or is empty");
-    ROS_WARN_STREAM_COND(
-        R.empty(), joint_name << ", R array has not been supplied or is empty");
-    ROS_WARN_STREAM_COND(
-        W.size() != ACADO_NY, joint_name << ", Incorrect weighting array size");
-
-    // Set WArray for the mpc msg
-    for (int i = 0; i < num_joints_; ++i) {
-        mpc_pub_->msg_.joint[i].tuning.weights.assign(W.begin(), W.end());
-    }
+        W.size() != ACADO_NY, "Incorrect weighting array size");
 
     return W;
 }
