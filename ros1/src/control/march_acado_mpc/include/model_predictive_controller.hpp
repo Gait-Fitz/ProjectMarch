@@ -10,6 +10,8 @@ using namespace std;
 class ModelPredictiveController {
 
 public:
+    ModelPredictiveController(std::vector<float> W);
+
     // Public variables
     vector<double> x0 { 0, 0 }; // Current state
     double u; // Calculated control input
@@ -75,6 +77,9 @@ public:
      * \brief Shift the state and control acadoVariables
      */
     void shiftStatesAndControl();
+
+private:
+    std::vector<float> W_;
 };
 
 #endif
