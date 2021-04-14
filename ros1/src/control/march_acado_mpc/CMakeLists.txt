@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.16)
 project(march_acado_mpc DESCRIPTION "Model predictive control with the help of ACADO"
     LANGUAGES CXX C)
 
+add_compile_options(-std=c++17)
+
 # Enable the FetchContent CMake module.
 include(FetchContent)
 

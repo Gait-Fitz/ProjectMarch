@@ -90,6 +90,13 @@ private:
      */
     std::vector<float> getWeights(std::vector<std::string> joint_names);
 
+    /**
+     * @brief Get the joint constraints from the URDF
+     * @return Returns an empty value if the /robot_description parameter is not available
+     *         Otherwise it will return the ModelPredictiveControllerConstraints.
+     */
+    std::optional<ModelPredictiveControllerConstraints> getConstraints(std::vector<std::string> joint_names);
+
     std::vector<hardware_interface::JointHandle>* joint_handles_ptr_;
 
     unsigned int num_joints_;
