@@ -110,7 +110,10 @@ std::vector<float> ModelPredictiveControllerInterface::getWeights(
 }
 
 // Get the joint constraints from the URDF
-std::optional<ModelPredictiveControllerConstraints> ModelPredictiveControllerInterface::getConstraints(std::vector<std::string> joint_names) {
+std::optional<ModelPredictiveControllerConstraints>
+ModelPredictiveControllerInterface::getConstraints(
+    std::vector<std::string> joint_names)
+{
     urdf::Model urdf;
     if (urdf.initParam("/robot_description")) {
         ModelPredictiveControllerConstraints constraints;
@@ -132,17 +135,17 @@ std::optional<ModelPredictiveControllerConstraints> ModelPredictiveControllerInt
                 constraints.position_upper[i] = joint->safety->soft_upper_limit;
             } else {
                 constraints.position_lower[i] = joint->limits->lower;
-                constraints.position_upper[i]  = joint->limits->upper;
+                constraints.position_upper[i] = joint->limits->upper;
             }
 
             // Velocity limit
             constraints.velocity[i] = joint->limits->velocity;
         }
         return constraints;
-    }
-    else {
-        ROS_WARN("Could not find robot description on the parameter server. "
-                 "Assuming that constrains are already set in the ACADO model.");
+    } else {
+        ROS_WARN(
+            "Could not find robot description on the parameter server. "
+            "Assuming that constrains are already set in the ACADO model.");
         return std::nullopt;
     }
 }
