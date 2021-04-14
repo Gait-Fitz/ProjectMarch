@@ -30,7 +30,8 @@ bool ModelPredictiveControllerInterface::init(
     initMpcMsg();
 
     // Initialize the model predictive controllers
-    model_predictive_controller_ = std::make_unique<ModelPredictiveController>(getWeights(joint_names));
+    model_predictive_controller_
+        = std::make_unique<ModelPredictiveController>(getWeights(joint_names));
     model_predictive_controller_->joint_name = std::move(joint_names[0]);
     model_predictive_controller_->init();
 
@@ -208,30 +209,29 @@ void ModelPredictiveControllerInterface::updateCommand(
     assert(num_joints_ == state_error.position.size());
     assert(num_joints_ == state_error.velocity.size());
 
-    // Update effort command
+    // Set initial state and reference
     for (unsigned int i = 0; i < num_joints_; ++i) {
-        // Get current joint state
-        state = { (*joint_handles_ptr_)[i].getPosition(),
-            (*joint_handles_ptr_)[i].getVelocity() };
-        model_predictive_controller_->x0 = state;
+        // Set the initial state of joint i
+        model_predictive_controller_->setInitialState(i,
+            { (*joint_handles_ptr_)[i].getPosition(),
+                (*joint_handles_ptr_)[i].getVelocity() });
 
-        // Set reference
         for (int j = 0; j < desired_states.size(); ++j) {
-            model_predictive_controller_->setReference(j,
-                { desired_states[j].position[i], // angle
-                    desired_states[j].velocity[i], // angular velocity
-                    0.0 }); // torque
+            model_predictive_controller_->setReference(i, j,
+                { desired_states[j].position[i],
+                    desired_states[j].velocity[i] },
+                { 0.0 });
         }
-
-        // Calculate mpc control signal
-        model_predictive_controller_->calculateControlInput();
-        command = model_predictive_controller_->u;
-
-        // Apply command
-        (*joint_handles_ptr_)[i].setCommand(command);
     }
 
-    for (int i = 0; i < num_joints_; ++i) {
+    // Calculate mpc control signal
+    model_predictive_controller_->calculateControlInput();
+    command = model_predictive_controller_->u;
+
+    for (unsigned int i = 0; i < num_joints_; ++i) {
+        // Apply command
+        (*joint_handles_ptr_)[i].setCommand(command);
+
         // Fill MPC message with information
         setMpcMsg(i);
 
