@@ -30,9 +30,9 @@ bool ModelPredictiveControllerInterface::init(
     initMpcMsg();
 
     // Initialize the model predictive controllers
-    model_predictive_controller.assignWeightingMatrix(getWeights(joint_names));
-    model_predictive_controller.joint_name = std::move(joint_names[0]);
-    model_predictive_controller.init();
+    model_predictive_controller_ = std::make_unique<ModelPredictiveController>(getWeights(joint_names));
+    model_predictive_controller_->joint_name = std::move(joint_names[0]);
+    model_predictive_controller_->init();
 
     return true;
 }
@@ -151,7 +151,8 @@ void ModelPredictiveControllerInterface::setMpcMsg(int joint_number)
         mpc_pub_->msg_.header.stamp = ros::Time::now();
     }
 
-    mpc_pub_->msg_.joint[i].diagnostics.cost = model_predictive_controller.cost;
+    mpc_pub_->msg_.joint[i].diagnostics.cost
+        = model_predictive_controller_->cost;
 
     // Loop through the 'measurements' (y_i = 0 means 'angle', y_i = 1 means
     // 'd/dt*angle')
@@ -180,18 +181,18 @@ void ModelPredictiveControllerInterface::setMpcMsg(int joint_number)
 
     // Acado solver time diagnostics
     mpc_pub_->msg_.joint[i].diagnostics.preparation_time
-        = model_predictive_controller.t_preparation;
+        = model_predictive_controller_->t_preparation;
     mpc_pub_->msg_.joint[i].diagnostics.feedback_time
-        = model_predictive_controller.t_feedback;
+        = model_predictive_controller_->t_feedback;
     mpc_pub_->msg_.joint[i].diagnostics.total_time
-        = model_predictive_controller.t_preparation
-        + model_predictive_controller.t_feedback;
+        = model_predictive_controller_->t_preparation
+        + model_predictive_controller_->t_feedback;
 
     // Acado & QPoasis error diagnostics
     mpc_pub_->msg_.joint[i].diagnostics.preparation_status
-        = model_predictive_controller.preparationStepStatus;
+        = model_predictive_controller_->preparationStepStatus;
     mpc_pub_->msg_.joint[i].diagnostics.feedback_status
-        = model_predictive_controller.feedbackStepStatus;
+        = model_predictive_controller_->feedbackStepStatus;
 }
 
 // Function that calculates the command that needs to be send to each joint
@@ -212,19 +213,19 @@ void ModelPredictiveControllerInterface::updateCommand(
         // Get current joint state
         state = { (*joint_handles_ptr_)[i].getPosition(),
             (*joint_handles_ptr_)[i].getVelocity() };
-        model_predictive_controller.x0 = state;
+        model_predictive_controller_->x0 = state;
 
         // Set reference
         for (int j = 0; j < desired_states.size(); ++j) {
-            model_predictive_controller.setReference(j,
+            model_predictive_controller_->setReference(j,
                 { desired_states[j].position[i], // angle
                     desired_states[j].velocity[i], // angular velocity
                     0.0 }); // torque
         }
 
         // Calculate mpc control signal
-        model_predictive_controller.calculateControlInput();
-        command = model_predictive_controller.u;
+        model_predictive_controller_->calculateControlInput();
+        command = model_predictive_controller_->u;
 
         // Apply command
         (*joint_handles_ptr_)[i].setCommand(command);
@@ -235,7 +236,7 @@ void ModelPredictiveControllerInterface::updateCommand(
         setMpcMsg(i);
 
         // Shift the solver for next time step
-        model_predictive_controller.shiftStatesAndControl();
+        model_predictive_controller_->shiftStatesAndControl();
     }
 
     // Publish msgs after all inputs are calculated and set
