@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include <urdf/model.h>
+
 // WARNING! UNSAFE!
 // If you initialize this object, YOU, the caller, have to ensure
 // that both `joint_handles` and `nh` have a lifetime that is at
@@ -72,6 +74,44 @@ std::vector<float> ModelPredictiveControllerInterface::getWeights(
     }
 
     return W;
+}
+
+// Get the joint constraints from the URDF
+std::optional<ModelPredictiveControllerConstraints> ModelPredictiveControllerInterface::getConstraints(std::vector<std::string> joint_names) {
+    urdf::Model urdf;
+    if (urdf.initParam("/robot_description")) {
+        ModelPredictiveControllerConstraints constraints;
+
+        constraints.effort.resize(num_joints_);
+        constraints.position_lower.resize(num_joints_);
+        constraints.position_upper.resize(num_joints_);
+        constraints.velocity.resize(num_joints_);
+
+        for (int i = 0; i < num_joints_; i++) {
+            auto joint = urdf.getJoint(joint_names[i]);
+
+            // Effort limit
+            constraints.effort[i] = joint->limits->effort;
+
+            // Position limits
+            if (joint->safety) {
+                constraints.position_lower[i] = joint->safety->soft_lower_limit;
+                constraints.position_upper[i] = joint->safety->soft_upper_limit;
+            } else {
+                constraints.position_lower[i] = joint->limits->lower;
+                constraints.position_upper[i]  = joint->limits->upper;
+            }
+
+            // Velocity limit
+            constraints.velocity[i] = joint->limits->velocity;
+        }
+        return constraints;
+    }
+    else {
+        ROS_WARN("Could not find robot description on the parameter server. "
+                 "Assuming that constrains are already set in the ACADO model.");
+        return std::nullopt;
+    }
 }
 
 // Function that dictates what to do when the controller is started by the
