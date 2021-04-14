@@ -14,7 +14,6 @@ struct ModelPredictiveControllerConstraints {
     std::vector<float> velocity;
 };
 
-
 class ModelPredictiveController {
 
 public:
