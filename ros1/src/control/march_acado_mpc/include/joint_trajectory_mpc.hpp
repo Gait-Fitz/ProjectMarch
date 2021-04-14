@@ -96,7 +96,6 @@ private:
     double command;
 
     std::unique_ptr<ModelPredictiveController> model_predictive_controller_;
-    vector<double> state;
 
     std::unique_ptr<
         realtime_tools::RealtimePublisher<march_shared_msgs::MpcMsg>>

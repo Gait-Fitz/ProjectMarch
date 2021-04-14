@@ -13,7 +13,6 @@ public:
     ModelPredictiveController(std::vector<float> W);
 
     // Public variables
-    vector<double> x0 { 0, 0 }; // Current state
     double u; // Calculated control input
     std::string joint_name;
     double cost; // Objective value
@@ -35,14 +34,15 @@ public:
      * \brief Set the initial state
      * @param x0 - initial state
      */
-    void setInitialState(vector<double> x0);
+    void setInitialState(int joint, vector<double> x0);
 
     /**
      * \brief Set the reference for time step n in [0, N]
      * @param n
      * @param reference
      */
-    void setReference(int n, const std::vector<double>& reference);
+    void setReference(int joint, int n, const std::vector<double>& states,
+        const std::vector<double>& inputs);
 
     /**
      * \brief Assign the weighting array values

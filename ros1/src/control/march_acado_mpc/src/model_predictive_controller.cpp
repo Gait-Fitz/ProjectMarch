@@ -21,7 +21,7 @@ ACADOvariables acadoVariables = {};
 ACADOworkspace acadoWorkspace = {};
 
 ModelPredictiveController::ModelPredictiveController(std::vector<float> W)
-  : W_(W)
+    : W_(W)
 {
 }
 
@@ -44,9 +44,6 @@ void ModelPredictiveController::init()
     std::fill(std::begin(acadoVariables.W), std::end(acadoVariables.W), 0.0);
     std::fill(std::begin(acadoVariables.WN), std::end(acadoVariables.WN), 0.0);
 
-    // Current state feedback
-    setInitialState(x0);
-
     // Assign the weighting matrix
     assignWeightingMatrix(W_);
 
@@ -54,20 +51,20 @@ void ModelPredictiveController::init()
     acado_preparationStep();
 }
 
-void ModelPredictiveController::setInitialState(vector<double> x0)
+void ModelPredictiveController::setInitialState(int joint, vector<double> x0)
 {
-    for (int i = 0; i < ACADO_NX; ++i) {
-        acadoVariables.x0[i] = x0[i];
-    }
+    std::copy(x0.begin(), x0.end(),
+        std::begin(acadoVariables.x0) + joint * x0.size());
 }
-void ModelPredictiveController::setReference(
-    int n, const std::vector<double>& reference)
+
+void ModelPredictiveController::setReference(int joint, int n,
+    const std::vector<double>& states, const std::vector<double>& inputs)
 {
 
     // check if size of reference at time step n is equal to size of ACADO_NY
-    if (ACADO_NY != reference.size()) {
-        ROS_DEBUG_STREAM_ONCE(joint_name
-            << ", The supplied reference vector has an incorrect size");
+    if (ACADO_NY != states.size() + inputs.size()) {
+        ROS_DEBUG_STREAM_ONCE(
+            "The supplied reference vector has an incorrect size");
     }
 
     // Set the reference of node n
@@ -75,13 +72,17 @@ void ModelPredictiveController::setReference(
         // set "running" reference
         // reference of node 0 to node ACADO_N-1, includes states and control
         // references
-        std::copy_n(reference.begin(), ACADO_NY,
-            std::begin(acadoVariables.y) + n * ACADO_NY);
+        std::copy(states.begin(), states.end(),
+            std::begin(acadoVariables.y) + joint * states.size()
+                + n * ACADO_NY);
+        std::copy(inputs.begin(), inputs.end(),
+            std::end(acadoVariables.y) + ACADO_NX + joint + n * ACADO_NY);
     } else {
         // set "end" reference
         // reference of the last node N, includes only the states references
-        std::copy_n(
-            reference.begin(), ACADO_NYN, std::begin(acadoVariables.yN));
+        std::copy(states.begin(), states.end(),
+            std::begin(acadoVariables.y) + joint * states.size()
+                + n * ACADO_NY);
     }
 }
 
@@ -117,8 +118,6 @@ void ModelPredictiveController::controllerDiagnosis()
 
 void ModelPredictiveController::calculateControlInput()
 {
-    // Set initial state
-    setInitialState(x0);
 
     // Preparation step (timed)
     acado_tic(&t);
