@@ -228,6 +228,8 @@ void ModelPredictiveControllerInterface::updateCommand(
     model_predictive_controller_->calculateControlInput();
     command = model_predictive_controller_->u;
 
+    ROS_INFO_STREAM("COMMAND CALCULATED: " << acadoVariables.u[0] << ", COMMAND SEND: " << command);
+
     for (unsigned int i = 0; i < num_joints_; ++i) {
         // Apply command
         (*joint_handles_ptr_)[i].setCommand(command);
