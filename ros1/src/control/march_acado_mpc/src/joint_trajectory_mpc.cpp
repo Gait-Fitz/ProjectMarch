@@ -82,8 +82,9 @@ std::vector<float> ModelPredictiveControllerInterface::getWeights(
     W.insert(W.end(), Q.begin(), Q.end());
     W.insert(W.end(), R.begin(), R.end());
 
-    ROS_WARN_STREAM_COND(
-        W.size() != ACADO_NY, "Incorrect weighting array size");
+    ROS_WARN_STREAM_COND(W.size() != ACADO_NY,
+        "Incorrect weighting array size, size should be "
+            << ACADO_NY << " but is " << W.size());
 
     return W;
 }
