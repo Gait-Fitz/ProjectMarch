@@ -7,6 +7,14 @@
 
 using namespace std;
 
+struct ModelPredictiveControllerConstraints {
+    std::vector<float> effort;
+    std::vector<float> position_lower;
+    std::vector<float> position_upper;
+    std::vector<float> velocity;
+};
+
+
 class ModelPredictiveController {
 
 public:
