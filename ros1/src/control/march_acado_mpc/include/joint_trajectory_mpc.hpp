@@ -93,7 +93,7 @@ private:
     std::vector<hardware_interface::JointHandle>* joint_handles_ptr_;
 
     unsigned int num_joints_;
-    double command;
+    std::vector<double> command;
 
     std::unique_ptr<ModelPredictiveController> model_predictive_controller_;
 
