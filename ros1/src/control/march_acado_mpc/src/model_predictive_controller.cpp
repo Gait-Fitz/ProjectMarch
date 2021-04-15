@@ -79,7 +79,7 @@ void ModelPredictiveController::setReference(int joint, int n,
             std::begin(acadoVariables.y) + joint * states.size()
                 + n * ACADO_NY);
         std::copy(inputs.begin(), inputs.end(),
-            std::end(acadoVariables.y) + ACADO_NX + joint + n * ACADO_NY);
+            std::begin(acadoVariables.y) + ACADO_NX + joint + n * ACADO_NY);
     } else {
         // set "end" reference
         // reference of the last node N, includes only the states references
@@ -121,7 +121,6 @@ void ModelPredictiveController::controllerDiagnosis()
 
 std::vector<double> ModelPredictiveController::calculateControlInput()
 {
-
     // Preparation step (timed)
     acado_tic(&t);
     preparationStepStatus = acado_preparationStep();
