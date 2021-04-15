@@ -44,6 +44,9 @@ void ModelPredictiveController::init()
     std::fill(std::begin(acadoVariables.W), std::end(acadoVariables.W), 0.0);
     std::fill(std::begin(acadoVariables.WN), std::end(acadoVariables.WN), 0.0);
 
+    // Reserve space for the inputs
+    command.reserve(ACADO_NU);
+
     // Assign the weighting matrix
     assignWeightingMatrix(W_);
 
@@ -116,7 +119,7 @@ void ModelPredictiveController::controllerDiagnosis()
         feedbackStepStatus != 0, acado_getErrorString(feedbackStepStatus));
 }
 
-void ModelPredictiveController::calculateControlInput()
+std::vector<double> ModelPredictiveController::calculateControlInput()
 {
 
     // Preparation step (timed)
@@ -132,13 +135,13 @@ void ModelPredictiveController::calculateControlInput()
     // Objective cost for diagnosis
     cost = acado_getObjective();
 
-    // Set mpc command
-    u = acadoVariables.u[0];
-
-    // Shift states and control and prepare for the next iteration
-    acado_shiftStates(/*strategy=*/2, /*xEnd=*/0, /*uEnd=*/0);
-    acado_shiftControls(/*uEnd=*/0);
-
     // Perform a diagnosis on the controller
     controllerDiagnosis();
+
+    // get command
+    command.insert(command.begin(), std::begin(acadoVariables.u),
+        std::begin(acadoVariables.u) + ACADO_NU);
+
+    // return command
+    return command;
 }

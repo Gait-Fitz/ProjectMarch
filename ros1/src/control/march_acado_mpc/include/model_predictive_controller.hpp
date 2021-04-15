@@ -13,7 +13,7 @@ public:
     ModelPredictiveController(std::vector<float> W);
 
     // Public variables
-    double u; // Calculated control input
+    std::vector<double> command;
     std::string joint_name;
     double cost; // Objective value
 
@@ -59,7 +59,7 @@ public:
     /**
      * \brief Calculate the control input
      */
-    void calculateControlInput();
+    std::vector<double> calculateControlInput();
     /**
      * \brief Shift the state and control acadoVariables
      */

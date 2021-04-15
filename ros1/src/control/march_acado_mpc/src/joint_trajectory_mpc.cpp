@@ -225,14 +225,14 @@ void ModelPredictiveControllerInterface::updateCommand(
     }
 
     // Calculate mpc control signal
-    model_predictive_controller_->calculateControlInput();
-    command = model_predictive_controller_->u;
+    command = model_predictive_controller_->calculateControlInput();
 
-    ROS_INFO_STREAM("COMMAND CALCULATED: " << acadoVariables.u[0] << ", COMMAND SEND: " << command);
+    ROS_INFO_STREAM("COMMAND CALCULATED: " << acadoVariables.u[0]
+                                           << ", COMMAND SEND: " << command[0]);
 
     for (unsigned int i = 0; i < num_joints_; ++i) {
         // Apply command
-        (*joint_handles_ptr_)[i].setCommand(command);
+        (*joint_handles_ptr_)[i].setCommand(command[i]);
 
         // Fill MPC message with information
         setMpcMsg(i);
