@@ -258,7 +258,8 @@ void ModelPredictiveControllerInterface::updateCommand(
     // Calculate mpc and apply command
     command = model_predictive_controller_->calculateControlInput();
 
-    ROS_INFO_STREAM("COMMAND CALCULATED: " << acadoVariables.u[0] << ", COMMAND SEND: " << command);
+    ROS_INFO_STREAM("COMMAND CALCULATED: " << acadoVariables.u[0]
+                                           << ", COMMAND SEND: " << command[0]);
 
     for (unsigned int i = 0; i < num_joints_; ++i) {
         // Apply command
