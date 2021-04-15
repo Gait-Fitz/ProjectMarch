@@ -29,7 +29,7 @@ bool ModelPredictiveControllerInterface::init(
         nh, "/march/mpc/", 10);
     initMpcMsg();
 
-    // Initialize the model predictive controllers
+    // Initialize the model predictive controller
     model_predictive_controller_
         = std::make_unique<ModelPredictiveController>(getWeights(joint_names));
     model_predictive_controller_->init();
