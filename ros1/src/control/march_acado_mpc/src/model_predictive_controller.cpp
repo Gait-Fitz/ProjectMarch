@@ -78,7 +78,7 @@ void ModelPredictiveController::setReference(int joint, int n,
             std::begin(acadoVariables.y) + joint * states.size()
                 + n * ACADO_NY);
         std::copy(inputs.begin(), inputs.end(),
-            std::end(acadoVariables.y) + ACADO_NX + joint + n * ACADO_NY);
+            std::begin(acadoVariables.y) + ACADO_NX + joint + n * ACADO_NY);
     } else {
         // set "end" reference
         // reference of the last node N, includes only the states references
@@ -110,37 +110,31 @@ void ModelPredictiveController::assignWeightingMatrix(std::vector<float> W)
 void ModelPredictiveController::controllerDiagnosis()
 {
     // Check acado_preparationStep() status code
-    ROS_WARN_STREAM_COND(preparationStepStatus >= PREP_INTERNAL_ERROR,
-        joint_name << ", Error in preparation step");
+    ROS_WARN_STREAM_COND(preparationStepStatus >= PREP_INTERNAL_ERROR,"Error in preparation step");
 
     // Check acado_feedbackStep() status code
     // Only checks codes that indicate an error
     switch (feedbackStepStatus) {
         case QP_ITERATION_LIMIT_REACHED:
-            ROS_WARN_STREAM(joint_name << ", QP could not be solved within the "
-                                          "given number of iterations");
+            ROS_WARN("QP could not be solved within the given number of iterations");
             break;
 
         case QP_INTERNAL_ERROR:
-            ROS_WARN_STREAM(joint_name
-                << ", QP could not be solved due to an internal error");
+            ROS_WARN("QP could not be solved due to an internal error");
             break;
 
         case QP_INFEASIBLE:
-            ROS_WARN_STREAM(joint_name
-                << ", QP is infeasible and thus could not be solved");
+            ROS_WARN("QP is infeasible and thus could not be solved");
             break;
 
         case QP_UNBOUNDED:
-            ROS_WARN_STREAM(
-                joint_name << ", QP is unbounded and thus could not be solved");
+            ROS_WARN("QP is unbounded and thus could not be solved");
             break;
     }
 }
 
 std::vector<double> ModelPredictiveController::calculateControlInput()
 {
-
     // Preparation step (timed)
     acado_tic(&t);
     preparationStepStatus = acado_preparationStep();

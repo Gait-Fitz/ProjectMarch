@@ -32,7 +32,6 @@ bool ModelPredictiveControllerInterface::init(
     // Initialize the model predictive controllers
     model_predictive_controller_
         = std::make_unique<ModelPredictiveController>(getWeights(joint_names));
-    model_predictive_controller_->joint_name = std::move(joint_names[0]);
     model_predictive_controller_->init();
 
     return true;
@@ -216,19 +215,16 @@ void ModelPredictiveControllerInterface::updateCommand(
             { (*joint_handles_ptr_)[i].getPosition(),
                 (*joint_handles_ptr_)[i].getVelocity() });
 
-        for (int j = 0; j < desired_states.size(); ++j) {
-            model_predictive_controller_->setReference(i, j,
-                { desired_states[j].position[i],
-                    desired_states[j].velocity[i] },
+        for (int n = 0; n < desired_states.size(); ++n) {
+            model_predictive_controller_->setReference(i, n,
+                { desired_states[n].position[i],
+                    desired_states[n].velocity[i] },
                 { 0.0 });
         }
     }
 
     // Calculate mpc control signal
     command = model_predictive_controller_->calculateControlInput();
-
-    ROS_INFO_STREAM("COMMAND CALCULATED: " << acadoVariables.u[0]
-                                           << ", COMMAND SEND: " << command[0]);
 
     for (unsigned int i = 0; i < num_joints_; ++i) {
         // Apply command
