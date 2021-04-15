@@ -110,13 +110,15 @@ void ModelPredictiveController::assignWeightingMatrix(std::vector<float> W)
 void ModelPredictiveController::controllerDiagnosis()
 {
     // Check acado_preparationStep() status code
-    ROS_WARN_STREAM_COND(preparationStepStatus >= PREP_INTERNAL_ERROR,"Error in preparation step");
+    ROS_WARN_STREAM_COND(preparationStepStatus >= PREP_INTERNAL_ERROR,
+        "Error in preparation step");
 
     // Check acado_feedbackStep() status code
     // Only checks codes that indicate an error
     switch (feedbackStepStatus) {
         case QP_ITERATION_LIMIT_REACHED:
-            ROS_WARN("QP could not be solved within the given number of iterations");
+            ROS_WARN(
+                "QP could not be solved within the given number of iterations");
             break;
 
         case QP_INTERNAL_ERROR:
