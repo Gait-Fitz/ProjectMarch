@@ -223,7 +223,7 @@ void ModelPredictiveControllerInterface::updateCommand(
         }
     }
 
-    // Calculate mpc control signal
+    // Calculate mpc and apply command
     command = model_predictive_controller_->calculateControlInput();
 
     for (unsigned int i = 0; i < num_joints_; ++i) {
