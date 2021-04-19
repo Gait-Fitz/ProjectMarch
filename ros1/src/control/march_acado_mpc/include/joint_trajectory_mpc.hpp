@@ -95,6 +95,8 @@ private:
     unsigned int num_joints_;
     std::vector<double> command;
 
+    std::vector<double> desired_inputs;
+
     std::unique_ptr<ModelPredictiveController> model_predictive_controller_;
 
     std::unique_ptr<
