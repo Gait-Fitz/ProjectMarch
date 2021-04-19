@@ -23,12 +23,6 @@ bool ModelPredictiveControllerInterface::init(
     std::vector<std::string> joint_names;
     ros::param::get("/march/joint_names", joint_names);
 
-    // Initialize the place where the MPC command will be published
-    mpc_pub_ = std::make_unique<
-        realtime_tools::RealtimePublisher<march_shared_msgs::MpcMsg>>(
-        nh, "/march/mpc/", 10);
-    initMpcMsg();
-
     // Initialize variables
     desired_inputs.reserve(ACADO_NU);
     desired_inputs.resize(ACADO_NU, 0.0);
@@ -37,6 +31,12 @@ bool ModelPredictiveControllerInterface::init(
     model_predictive_controller_
         = std::make_unique<ModelPredictiveController>(getWeights(joint_names));
     model_predictive_controller_->init();
+
+    // Initialize the place where the MPC command will be published
+    mpc_pub_ = std::make_unique<
+        realtime_tools::RealtimePublisher<march_shared_msgs::MpcMsg>>(
+        nh, "/march/mpc/", 10);
+    initMpcMsg();
 
     return true;
 }
@@ -53,6 +53,13 @@ std::vector<float> ModelPredictiveControllerInterface::getWeights(
     std::vector<float> R, R_temp;
     std::vector<float> W;
 
+    // Initialize vectors
+    Q.reserve(ACADO_NX);
+    R.reserve(ACADO_NU);
+    W.reserve(ACADO_NY);
+    Q_joint_sizes.reserve(num_joints_);
+    R_joint_sizes.reserve(num_joints_);
+
     for (int i = 0; i < num_joints_; i++) {
 
         ros::param::get(
@@ -60,13 +67,13 @@ std::vector<float> ModelPredictiveControllerInterface::getWeights(
         ros::param::get(
             parameter_path + "/weights/" + joint_names[i] + "/R", R_temp);
 
-        // Add Q_temp to Q
-        Q.reserve(Q.size() + Q_temp.size());
+        // Add Q_temp and R_temp to Q and R respectively
         Q.insert(Q.end(), Q_temp.begin(), Q_temp.end());
-
-        // Add R_temp to R
-        R.reserve(R.size() + R_temp.size());
         R.insert(R.end(), R_temp.begin(), R_temp.end());
+
+        // Log Q and R sizes of each joint
+        Q_joint_sizes.push_back(Q_temp.size());
+        R_joint_sizes.push_back(R_temp.size());
 
         // Check for validity of the weighting arrays
         ROS_WARN_STREAM_COND(Q_temp.empty(),
@@ -82,7 +89,6 @@ std::vector<float> ModelPredictiveControllerInterface::getWeights(
     }
 
     // Add Q and R to W
-    W.reserve(Q.size() + R.size());
     W.insert(W.end(), Q.begin(), Q.end());
     W.insert(W.end(), R.begin(), R.end());
 
@@ -155,8 +161,7 @@ void ModelPredictiveControllerInterface::setMpcMsg(int joint_number)
         mpc_pub_->msg_.header.stamp = ros::Time::now();
     }
 
-    mpc_pub_->msg_.diagnostics.cost
-        = model_predictive_controller_->cost;
+    mpc_pub_->msg_.diagnostics.cost = model_predictive_controller_->cost;
 
     // Loop through the 'measurements' (y_i = 0 means 'angle', y_i = 1 means
     // 'd/dt*angle')
