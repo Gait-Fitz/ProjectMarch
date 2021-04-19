@@ -29,6 +29,10 @@ bool ModelPredictiveControllerInterface::init(
         nh, "/march/mpc/", 10);
     initMpcMsg();
 
+    // Initialize variables
+    desired_inputs.reserve(ACADO_NU);
+    desired_inputs.resize(ACADO_NU, 0.0);
+
     // Initialize the model predictive controller
     model_predictive_controller_
         = std::make_unique<ModelPredictiveController>(getWeights(joint_names));
@@ -219,7 +223,7 @@ void ModelPredictiveControllerInterface::updateCommand(
             model_predictive_controller_->setReference(i, n,
                 { desired_states[n].position[i],
                     desired_states[n].velocity[i] },
-                { 0.0 });
+                { desired_inputs[i] });
         }
     }
 
