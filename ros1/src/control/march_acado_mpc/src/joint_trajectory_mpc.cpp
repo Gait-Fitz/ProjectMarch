@@ -155,7 +155,7 @@ void ModelPredictiveControllerInterface::setMpcMsg(int joint_number)
         mpc_pub_->msg_.header.stamp = ros::Time::now();
     }
 
-    mpc_pub_->msg_.joint[i].diagnostics.cost
+    mpc_pub_->msg_.diagnostics.cost
         = model_predictive_controller_->cost;
 
     // Loop through the 'measurements' (y_i = 0 means 'angle', y_i = 1 means
@@ -184,18 +184,18 @@ void ModelPredictiveControllerInterface::setMpcMsg(int joint_number)
     }
 
     // Acado solver time diagnostics
-    mpc_pub_->msg_.joint[i].diagnostics.preparation_time
+    mpc_pub_->msg_.diagnostics.preparation_time
         = model_predictive_controller_->t_preparation;
-    mpc_pub_->msg_.joint[i].diagnostics.feedback_time
+    mpc_pub_->msg_.diagnostics.feedback_time
         = model_predictive_controller_->t_feedback;
-    mpc_pub_->msg_.joint[i].diagnostics.total_time
+    mpc_pub_->msg_.diagnostics.total_time
         = model_predictive_controller_->t_preparation
         + model_predictive_controller_->t_feedback;
 
     // Acado & QPoasis error diagnostics
-    mpc_pub_->msg_.joint[i].diagnostics.preparation_status
+    mpc_pub_->msg_.diagnostics.preparation_status
         = model_predictive_controller_->preparationStepStatus;
-    mpc_pub_->msg_.joint[i].diagnostics.feedback_status
+    mpc_pub_->msg_.diagnostics.feedback_status
         = model_predictive_controller_->feedbackStepStatus;
 }
 
