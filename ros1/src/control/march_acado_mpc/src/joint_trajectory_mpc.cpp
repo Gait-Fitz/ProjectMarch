@@ -34,6 +34,10 @@ bool ModelPredictiveControllerInterface::init(
         nh, "/march/mpc/", 10);
     mpc_pub_->msg_.joint.resize(num_joints_);
 
+    // Initialize variables
+    desired_inputs.reserve(ACADO_NU);
+    desired_inputs.resize(ACADO_NU, 0.0);
+
     // Initialize the model predictive controller
     model_predictive_controller_
         = std::make_unique<ModelPredictiveController>(getWeights(joint_names));
