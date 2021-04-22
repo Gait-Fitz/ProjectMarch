@@ -7,6 +7,7 @@
 #include <numeric>
 #include <string>
 #include <vector>
+#include <numeric>
 
 // WARNING! UNSAFE!
 // If you initialize this object, YOU, the caller, have to ensure
@@ -38,7 +39,7 @@ bool ModelPredictiveControllerInterface::init(
     desired_inputs.reserve(ACADO_NU);
     desired_inputs.resize(ACADO_NU, 0.0);
 
-    // Initialize the model predictive controller
+  // Initialize the model predictive controller
     model_predictive_controller_
         = std::make_unique<ModelPredictiveController>(getWeights(joint_names));
     model_predictive_controller_->init();
@@ -136,7 +137,7 @@ void ModelPredictiveControllerInterface::initMpcMsg()
         // Loop trough the states
         for (unsigned int j = 0; j < JOINT_NX[i]; j++) {
             mpc_pub_->msg_.joint[i].estimation.states[j].array.resize(
-                ACADO_N + 1);
+              ACADO_N + 1);
         }
         // Loop trough all the outputs
         for (unsigned int j = 0; j < JOINT_NX[i]; j++) {
@@ -148,8 +149,10 @@ void ModelPredictiveControllerInterface::initMpcMsg()
         for (unsigned int j = 0; j < JOINT_NU[i]; j++) {
             // The optimal control is one value shorter than the output,
             // since there is no control on the terminal state
-            mpc_pub_->msg_.joint[i].estimation.inputs[j].array.resize(ACADO_N);
-            mpc_pub_->msg_.joint[i].reference.inputs[j].array.resize(ACADO_N);
+            mpc_pub_->msg_.joint[i].estimation.inputs[j].array.resize(
+              ACADO_N);
+            mpc_pub_->msg_.joint[i].reference.inputs[j].array.resize(
+              ACADO_N);
         }
     }
 }
