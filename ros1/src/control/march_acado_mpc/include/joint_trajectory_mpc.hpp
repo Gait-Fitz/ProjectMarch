@@ -97,8 +97,8 @@ private:
 
     std::vector<double> desired_inputs;
 
-    std::vector<int> Q_joint_sizes;
-    std::vector<int> R_joint_sizes;
+    std::vector<int> JOINT_NX;
+    std::vector<int> JOINT_NU;
 
     std::unique_ptr<ModelPredictiveController> model_predictive_controller_;
 
