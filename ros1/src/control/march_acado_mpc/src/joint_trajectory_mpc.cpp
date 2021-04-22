@@ -4,9 +4,9 @@
 #include <pluginlib/class_list_macros.hpp>
 
 #include <iostream>
+#include <numeric>
 #include <string>
 #include <vector>
-#include <numeric>
 
 // WARNING! UNSAFE!
 // If you initialize this object, YOU, the caller, have to ensure
@@ -30,11 +30,11 @@ bool ModelPredictiveControllerInterface::init(
 
     // Initialize the place where the MPC message will be published
     mpc_pub_ = std::make_unique<
-               realtime_tools::RealtimePublisher<march_shared_msgs::MpcMsg>>(
-      nh, "/march/mpc/", 10);
+        realtime_tools::RealtimePublisher<march_shared_msgs::MpcMsg>>(
+        nh, "/march/mpc/", 10);
     mpc_pub_->msg_.joint.resize(num_joints_);
 
-  // Initialize the model predictive controller
+    // Initialize the model predictive controller
     model_predictive_controller_
         = std::make_unique<ModelPredictiveController>(getWeights(joint_names));
     model_predictive_controller_->init();
@@ -132,22 +132,20 @@ void ModelPredictiveControllerInterface::initMpcMsg()
         // Loop trough the states
         for (unsigned int j = 0; j < JOINT_NX[i]; j++) {
             mpc_pub_->msg_.joint[i].estimation.states[j].array.resize(
-              ACADO_N + 1);
+                ACADO_N + 1);
         }
         // Loop trough all the outputs
         for (unsigned int j = 0; j < JOINT_NX[i]; j++) {
             mpc_pub_->msg_.joint[i].reference.states[j].array.resize(
-              ACADO_N + 1);
+                ACADO_N + 1);
         }
 
         // Loop trough all the inputs
         for (unsigned int j = 0; j < JOINT_NU[i]; j++) {
             // The optimal control is one value shorter than the output,
             // since there is no control on the terminal state
-            mpc_pub_->msg_.joint[i].estimation.inputs[j].array.resize(
-              ACADO_N);
-            mpc_pub_->msg_.joint[i].reference.inputs[j].array.resize(
-              ACADO_N);
+            mpc_pub_->msg_.joint[i].estimation.inputs[j].array.resize(ACADO_N);
+            mpc_pub_->msg_.joint[i].reference.inputs[j].array.resize(ACADO_N);
         }
     }
 }
@@ -157,10 +155,13 @@ void ModelPredictiveControllerInterface::setMpcMsg(int joint_number)
     // For readability
     int i = joint_number;
 
-    // Get the starting column indices for the current joint (states, inputs, estimation and reference)
-    // required because we can't be certain that the amount of states and inputs are equal for all joints
-    int col_joint_state = std::accumulate(JOINT_NX.begin(), JOINT_NX.begin()+i, 0);
-    int col_joint_input = std::accumulate(JOINT_NU.begin(), JOINT_NU.begin()+i, 0);
+    // Get the starting column indices for the current joint (states, inputs,
+    // estimation and reference) required because we can't be certain that the
+    // amount of states and inputs are equal for all joints
+    int col_joint_state
+        = std::accumulate(JOINT_NX.begin(), JOINT_NX.begin() + i, 0);
+    int col_joint_input
+        = std::accumulate(JOINT_NU.begin(), JOINT_NU.begin() + i, 0);
 
     // Variables that only have to be set once
     if (joint_number == 0) {
@@ -169,18 +170,18 @@ void ModelPredictiveControllerInterface::setMpcMsg(int joint_number)
 
         // Acado solver time diagnostics
         mpc_pub_->msg_.diagnostics.preparation_time
-          = model_predictive_controller_->t_preparation;
+            = model_predictive_controller_->t_preparation;
         mpc_pub_->msg_.diagnostics.feedback_time
-          = model_predictive_controller_->t_feedback;
+            = model_predictive_controller_->t_feedback;
         mpc_pub_->msg_.diagnostics.total_time
-          = model_predictive_controller_->t_preparation
+            = model_predictive_controller_->t_preparation
             + model_predictive_controller_->t_feedback;
 
         // Acado & QPoasis error diagnostics
         mpc_pub_->msg_.diagnostics.preparation_status
-          = model_predictive_controller_->preparationStepStatus;
+            = model_predictive_controller_->preparationStepStatus;
         mpc_pub_->msg_.diagnostics.feedback_status
-          = model_predictive_controller_->feedbackStepStatus;
+            = model_predictive_controller_->feedbackStepStatus;
 
         // Objective function cost
         mpc_pub_->msg_.diagnostics.cost = model_predictive_controller_->cost;
@@ -209,7 +210,8 @@ void ModelPredictiveControllerInterface::setMpcMsg(int joint_number)
 
             // Set input reference
             mpc_pub_->msg_.joint[i].reference.inputs[u_i].array[n_i]
-                = acadoVariables.y[u_i + ACADO_NYN + n_i * ACADO_NY + col_joint_input];
+                = acadoVariables
+                      .y[u_i + ACADO_NYN + n_i * ACADO_NY + col_joint_input];
         }
     }
 
@@ -217,11 +219,11 @@ void ModelPredictiveControllerInterface::setMpcMsg(int joint_number)
     for (int x_i = 0; x_i < JOINT_NX[i]; x_i++) {
         // Set state estimation
         mpc_pub_->msg_.joint[i].estimation.states[x_i].array[ACADO_N]
-          = acadoVariables.x[x_i + ACADO_NX * ACADO_N + col_joint_state];
+            = acadoVariables.x[x_i + ACADO_NX * ACADO_N + col_joint_state];
 
         // set state reference
         mpc_pub_->msg_.joint[i].reference.states[x_i].array[ACADO_N]
-          = acadoVariables.yN[x_i + col_joint_state];
+            = acadoVariables.yN[x_i + col_joint_state];
     }
 }
 
