@@ -80,9 +80,9 @@ std::vector<float> ModelPredictiveControllerInterface::getWeights(
         JOINT_NU.push_back(R_temp.size());
 
         // Check for validity of the weighting arrays
-        ROS_WARN_STREAM_COND(Q_temp.empty(),
+        ROS_ERROR_STREAM_COND(Q_temp.empty(),
             joint_names[i] << ", Q array has not been supplied or is empty");
-        ROS_WARN_STREAM_COND(R_temp.empty(),
+        ROS_ERROR_STREAM_COND(R_temp.empty(),
             joint_names[i] << ", R array has not been supplied or is empty");
 
         // Set Q and R for the mpc msg
@@ -96,7 +96,7 @@ std::vector<float> ModelPredictiveControllerInterface::getWeights(
     W.insert(W.end(), Q.begin(), Q.end());
     W.insert(W.end(), R.begin(), R.end());
 
-    ROS_WARN_STREAM_COND(W.size() != ACADO_NY,
+    ROS_ERROR_STREAM_COND(W.size() != ACADO_NY,
         "Incorrect weighting array size, size should be "
             << ACADO_NY << " but is " << W.size());
 
