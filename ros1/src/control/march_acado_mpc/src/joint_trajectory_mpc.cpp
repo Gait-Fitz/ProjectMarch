@@ -162,16 +162,33 @@ void ModelPredictiveControllerInterface::setMpcMsg(int joint_number)
     int col_joint_state = std::accumulate(JOINT_NX.begin(), JOINT_NX.begin()+i, 0);
     int col_joint_input = std::accumulate(JOINT_NU.begin(), JOINT_NU.begin()+i, 0);
 
-    // Only set time once
+    // Variables that only have to be set once
     if (joint_number == 0) {
+        // Header time
         mpc_pub_->msg_.header.stamp = ros::Time::now();
-    }
 
-    mpc_pub_->msg_.diagnostics.cost = model_predictive_controller_->cost;
+        // Acado solver time diagnostics
+        mpc_pub_->msg_.diagnostics.preparation_time
+          = model_predictive_controller_->t_preparation;
+        mpc_pub_->msg_.diagnostics.feedback_time
+          = model_predictive_controller_->t_feedback;
+        mpc_pub_->msg_.diagnostics.total_time
+          = model_predictive_controller_->t_preparation
+            + model_predictive_controller_->t_feedback;
+
+        // Acado & QPoasis error diagnostics
+        mpc_pub_->msg_.diagnostics.preparation_status
+          = model_predictive_controller_->preparationStepStatus;
+        mpc_pub_->msg_.diagnostics.feedback_status
+          = model_predictive_controller_->feedbackStepStatus;
+
+        // Objective function cost
+        mpc_pub_->msg_.diagnostics.cost = model_predictive_controller_->cost;
+    }
 
     // Loop through the 'measurements' (y_i = 0 means 'angle', y_i = 1 means
     // 'd/dt*angle')
-    for (int n_i = 0; n_i < ACADO_N + 1; n_i++) {
+    for (int n_i = 0; n_i < ACADO_N; n_i++) {
 
         // Set state estimation and reference
         for (int x_i = 0; x_i < JOINT_NX[i]; x_i++) {
@@ -180,33 +197,32 @@ void ModelPredictiveControllerInterface::setMpcMsg(int joint_number)
                 = acadoVariables.x[x_i + ACADO_NX * n_i + col_joint_state];
 
             // set state reference
-            mpc_pub_->msg_.joint[i].reference.states[y_i].array[n_i]
+            mpc_pub_->msg_.joint[i].reference.states[x_i].array[n_i]
                 = acadoVariables.y[x_i + ACADO_NY * n_i + col_joint_state];
         }
 
-        // Loop trough inputs
+        // Set input estimation and reference
         for (int u_i = 0; u_i < JOINT_NU[i]; u_i++) {
+            // Set input estimation
             mpc_pub_->msg_.joint[i].estimation.inputs[u_i].array[n_i]
                 = acadoVariables.u[u_i + ACADO_NU * n_i + col_joint_input];
+
+            // Set input reference
             mpc_pub_->msg_.joint[i].reference.inputs[u_i].array[n_i]
                 = acadoVariables.y[u_i + ACADO_NYN + n_i * ACADO_NY + col_joint_input];
         }
     }
 
-    // Acado solver time diagnostics
-    mpc_pub_->msg_.diagnostics.preparation_time
-        = model_predictive_controller_->t_preparation;
-    mpc_pub_->msg_.diagnostics.feedback_time
-        = model_predictive_controller_->t_feedback;
-    mpc_pub_->msg_.diagnostics.total_time
-        = model_predictive_controller_->t_preparation
-        + model_predictive_controller_->t_feedback;
+    // Set the terminal state estimation and reference
+    for (int x_i = 0; x_i < JOINT_NX[i]; x_i++) {
+        // Set state estimation
+        mpc_pub_->msg_.joint[i].estimation.states[x_i].array[ACADO_N]
+          = acadoVariables.x[x_i + ACADO_NX * ACADO_N + col_joint_state];
 
-    // Acado & QPoasis error diagnostics
-    mpc_pub_->msg_.diagnostics.preparation_status
-        = model_predictive_controller_->preparationStepStatus;
-    mpc_pub_->msg_.diagnostics.feedback_status
-        = model_predictive_controller_->feedbackStepStatus;
+        // set state reference
+        mpc_pub_->msg_.joint[i].reference.states[x_i].array[ACADO_N]
+          = acadoVariables.yN[x_i + col_joint_state];
+    }
 }
 
 // Function that calculates the command that needs to be send to each joint
