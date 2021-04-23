@@ -96,8 +96,7 @@ private:
      * available Otherwise it will return the
      * ModelPredictiveControllerConstraints.
      */
-    std::optional<ModelPredictiveControllerConstraints> getConstraints(
-        std::vector<std::string> joint_names);
+    ModelPredictiveControllerConstraints getConstraints(std::vector<std::string> joint_names);
 
     std::vector<hardware_interface::JointHandle>* joint_handles_ptr_;
 

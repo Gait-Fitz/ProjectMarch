@@ -20,8 +20,9 @@ using namespace std;
 ACADOvariables acadoVariables = {};
 ACADOworkspace acadoWorkspace = {};
 
-ModelPredictiveController::ModelPredictiveController(std::vector<float> W)
+ModelPredictiveController::ModelPredictiveController(std::vector<float> W, ModelPredictiveControllerConstraints constraints)
     : W_(W)
+    , constraints_(constraints)
 {
 }
 
