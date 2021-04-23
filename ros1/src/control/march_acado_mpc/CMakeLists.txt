@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION 3.16)
 project(march_acado_mpc DESCRIPTION "Model predictive control with the help of ACADO"
     LANGUAGES CXX C)
 
-add_compile_options(-std=c++17)
-
 # Enable the FetchContent CMake module.
 include(FetchContent)
 
@@ -44,7 +42,7 @@ catkin_package(
 # is downloaded in the _deps/acado-solver-src folder in the build directory.
 fetchcontent_declare(acado-solver
     GIT_REPOSITORY "https://gitlab.com/project-march/libraries/acado-solver.git"
-    GIT_TAG "main"
+    GIT_TAG "no_hardcoded_constraints"
     GIT_SHALLOW true
 )
 if(NOT acado-solver_POPULATED)

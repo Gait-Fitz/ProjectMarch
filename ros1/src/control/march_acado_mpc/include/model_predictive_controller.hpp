@@ -17,7 +17,8 @@ struct ModelPredictiveControllerConstraints {
 class ModelPredictiveController {
 
 public:
-    ModelPredictiveController(std::vector<float> W, ModelPredictiveControllerConstraints constraints);
+    ModelPredictiveController(
+        std::vector<float> W, ModelPredictiveControllerConstraints constraints);
 
     /**
      * Controller variables
@@ -77,6 +78,12 @@ public:
      * @param W - weighting array
      */
     void assignWeightingMatrix(std::vector<float> W);
+
+    /**
+     * \brief Assign the constraints
+     * @param constraints
+     */
+    void assignConstraints(ModelPredictiveControllerConstraints constraints);
 
     /**
      * \brief Check status codes and other

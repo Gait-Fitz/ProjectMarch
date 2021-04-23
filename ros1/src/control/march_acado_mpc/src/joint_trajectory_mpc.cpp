@@ -44,7 +44,8 @@ bool ModelPredictiveControllerInterface::init(
     auto weights = getWeights(joint_names);
     auto constraints = getConstraints(joint_names);
 
-    model_predictive_controller_ = std::make_unique<ModelPredictiveController>(weights, constraints);
+    model_predictive_controller_
+        = std::make_unique<ModelPredictiveController>(weights, constraints);
     model_predictive_controller_->init();
 
     // Initialize the MPC message
@@ -112,7 +113,8 @@ std::vector<float> ModelPredictiveControllerInterface::getWeights(
 }
 
 // Get the joint constraints from the URDF
-ModelPredictiveControllerConstraints ModelPredictiveControllerInterface::getConstraints(
+ModelPredictiveControllerConstraints
+ModelPredictiveControllerInterface::getConstraints(
     std::vector<std::string> joint_names)
 {
     urdf::Model urdf;
@@ -147,7 +149,8 @@ ModelPredictiveControllerConstraints ModelPredictiveControllerInterface::getCons
         ROS_WARN(
             "Could not find robot description on the parameter server. "
             "Assuming that constrains are already set in the ACADO model.");
-        throw std::runtime_error("Cannot construct MPC because constraints are not found.");
+        throw std::runtime_error(
+            "Cannot construct MPC because constraints are not found.");
     }
 }
 
