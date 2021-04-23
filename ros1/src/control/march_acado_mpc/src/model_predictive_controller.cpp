@@ -116,40 +116,47 @@ void ModelPredictiveController::assignWeightingMatrix(std::vector<float> W)
 void ModelPredictiveController::assignConstraints(
     ModelPredictiveControllerConstraints constraints)
 {
-    std::vector<float> lb_effort;
-    lb_effort.reserve(constraints.effort.size());
-    std::transform(constraints.effort.begin(), constraints.effort.end(),
-        lb_effort.begin(), [](float & v) {
-            return v * -1.0;
-        });
+    // Create a lower bound effort vector by flipping the sign of the upper
+    // bound
+    std::vector<float> lb_effort(constraints.effort.size(), 0.0);
+    for (int i = 0; i < constraints.effort.size(); ++i) {
+        lb_effort[i] = -1.0 * constraints.effort[i];
+    }
 
-    std::vector<float> lb_velocity;
-    lb_velocity.reserve(constraints.velocity.size());
-    transform(constraints.velocity.begin(), constraints.velocity.end(),
-        lb_velocity.begin(), [](float & v) {
-            return v * -1.0;
-        });
+    // Create a lower bound velocity vector by flipping the sign of the upper
+    // bound
+    std::vector<float> lb_velocity(constraints.velocity.size(), 0.0);
+    for (int i = 0; i < constraints.velocity.size(); ++i) {
+        lb_velocity[i] = -1.0 * constraints.velocity[i];
+    }
 
+    // Combine the position and velocity of each joint after each other into a
+    // lower and upper bound vector
     std::vector<float> lb_states, ub_states;
     lb_states.reserve(ACADO_NX);
     ub_states.reserve(ACADO_NX);
     for (int i = 0; i < constraints.position_lower.size(); ++i) {
-        lb_states.insert(
-            lb_states.end(), { constraints.position_lower[i], lb_velocity[i] });
-        ub_states.insert(ub_states.end(),
+        lb_states.insert(lb_states.begin(),
+            { constraints.position_lower[i], lb_velocity[i] });
+        ub_states.insert(ub_states.begin(),
             { constraints.position_upper[i], constraints.velocity[i] });
     }
 
+    // Assign the constraints
     for (int i = 0; i < ACADO_N; ++i) {
+        // Assign lower bound of the effort
         std::copy(lb_effort.begin(), lb_effort.end(),
             std::begin(acadoVariables.lbValues) + i * ACADO_NU);
 
+        // Assign upper bound of the effort
         std::copy(constraints.effort.begin(), constraints.effort.end(),
             std::begin(acadoVariables.ubValues) + i * ACADO_NU);
 
+        // Assign the lower bound of the states
         std::copy(lb_states.begin(), lb_states.end(),
             std::begin(acadoVariables.lbAValues) + i * ACADO_NX);
 
+        // Assign the upper bound of the states
         std::copy(ub_states.begin(), ub_states.end(),
             std::begin(acadoVariables.ubAValues) + i * ACADO_NX);
     }
