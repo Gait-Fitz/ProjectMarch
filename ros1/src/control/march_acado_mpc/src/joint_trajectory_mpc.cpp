@@ -38,7 +38,7 @@ bool ModelPredictiveControllerInterface::init(
     desired_inputs.reserve(ACADO_NU);
     desired_inputs.resize(ACADO_NU, 0.0);
 
-  // Initialize the model predictive controller
+    // Initialize the model predictive controller
     model_predictive_controller_
         = std::make_unique<ModelPredictiveController>(getWeights(joint_names));
     model_predictive_controller_->init();
