@@ -19,7 +19,8 @@ using namespace std;
 ACADOvariables acadoVariables = {};
 ACADOworkspace acadoWorkspace = {};
 
-ModelPredictiveController::ModelPredictiveController(std::vector<float> W, ModelPredictiveControllerConstraints constraints)
+ModelPredictiveController::ModelPredictiveController(
+    std::vector<float> W, ModelPredictiveControllerConstraints constraints)
     : W_(W)
     , constraints_(constraints)
 {
@@ -49,6 +50,9 @@ void ModelPredictiveController::init()
 
     // Assign the weighting matrix
     assignWeightingMatrix(W_);
+
+    // Assign the constraints
+    assignConstraints(constraints_);
 
     // Warm-up the solver
     acado_preparationStep();
@@ -108,9 +112,46 @@ void ModelPredictiveController::assignWeightingMatrix(std::vector<float> W)
     }
 }
 
-void ModelPredictiveController::assignConstraints(ModelPredictiveControllerConstraints constraints)
+void ModelPredictiveController::assignConstraints(
+    ModelPredictiveControllerConstraints constraints)
 {
-  ROS_INFO("AAAAAAAAAAAAAAAAAAAHHHHHHHH!!!")
+    std::vector<float> lb_effort;
+    lb_effort.reserve(constraints.effort.size());
+    std::transform(constraints.effort.begin(), constraints.effort.end(),
+        lb_effort.begin(), [](float & v) {
+            return v * -1.0;
+        });
+
+    std::vector<float> lb_velocity;
+    lb_velocity.reserve(constraints.velocity.size());
+    transform(constraints.velocity.begin(), constraints.velocity.end(),
+        lb_velocity.begin(), [](float & v) {
+            return v * -1.0;
+        });
+
+    std::vector<float> lb_states, ub_states;
+    lb_states.reserve(ACADO_NX);
+    ub_states.reserve(ACADO_NX);
+    for (int i = 0; i < constraints.position_lower.size(); ++i) {
+        lb_states.insert(
+            lb_states.end(), { constraints.position_lower[i], lb_velocity[i] });
+        ub_states.insert(ub_states.end(),
+            { constraints.position_upper[i], constraints.velocity[i] });
+    }
+
+    for (int i = 0; i < ACADO_N; ++i) {
+        std::copy(lb_effort.begin(), lb_effort.end(),
+            std::begin(acadoVariables.lbValues) + i * ACADO_NU);
+
+        std::copy(constraints.effort.begin(), constraints.effort.end(),
+            std::begin(acadoVariables.ubValues) + i * ACADO_NU);
+
+        std::copy(lb_states.begin(), lb_states.end(),
+            std::begin(acadoVariables.lbAValues) + i * ACADO_NX);
+
+        std::copy(ub_states.begin(), ub_states.end(),
+            std::begin(acadoVariables.ubAValues) + i * ACADO_NX);
+    }
 }
 
 void ModelPredictiveController::controllerDiagnosis()
