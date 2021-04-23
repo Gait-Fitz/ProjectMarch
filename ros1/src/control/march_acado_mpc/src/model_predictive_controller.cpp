@@ -138,8 +138,8 @@ std::vector<double> ModelPredictiveController::calculateControlInput()
     controllerDiagnosis();
 
     // get command
-    command.insert(command.begin(), std::begin(acadoVariables.u),
-        std::begin(acadoVariables.u) + ACADO_NU);
+    command.assign(
+        std::begin(acadoVariables.u), std::begin(acadoVariables.u) + ACADO_NU);
 
     // return command
     return command;
