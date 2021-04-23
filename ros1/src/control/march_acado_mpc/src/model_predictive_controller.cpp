@@ -108,6 +108,11 @@ void ModelPredictiveController::assignWeightingMatrix(std::vector<float> W)
     }
 }
 
+void ModelPredictiveController::assignConstraints(ModelPredictiveControllerConstraints constraints)
+{
+  ROS_INFO("AAAAAAAAAAAAAAAAAAAHHHHHHHH!!!")
+}
+
 void ModelPredictiveController::controllerDiagnosis()
 {
     // Check acado_preparationStep() status code
