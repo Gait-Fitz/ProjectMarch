@@ -17,7 +17,7 @@ struct ModelPredictiveControllerConstraints {
 class ModelPredictiveController {
 
 public:
-    ModelPredictiveController(std::vector<float> W);
+    ModelPredictiveController(std::vector<float> W, ModelPredictiveControllerConstraints constraints);
 
     /**
      * Controller variables
@@ -95,6 +95,7 @@ public:
 
 private:
     std::vector<float> W_;
+    ModelPredictiveControllerConstraints constraints_;
 };
 
 #endif
