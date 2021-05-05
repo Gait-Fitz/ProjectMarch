@@ -31,12 +31,15 @@ public:
      */
 
     // Timing variables
-    acado_timer t;
-    double t_preparation, t_feedback;
+    acado_timer t {};
+    double t_preparation {}, t_feedback {};
 
     // Status variables
-    int preparationStepStatus;
-    int feedbackStepStatus;
+    int preparationStepStatus {};
+    int feedbackStepStatus {};
+
+    // Performance variables
+    double cost {}; // Objective value
 
     // Performance variables
     double cost; // Objective value
@@ -63,15 +66,19 @@ public:
      * \brief Set the initial state
      * @param x0 - initial state
      */
-    void setInitialState(int joint, vector<double> x0);
+    void setInitialState(std::vector<double>& x0);
 
     /**
-     * \brief Set the reference for time step n in [0, N]
-     * @param n
+     * \brief Set the reference for nodes 0 to N-1
      * @param reference
      */
-    void setReference(int joint, int n, const std::vector<double>& states,
-        const std::vector<double>& inputs);
+    void setRunningReference(const std::vector<double>& reference);
+
+    /**
+     * \brief Set the reference for node N
+     * @param end_reference
+     */
+    void setEndReference(const std::vector<double>& end_reference);
 
     /**
      * \brief Assign the weighting array values

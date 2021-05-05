@@ -19,6 +19,7 @@ bool ModelPredictiveControllerInterface::init(
     std::vector<hardware_interface::JointHandle>& joint_handles,
     ros::NodeHandle& nh)
 {
+    // Get joint handles and the amount of joints to control
     joint_handles_ptr_ = &joint_handles;
     num_joints_ = joint_handles.size();
 
@@ -26,9 +27,14 @@ bool ModelPredictiveControllerInterface::init(
     std::vector<std::string> joint_names;
     ros::param::get("/march/joint_names", joint_names);
 
-    // Initialize variables
+    // Initialize desired inputs
     desired_inputs.reserve(ACADO_NU);
     desired_inputs.resize(ACADO_NU, 0.0);
+
+    // Initialize state and reference vectors
+    initial_state.reserve(ACADO_NX);
+    reference.reserve(sizeof(acadoVariables.y) / sizeof(acadoVariables.y[0]));
+    end_reference.reserve(ACADO_NYN);
 
     // Initialize the place where the MPC message will be published
     mpc_pub_ = std::make_unique<
@@ -207,9 +213,9 @@ void ModelPredictiveControllerInterface::setMpcMsg(int joint_number)
     // estimation and reference) required because we can't be certain that the
     // amount of states and inputs are equal for all joints
     int col_joint_state
-        = std::accumulate(JOINT_NX.begin(), JOINT_NX.begin() + i, 0);
+        = std::accumulate(JOINT_NX.begin(), JOINT_NX.begin() + i, /*init=*/0.0);
     int col_joint_input
-        = std::accumulate(JOINT_NU.begin(), JOINT_NU.begin() + i, 0);
+        = std::accumulate(JOINT_NU.begin(), JOINT_NU.begin() + i, /*init=*/0.0);
 
     // Variables that only have to be set once
     if (joint_number == 0) {
@@ -288,25 +294,49 @@ void ModelPredictiveControllerInterface::updateCommand(
     assert(num_joints_ == state_error.position.size());
     assert(num_joints_ == state_error.velocity.size());
 
-    // Set initial state and reference
-    for (unsigned int i = 0; i < num_joints_; ++i) {
-        // Set the initial state of joint i
-        model_predictive_controller_->setInitialState(i,
+    // Get initial state of each joint combined
+    for (int i = 0; i < num_joints_; ++i) {
+        initial_state.insert(initial_state.end(),
             { (*joint_handles_ptr_)[i].getPosition(),
                 (*joint_handles_ptr_)[i].getVelocity() });
-
-        for (int n = 0; n < desired_states.size(); ++n) {
-            model_predictive_controller_->setReference(i, n,
-                { desired_states[n].position[i],
-                    desired_states[n].velocity[i] },
-                { desired_inputs[i] });
-        }
     }
+
+    // Get "running" reference of each joint combined
+    for (int n = 0; n < desired_states.size() - 1; ++n) {
+        for (int i = 0; i < num_joints_; ++i) {
+            reference.insert(reference.end(),
+                { desired_states[n].position[i],
+                    desired_states[n].velocity[i] });
+        }
+        reference.insert(
+            reference.end(), desired_inputs.begin(), desired_inputs.end());
+    }
+
+    // Get "end" reference of each joint combined
+    for (int i = 0; i < num_joints_; ++i) {
+        end_reference.insert(end_reference.end(),
+            { desired_states[ACADO_N].position[i],
+                desired_states[ACADO_N].velocity[i] });
+    }
+
+    // Set initial state
+    model_predictive_controller_->setInitialState(initial_state);
+    initial_state.clear();
+
+    // Set "running" reference
+    // Consists of all desired states and inputs at node 0 to N-1
+    model_predictive_controller_->setRunningReference(reference);
+    reference.clear();
+
+    // Set "end" reference
+    // Consists of desired position and velocity at the last node N
+    model_predictive_controller_->setEndReference(end_reference);
+    end_reference.clear();
 
     // Calculate mpc and apply command
     command = model_predictive_controller_->calculateControlInput();
 
-    for (unsigned int i = 0; i < num_joints_; ++i) {
+    for (int i = 0; i < num_joints_; ++i) {
         // Apply command
         (*joint_handles_ptr_)[i].setCommand(command[i]);
 
@@ -326,7 +356,7 @@ void ModelPredictiveControllerInterface::updateCommand(
 void ModelPredictiveControllerInterface::stopping(const ros::Time& /*time*/)
 {
     // zero commands
-    for (unsigned int i = 0; i < num_joints_; ++i) {
+    for (int i = 0; i < num_joints_; ++i) {
         (*joint_handles_ptr_)[i].setCommand(/*command=*/0.0);
     }
 }

@@ -21,8 +21,8 @@
 #include <ros/time.h>
 
 #include <cassert>
+#include <ctime>
 #include <memory>
-#include <time.h>
 
 // Create a State alias
 namespace joint_trajectory_controller {
@@ -99,18 +99,34 @@ private:
     ModelPredictiveControllerConstraints getConstraints(
         std::vector<std::string> joint_names);
 
+    // Pointer to the joints to control
     std::vector<hardware_interface::JointHandle>* joint_handles_ptr_;
 
-    unsigned int num_joints_;
-    std::vector<double> command;
+    // The amount of joints to control
+    unsigned int num_joints_ {};
 
-    std::vector<double> desired_inputs;
-
+    // Vectors to store the amount of states (NX) and inputs (NU) of each
+    // individual joint
     std::vector<int> JOINT_NX;
     std::vector<int> JOINT_NU;
 
+    // Vector to store the reference for the input or torque we want the joints
+    // to exert This is set equal to zero for now, but has been added such that
+    // it could be used later if desired.
+    std::vector<double> desired_inputs;
+
+    // Vectors for collecting the initial states and references of all joints
+    std::vector<double> initial_state;
+    std::vector<double> reference;
+    std::vector<double> end_reference;
+
+    // Vector to store the command calculated by the controller
+    std::vector<double> command;
+
+    // Unique pointer to the ModelPredictiveController class
     std::unique_ptr<ModelPredictiveController> model_predictive_controller_;
 
+    // Unique pointer to the MpcMsg
     std::unique_ptr<
         realtime_tools::RealtimePublisher<march_shared_msgs::MpcMsg>>
         mpc_pub_;
