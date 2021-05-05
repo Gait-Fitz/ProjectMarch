@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Copyright (C) 2021 Thijs Raymakers
 # Copyright (C) 2020 Bas Volkers
 #
@@ -17,8 +19,6 @@
 # AND the additional terms along with this program. If not,
 # see <https://projectmarch.nl/s/LICENSE> and
 # <https://projectmarch.nl/s/LICENSE-ADDITIONAL-TERMS>.
-
-#!/usr/bin/env python
 
 import unittest
 
