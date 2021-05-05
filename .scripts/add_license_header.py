@@ -214,12 +214,12 @@ def add_to_file(file):
         print(f"{file}\n{header}")
         data = ""
         try:
-            #with open(file, 'r') as original: 
-            #    data = original.read()
-            #with open(file, 'w') as modified:
-            #    modified.write(f"{header}\n{data}")
+            with open(file, 'r') as original:
+                data = original.read()
+            with open(file, 'w') as modified:
+                modified.write(f"{header}\n{data}")
             return (True, file)
-        except:
+        except IOError:
             return (False, "Opening file failed", file)
     return (False, "Header = None", file)
 
