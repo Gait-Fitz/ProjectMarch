@@ -22,8 +22,8 @@ ACADOworkspace acadoWorkspace = {};
 
 ModelPredictiveController::ModelPredictiveController(
     std::vector<float> W, ModelPredictiveControllerConstraints constraints)
-    : W_(W)
-    , constraints_(constraints)
+    : W_(std::move(W))
+    , constraints_(std::move(constraints))
 {
 }
 
