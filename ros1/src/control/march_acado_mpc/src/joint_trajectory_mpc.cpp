@@ -146,9 +146,6 @@ ModelPredictiveControllerInterface::getConstraints(
         }
         return constraints;
     } else {
-        ROS_WARN(
-            "Could not find robot description on the parameter server. "
-            "Assuming that constrains are already set in the ACADO model.");
         throw std::runtime_error(
             "Cannot construct MPC because constraints are not found.");
     }
