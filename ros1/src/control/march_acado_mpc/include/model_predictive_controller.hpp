@@ -41,22 +41,6 @@ public:
     // Performance variables
     double cost {}; // Objective value
 
-    // Performance variables
-    double cost; // Objective value
-
-    // qpOASES error enums
-    enum Error {
-
-        // acado_preparationStep() errors
-        PREP_INTERNAL_ERROR = 1,
-
-        // acado_feedbackStep() errors
-        QP_ITERATION_LIMIT_REACHED = 1,
-        QP_INTERNAL_ERROR = -1,
-        QP_INFEASIBLE = -2,
-        QP_UNBOUNDED = -3
-    };
-
     /**
      * \brief Initialise the model predictive controller
      */
