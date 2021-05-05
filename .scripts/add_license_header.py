@@ -148,6 +148,8 @@ def group_by_year(authors):
     return years
 
 def should_have_copyright_notice(filename):
+    if "__" in filename:
+        return False
     extension = filename.split(".")[-1]
     try:
          _ = prefix_suffix[extension]
