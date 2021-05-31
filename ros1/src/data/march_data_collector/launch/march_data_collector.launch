@@ -12,6 +12,7 @@
               if the simulation is being used, the imus should not be used to
               publish the transformation."/>
 
+    <env name="GMON_OUT_PREFIX" value="march_data_collector" />
     <node name="march_data_collector" pkg="march_data_collector" type="march_data_collector" output="screen">
         <param name="moticon_ip" value="$(arg moticon_ip)" />
         <param name="pressure_soles" value="$(arg pressure_soles)" />

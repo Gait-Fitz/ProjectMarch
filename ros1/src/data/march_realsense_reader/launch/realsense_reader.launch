@@ -1,4 +1,5 @@
 <launch>
+    <env name="GMON_OUT_PREFIX" value="march_realsense_reader" />
     <node name="realsense_reader_node"
           pkg="march_realsense_reader"
           type="march_realsense_reader_node"
