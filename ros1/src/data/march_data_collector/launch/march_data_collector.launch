@@ -13,7 +13,7 @@
               publish the transformation."/>
 
     <env name="GMON_OUT_PREFIX" value="march_data_collector" />
-    <node name="march_data_collector" pkg="march_data_collector" type="march_data_collector" output="screen">
+    <node name="march_data_collector" pkg="march_data_collector" type="march_data_collector" output="screen" launch-prefix="valgrind --tool=callgrind --callgrind-out-file='callgrind.march_data_collector.%p'">
         <param name="moticon_ip" value="$(arg moticon_ip)" />
         <param name="pressure_soles" value="$(arg pressure_soles)" />
         <param name="simulation" value="$(arg simulation)"/>
