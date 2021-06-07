@@ -13,6 +13,10 @@ from march_utility.utilities.utility_functions import (
 from march_utility.utilities.vector_3d import Vector3d
 
 
+def round_setpoint(n):
+    return round(n, Setpoint.digits)
+
+
 class SetpointTest(unittest.TestCase):
     def setUp(self):
         self.setpoint = Setpoint(
@@ -28,20 +32,22 @@ class SetpointTest(unittest.TestCase):
         }
 
     def test_time_rounding(self):
-        self.assertEqual(self.setpoint.time, Duration(seconds=1.12341254))
+        self.assertEqual(
+            self.setpoint.time, Duration(seconds=round_setpoint(1.12341254))
+        )
 
     def test_position_rounding(self):
-        self.assertEqual(self.setpoint.position, 0.03434126)
+        self.assertEqual(self.setpoint.position, round_setpoint(0.03434126))
 
     def test_velocity_rounding(self):
-        self.assertEqual(self.setpoint.velocity, 123.16208455)
+        self.assertEqual(self.setpoint.velocity, round_setpoint(123.16208455))
 
     def test_string_output(self):
         self.assertEqual(
             str(self.setpoint),
-            "Time: {t}, Position: {p}, Velocity: {v}".format(
-                t=1123412540, p=0.03434126, v=123.16208455
-            ),
+            f"Time: {round_setpoint(Duration(nanoseconds=1123412540)).nanoseconds}, "
+            f"Position: {round_setpoint(0.03434126)}, Velocity: "
+            f"{round_setpoint(123.16208455)}",
         )
 
     def test_equal(self):
@@ -99,7 +105,9 @@ class SetpointTest(unittest.TestCase):
         new_setpoints = FeetState.feet_state_to_setpoints(feet_state)
         for key in new_setpoints.keys():
             self.assertAlmostEqual(
-                new_setpoints[key].velocity, self.setpoint_dict[key].velocity, places=4
+                new_setpoints[key].velocity,
+                round_setpoint(self.setpoint_dict[key].velocity),
+                places=3,
             )
 
     def test_inverse_kinematics_reversed_position(self):
@@ -115,8 +123,8 @@ class SetpointTest(unittest.TestCase):
         dif_right = (
             desired_state.right_foot.position - resulting_position.right_foot.position
         )
-        self.assertLess(dif_left.norm(), 0.00001)
-        self.assertLess(dif_right.norm(), 1 / 0.00001)
+        self.assertLess(dif_left.norm(), 0.0001)
+        self.assertLess(dif_right.norm(), 1 / 0.0001)
 
     def test_weighted_average_states(self):
         parameter = 0.8
@@ -152,20 +160,24 @@ class SetpointTest(unittest.TestCase):
         [
             l_ul,
             l_ll,
-            _,
-            _,
+            l_hl,
+            l_ph,
             r_ul,
             r_ll,
-            _,
-            _,
-            _,
+            r_hl,
+            r_ph,
+            base,
         ] = get_lengths_robot_for_inverse_kinematics(Side.both)
         resulting_state = FeetState.from_setpoint_dict(setpoint_dict)
         expected_right_foot = Foot(
-            Side.right, Vector3d(r_ul + r_ll + 0.1395, 0.1705, 0), Vector3d(0, 0, 0)
+            Side.right,
+            Vector3d(r_ul + r_ll + r_hl, base / 2.0 + r_ph, 0),
+            Vector3d(0, 0, 0),
         )
         expected_left_foot = Foot(
-            Side.right, Vector3d(l_ul + l_ll + 0.1395, -0.1705, 0), Vector3d(0, 0, 0)
+            Side.right,
+            Vector3d(l_ul + l_ll + l_hl, -base / 2.0 - l_ph, 0),
+            Vector3d(0, 0, 0),
         )
         expected_state = FeetState(expected_right_foot, expected_left_foot, Duration())
         self.assertTrue(
@@ -191,20 +203,24 @@ class SetpointTest(unittest.TestCase):
         [
             l_ul,
             l_ll,
-            _,
-            _,
+            l_hl,
+            l_ph,
             r_ul,
             r_ll,
-            _,
-            _,
-            _,
+            r_hl,
+            r_ph,
+            base,
         ] = get_lengths_robot_for_inverse_kinematics(Side.both)
         resulting_state = FeetState.from_setpoint_dict(setpoint_dict)
         expected_right_foot = Foot(
-            Side.right, Vector3d(0.1395, 0.1705, r_ul + r_ll), Vector3d(0, 0, 0)
+            Side.right,
+            Vector3d(r_hl, base / 2.0 + r_ph, r_ul + r_ll),
+            Vector3d(0, 0, 0),
         )
         expected_left_foot = Foot(
-            Side.right, Vector3d(0.1395, -0.1705, l_ul + l_ll), Vector3d(0, 0, 0)
+            Side.right,
+            Vector3d(l_hl, -base / 2.0 - l_ph, l_ul + l_ll),
+            Vector3d(0, 0, 0),
         )
         expected_state = FeetState(expected_right_foot, expected_left_foot, Duration())
         self.assertTrue(
@@ -230,20 +246,24 @@ class SetpointTest(unittest.TestCase):
         [
             l_ul,
             l_ll,
-            _,
-            _,
+            l_hl,
+            l_ph,
             r_ul,
             r_ll,
-            _,
-            _,
-            _,
+            r_hl,
+            r_ph,
+            base,
         ] = get_lengths_robot_for_inverse_kinematics(Side.both)
         resulting_state = FeetState.from_setpoint_dict(setpoint_dict)
         expected_right_foot = Foot(
-            Side.right, Vector3d(r_ul + 0.1395, 0.1705, r_ll), Vector3d(0, 0, 0)
+            Side.right,
+            Vector3d(r_ul + r_hl, base / 2.0 + r_ph, r_ll),
+            Vector3d(0, 0, 0),
         )
         expected_left_foot = Foot(
-            Side.right, Vector3d(l_ul + 0.1395, -0.1705, l_ll), Vector3d(0, 0, 0)
+            Side.right,
+            Vector3d(l_ul + l_hl, -base / 2.0 - l_ph, l_ll),
+            Vector3d(0, 0, 0),
         )
         expected_state = FeetState(expected_right_foot, expected_left_foot, Duration())
         self.assertTrue(
@@ -261,13 +281,13 @@ class SetpointTest(unittest.TestCase):
         [
             l_ul,
             l_ll,
-            _,
-            _,
+            l_hl,
+            l_ph,
             r_ul,
             r_ll,
-            _,
-            _,
-            _,
+            r_hl,
+            r_ph,
+            base,
         ] = get_lengths_robot_for_inverse_kinematics(Side.both)
         parameter = 0.99
         base_setpoint_dict = {
@@ -294,20 +314,28 @@ class SetpointTest(unittest.TestCase):
         )
 
         base_expected_right_foot = Foot(
-            Side.right, Vector3d(0.1395, 0.1705, r_ul + r_ll), Vector3d(0, 0, 0)
+            Side.right,
+            Vector3d(r_hl, base / 2.0 + r_ph, r_ul + r_ll),
+            Vector3d(0, 0, 0),
         )
         base_expected_left_foot = Foot(
-            Side.right, Vector3d(0.1395, -0.1705, l_ul + l_ll), Vector3d(0, 0, 0)
+            Side.right,
+            Vector3d(l_hl, -base / 2.0 - l_ph, l_ul + l_ll),
+            Vector3d(0, 0, 0),
         )
         base_expected_state = FeetState(
             base_expected_right_foot, base_expected_left_foot, Duration()
         )
 
         other_expected_right_foot = Foot(
-            Side.right, Vector3d(r_ul + r_ll + 0.1395, 0.1705, 0), Vector3d(0, 0, 0)
+            Side.right,
+            Vector3d(r_ul + r_ll + r_hl, base / 2.0 + r_ph, 0),
+            Vector3d(0, 0, 0),
         )
         other_expected_left_foot = Foot(
-            Side.right, Vector3d(l_ul + l_ll + 0.1395, -0.1705, 0), Vector3d(0, 0, 0)
+            Side.right,
+            Vector3d(l_ul + l_ll + l_hl, -base / 2.0 - l_ph, 0),
+            Vector3d(0, 0, 0),
         )
         other_expected_state = FeetState(
             other_expected_right_foot, other_expected_left_foot, Duration()

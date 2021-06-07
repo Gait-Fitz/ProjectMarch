@@ -15,6 +15,7 @@ add_message_files(
     AfterLimitJointCommand.msg
     Alive.msg
     CurrentGait.msg
+    CurrentIPDState.msg
     CurrentState.msg
     Error.msg
     GaitInstruction.msg
@@ -30,8 +31,8 @@ add_message_files(
     PressureSolesData.msg
 )
 add_message_files(
-    DIRECTORY
-    msg/mpc_msgs
+#    DIRECTORY
+#    msg/mpc_msgs
     FILES
     MpcArray.msg
     MpcStateVectors.msg
@@ -55,6 +56,7 @@ add_service_files(
     GetParamStringList.srv
     GetPossibleComLevels.srv
     PossibleGaits.srv
+    PublishTestDataset.srv
     SetGaitVersion.srv
     SetObstacleSizeRampLike.srv
     SetObstacleSizeBlockLike.srv

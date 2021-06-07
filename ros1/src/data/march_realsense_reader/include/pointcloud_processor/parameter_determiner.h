@@ -1,7 +1,7 @@
 #ifndef MARCH_PARAMETER_DETERMINER_H
 #define MARCH_PARAMETER_DETERMINER_H
 #include "march_shared_msgs/GetGaitParameters.h"
-#include "utilities/realsense_gait_utilities.h"
+#include "utilities/realsense_category_utilities.h"
 #include <march_realsense_reader/pointcloud_parametersConfig.h>
 #include <pcl/point_types.h>
 #include <pcl_ros/point_cloud.h>
@@ -32,7 +32,7 @@ public:
             plane_coefficients_vector,
         boost::shared_ptr<HullVector> const hull_vector,
         boost::shared_ptr<PolygonVector> const polygon_vector,
-        SelectedGait const selected_gait,
+        RealSenseCategory const realsense_category,
         boost::shared_ptr<GaitParameters> gait_parameters)
         = 0;
 
@@ -49,7 +49,7 @@ protected:
     boost::shared_ptr<PlaneCoefficientsVector> plane_coefficients_vector_;
     boost::shared_ptr<HullVector> hull_vector_;
     boost::shared_ptr<PolygonVector> polygon_vector_;
-    std::optional<SelectedGait> selected_gait_ = std::nullopt;
+    std::optional<RealSenseCategory> realsense_category_ = std::nullopt;
     boost::shared_ptr<GaitParameters> gait_parameters_;
     bool debugging_;
 };
@@ -69,7 +69,7 @@ public:
                                  plane_coefficients_vector,
         boost::shared_ptr<HullVector> const hull_vector,
         boost::shared_ptr<PolygonVector> const polygon_vector,
-        SelectedGait const selected_gait,
+        RealSenseCategory const realsense_category,
         boost::shared_ptr<GaitParameters> gait_parameters) override;
 
     /** This function is called upon whenever a parameter from config is
@@ -162,12 +162,15 @@ protected:
     // Find the stairs up parameters from the foot locations
     bool getGaitParametersFromFootLocationStairsUp();
 
-    // Find the ramp down parameter from the foot locations
-    bool getGaitParametersFromFootLocationRampDown();
+    // Find the ramp parameter from the foot locations
+    bool getGaitParametersFromFootLocationRamp();
 
     // Fill the foot locations to try cloud with a line of points from (start,
     // 0) to (end, 0)
     bool fillOptionalFootLocationCloud(float start, float end);
+
+    // set the gait dimension variables to the relevant value
+    void initializeGaitDimensions();
 
     // All relevant parameters
     int hull_dimension {};
@@ -185,6 +188,14 @@ protected:
     float z_flat {};
     float x_steep {};
     float z_steep {};
+    float x_flat_down {};
+    float z_flat_down {};
+    float x_steep_down {};
+    float z_steep_down {};
+    float x_flat_up {};
+    float z_flat_up {};
+    float x_steep_up {};
+    float z_steep_up {};
     float min_search_area {};
     float max_search_area {};
     float max_distance_to_line {};
@@ -210,7 +221,7 @@ public:
                                  plane_coefficients_vector,
         boost::shared_ptr<HullVector> const hull_vector,
         boost::shared_ptr<PolygonVector> const polygon_vector,
-        SelectedGait const selected_gait,
+        RealSenseCategory const realsense_category,
         boost::shared_ptr<GaitParameters> gait_parameters) override;
 };
 
