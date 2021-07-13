@@ -2,6 +2,7 @@
     <arg name="robot" default="march4" doc="The robot to run. Can be: march3, march4, test_joint_linear, test_joint_rotational."/>
     <arg name="robot_description" default="$(arg robot)" doc="URDF file to use"/>
     <arg name="controller_name" default="$(arg robot)" doc="Name of the controller file"/>
+    <arg name="controller_type" default="effort_control" doc="Changes the controller used by the hardware interface."/>
     <arg name="reset_motor_controllers" default="false" doc="Reset the MotorControllers if this argument is set to true"/>
     <arg name="if_name" default="" doc="Ethernet port to use, can be found by running 'ifconfig' in the terminal.
                                         If not provided, then the value is read from the robot .yaml file."/>
@@ -19,12 +20,12 @@
 
         <node name="controller_spawner" pkg="controller_manager" type="controller_manager"
               respawn="false" output="screen"
-              args="spawn controller/joint_state controller/temperature_sensor controller/trajectory"
-              unless="$(eval controller_type == 'mixed_control')"
+              args="spawn controller/trajectory controller/joint_state"
+              if="$(eval controller_type != 'mixed_control')"
         />
         <node name="controller_spawner" pkg="controller_manager" type="controller_manager"
               respawn="false" output="screen"
-              args="spawn controller/joint_state controller/temperature_sensor controller/trajectory_effort controller/trajectory_model_predictive"
+              args="spawn controller/trajectory_effort controller/joint_state controller/trajectory_model_predictive"
               if="$(eval controller_type == 'mixed_control')"
         />
 
