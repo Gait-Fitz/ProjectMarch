@@ -4,7 +4,8 @@ march:
       type: joint_state_controller/JointStateController
       publish_rate: 50
 
-    trajectory_effort:
+    # Regular PID trajectory effort controller
+    trajectory:
       type: effort_controllers/JointTrajectoryController
       joints:
         - left_ankle
@@ -41,7 +42,9 @@ march:
         right_knee:
           trajectory: 0.5
 
-    trajectory_model_predictive:
+    # Trajectory effort controller specifically for MPC
+    # TODO: actually use MPC here
+    trajectory_mpc:
       type: effort_controllers/JointTrajectoryController
       joints:
         - left_hip_aa

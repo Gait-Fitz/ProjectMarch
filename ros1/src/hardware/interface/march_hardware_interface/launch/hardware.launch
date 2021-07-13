@@ -10,7 +10,7 @@
          doc="Whether the joints that are fixed in the urdf, but do have motorcontrollers,
          are also not in the ethercat train."/>
 
-    <rosparam file="$(find march_hardware_interface)/config/$(arg controller_name)/controllers.yaml" command="load"/>
+    <rosparam file="$(find march_hardware_interface)/config/$(arg controller_type)/$(arg controller_name).yaml" command="load"/>
     <node name="upload_controller_values" pkg="march_launch"
           type="upload_controller_values.py"/>
     <param name="robot_description" textfile="$(find march_description)/urdf/$(arg robot_description).urdf"/>
@@ -20,12 +20,12 @@
 
         <node name="controller_spawner" pkg="controller_manager" type="controller_manager"
               respawn="false" output="screen"
-              args="spawn controller/trajectory controller/joint_state"
+              args="spawn controller/trajectory controller/joint_state controller/temperature_sensor"
               if="$(eval controller_type != 'mixed_control')"
         />
         <node name="controller_spawner" pkg="controller_manager" type="controller_manager"
               respawn="false" output="screen"
-              args="spawn controller/trajectory_effort controller/joint_state controller/trajectory_model_predictive"
+              args="spawn controller/trajectory controller/joint_state controller/trajectory_mpc controller/temperature_sensor"
               if="$(eval controller_type == 'mixed_control')"
         />
 

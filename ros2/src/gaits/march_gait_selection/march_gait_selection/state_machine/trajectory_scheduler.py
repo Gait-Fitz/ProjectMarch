@@ -19,8 +19,7 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 POSSIBLE_CONTROLLER_NAMES = [
     "trajectory",
-    "trajectory_effort",
-    "trajectory_model_predictive",
+    "trajectory_mpc",
 ]
 
 

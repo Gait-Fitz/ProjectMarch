@@ -9,10 +9,10 @@ CONTROLLER_PREFIX = "/march/controller"
 
 
 def get_controller_names(controller_type: str) -> List[str]:
+    controller_names = ["trajectory"]
     if controller_type == "mixed_control":
-        return ["trajectory_effort", "trajectory_model_predictive"]
-    else:
-        return ["trajectory"]
+        controller_names.append("trajectory_mpc")
+    return controller_names
 
 
 def get_follow_joint_trajectory_bridge_topics(controller_name: str) -> List[dict]:
