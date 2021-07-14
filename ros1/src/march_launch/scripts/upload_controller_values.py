@@ -44,7 +44,7 @@ def get_follow_joint_trajectory_bridge_topics(controller_name: str) -> List[dict
         {
             "topic": f"{CONTROLLER_PREFIX}/{controller_name}/command",
             "type": "trajectory_msgs/msg/JointTrajectory",
-        }
+        },
     ]
 
 
@@ -59,10 +59,18 @@ def get_params_for_actuation(joint: str, controller_name: str) -> List[str]:
         f"{CONTROLLER_PREFIX}/{controller_name}/constraints/{joint}",
     ]
 
-def get_actuating_joint_names_by_controller(controller_name: str, actuating_joint_names: List[str]) -> List[str]:
-    joint_names_by_controller = rospy.get_param(f"/march/controller/{controller_name}/joints")
-    actuating_joint_names_by_controller = set(actuating_joint_names).intersection(set(joint_names_by_controller))
+
+def get_actuating_joint_names_by_controller(
+    controller_name: str, actuating_joint_names: List[str]
+) -> List[str]:
+    joint_names_by_controller = rospy.get_param(
+        f"/march/controller/{controller_name}/joints"
+    )
+    actuating_joint_names_by_controller = set(actuating_joint_names).intersection(
+        set(joint_names_by_controller)
+    )
     return sorted(list(actuating_joint_names_by_controller))
+
 
 def main():
     """
@@ -102,8 +110,15 @@ def main():
         rospy.set_param("/march/joint_names", actuating_joint_names)
 
         for controller_name in controller_names:
-            actuating_joint_names_by_controller = get_actuating_joint_names_by_controller(controller_name, actuating_joint_names)
-            rospy.set_param(f"/march/controller/{controller_name}/joints", actuating_joint_names_by_controller)
+            actuating_joint_names_by_controller = (
+                get_actuating_joint_names_by_controller(
+                    controller_name, actuating_joint_names
+                )
+            )
+            rospy.set_param(
+                f"/march/controller/{controller_name}/joints",
+                actuating_joint_names_by_controller,
+            )
 
             for joint in fixed_joint_names:
                 for param in get_params_for_actuation(joint, controller_name):

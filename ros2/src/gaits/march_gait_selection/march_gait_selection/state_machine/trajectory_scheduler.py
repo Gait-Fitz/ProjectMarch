@@ -129,7 +129,11 @@ class TrajectoryScheduler:
         command.trajectory.header.stamp = stamp
 
         for controller_name, publisher in self._trajectory_goal_pubs.items():
-            goal = FollowJointTrajectoryGoal(trajectory=self.split_joint_trajectory_by_controller(command.trajectory, controller_name))
+            goal = FollowJointTrajectoryGoal(
+                trajectory=self.split_joint_trajectory_by_controller(
+                    command.trajectory, controller_name
+                )
+            )
 
             self._node.get_logger().info(str(goal))
 
@@ -201,8 +205,7 @@ class TrajectoryScheduler:
         return joint_names_per_controller
 
     def split_joint_trajectory_by_controller(
-        self, trajectory: JointTrajectory,
-            controller_name: str
+        self, trajectory: JointTrajectory, controller_name: str
     ) -> JointTrajectory:
         if not self.uses_mixed_control:
             return trajectory
