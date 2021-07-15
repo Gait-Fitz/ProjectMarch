@@ -21,20 +21,22 @@
     <node name="upload_controller_values" pkg="march_launch"
           type="upload_controller_values.py" args="$(arg controller_type)"/>
 
-    <group ns="march">
-        <node name="controller_spawner" pkg="controller_manager" type="controller_manager"
-              respawn="false" output="screen"
-              args="spawn controller/trajectory controller/joint_state"
-              if="$(eval controller_type != 'mixed_control')"
-        />
-        <node name="controller_spawner" pkg="controller_manager" type="controller_manager"
-              respawn="false" output="screen"
-              args="spawn controller/trajectory controller/joint_state controller/trajectory_mpc"
-              if="$(eval controller_type == 'mixed_control')"
-        />
-        <node name="set_obstacle_node" pkg="march_simulation" type="set_obstacle_dimensions"/>
+<!--    <group ns="march">-->
+<!--        <node name="controller_spawner" pkg="controller_manager" type="controller_manager"-->
+<!--              respawn="false" output="screen"-->
+<!--              args="spawn controller/trajectory controller/joint_state"-->
+<!--              if="$(eval controller_type != 'mixed_control')"-->
+<!--        />-->
+<!--        <node name="controller_spawner" pkg="controller_manager" type="controller_manager"-->
+<!--              respawn="false" output="screen"-->
+<!--              args="spawn controller/trajectory controller/joint_state controller/trajectory_mpc"-->
+<!--              if="$(eval controller_type == 'mixed_control')"-->
+<!--        />-->
+    <node name="spawn_all_controllers" pkg="march_launch"  ns="march"
+      type="spawn_all_controllers.py"/>
+    <node name="set_obstacle_node" pkg="march_simulation" type="set_obstacle_dimensions"/>
 
-    </group>
+<!--    </group>-->
 
     <group>
         <!-- We resume the logic in empty_world.launch_sm, changing only the name of the world to be launched -->
