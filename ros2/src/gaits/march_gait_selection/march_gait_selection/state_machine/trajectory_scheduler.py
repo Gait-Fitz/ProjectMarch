@@ -194,6 +194,7 @@ class TrajectoryScheduler:
                 f"Failed to execute trajectory. {result.result.error_string} ({result.result.error_code})"
             )
             self._failed = True
+            self.cancel_active_goals()
 
     def get_joint_names_per_controller(self) -> Dict[ControllerName, List[str]]:
         """Get all joint names per controller.
