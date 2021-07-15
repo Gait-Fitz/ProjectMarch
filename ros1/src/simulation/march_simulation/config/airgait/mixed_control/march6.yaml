@@ -46,13 +46,22 @@ march:
     # TODO: actually use MPC here
     trajectory_mpc:
       type: effort_controllers/JointTrajectoryController
+      N: 10
       joints:
         - left_hip_aa
         - right_hip_aa
 
+      weights:
+        left_hip_aa:
+          Q: [ 100.0, 1.0 ]
+          R: [ 0.01 ]
+        right_hip_aa:
+          Q: [ 100.0, 1.0 ]
+          R: [ 0.01 ]
+
       gains:
-        left_hip_aa: {p: 1000,  d: 10, i: 0, i_clamp: 0}
-        right_hip_aa: {p: 1000,  d: 10, i: 0, i_clamp: 0}
+        left_hip_aa: { p: 1000,  d: 10, i: 0, i_clamp: 0 }
+        right_hip_aa: { p: 1000,  d: 10, i: 0, i_clamp: 0 }
 
       state_publish_rate:  25
       action_monitor_rate: 30
