@@ -138,14 +138,13 @@ class TrajectoryScheduler:
         command.trajectory.header.stamp = stamp
 
         for controller_name, publisher in self._trajectory_goal_pubs.items():
-            goal = FollowJointTrajectoryGoal(
-                trajectory=self.extract_joint_trajectory_by_joint_names(
+            if self.uses_mixed_control:
+                trajectory = self.extract_joint_trajectory_by_joint_names(
                     command.trajectory, self._joints_per_controller[controller_name]
                 )
-            )
-
-            self._node.get_logger().info(str(goal))
-
+            else:
+                trajectory = command.trajectory
+            goal = FollowJointTrajectoryGoal(trajectory=trajectory)
             publisher.publish(
                 FollowJointTrajectoryActionGoal(
                     header=Header(stamp=stamp),
@@ -221,8 +220,9 @@ class TrajectoryScheduler:
 
         return joint_names_per_controller
 
+    @staticmethod
     def extract_joint_trajectory_by_joint_names(
-        self, trajectory: JointTrajectory, joint_names: List[str]
+        trajectory: JointTrajectory, joint_names: List[str]
     ) -> JointTrajectory:
         """
         Extract a JointTrajectory with only the points relevant to the supplied joint names.
@@ -231,17 +231,15 @@ class TrajectoryScheduler:
         :param joint_names: Which joints to look for
         :return: Returns a JointTrajectory with only the points relevant to the supplied joint names.
         """
-        if not self.uses_mixed_control:
-            # We can just return the regular trajectory
-            return trajectory
-
         joint_indices = [trajectory.joint_names.index(joint) for joint in joint_names]
 
         return JointTrajectory(
             header=trajectory.header,
             joint_names=joint_names,
             points=[
-                self.copy_joint_trajectory_point_by_indices(point, joint_indices)
+                TrajectoryScheduler.copy_joint_trajectory_point_by_indices(
+                    point, joint_indices
+                )
                 for point in trajectory.points
             ],
         )

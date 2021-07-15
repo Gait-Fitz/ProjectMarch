@@ -17,7 +17,7 @@ def main():
     except rospy.ROSInitException:
         return
 
-    controller_config = rospy.get_param(NAMESPACE + CONTROLLER_NAMESPACE)
+    controller_config = rospy.get_param(f"/{NAMESPACE}/{CONTROLLER_NAMESPACE}")
 
     args = "spawn"
     for controller in controller_config:
