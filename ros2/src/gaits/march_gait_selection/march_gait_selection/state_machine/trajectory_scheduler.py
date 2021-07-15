@@ -125,7 +125,7 @@ class TrajectoryScheduler:
             self._joints_per_controller = self.get_joint_names_per_controller()
 
     @property
-    def uses_mixed_control(self):
+    def uses_mixed_control(self) -> bool:
         """Is mixed control (multiple controllers) used?"""
         return len(self._active_controller_names) > 1
 
@@ -195,7 +195,7 @@ class TrajectoryScheduler:
             )
             self._failed = True
 
-    def get_joint_names_per_controller(self):
+    def get_joint_names_per_controller(self) -> Dict[ControllerName, List[str]]:
         """Get all joint names per controller.
 
         Returns a dictionary with controller name as key and a list of joint names
@@ -248,7 +248,7 @@ class TrajectoryScheduler:
     @staticmethod
     def copy_joint_trajectory_point_by_indices(
         point: JointTrajectoryPoint, indices: List[int]
-    ):
+    ) -> JointTrajectoryPoint:
         """Copy a JointTrajectoryPoint using a list of indices.
 
         Repeatedly calls get_values_from_joint_trajectory_list.
@@ -270,7 +270,9 @@ class TrajectoryScheduler:
         )
 
     @staticmethod
-    def get_values_from_joint_trajectory_list(target_list: list, indices: List[int]):
+    def get_values_from_joint_trajectory_list(
+        target_list: list, indices: List[int]
+    ) -> list:
         """Get multiple values from a list, using a list of indices."""
         if len(target_list) == 0:
             return []
