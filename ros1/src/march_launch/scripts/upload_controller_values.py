@@ -9,6 +9,10 @@ CONTROLLER_PREFIX = "/march/controller"
 
 
 def get_controller_names(controller_type: str) -> List[str]:
+    """Get active controller names
+
+    Returns an extra controller name if the controller type is mixed control.
+    """
     controller_names = ["trajectory"]
     if controller_type == "mixed_control":
         controller_names.append("trajectory_mpc")
@@ -16,6 +20,7 @@ def get_controller_names(controller_type: str) -> List[str]:
 
 
 def get_follow_joint_trajectory_bridge_topics(controller_name: str) -> List[dict]:
+    """Get all bridge topics for a certain controller."""
     return [
         {
             "topic": f"{CONTROLLER_PREFIX}/{controller_name}/follow_joint_trajectory/cancel",
@@ -63,13 +68,19 @@ def get_params_for_actuation(joint: str, controller_name: str) -> List[str]:
 def get_actuating_joint_names_by_controller(
     controller_name: str, actuating_joint_names: List[str]
 ) -> List[str]:
+    """
+    Compare the actuating joint names with the joint corresponding to a certain controller.
+    :param controller_name: Controller to look up joint names for
+    :param actuating_joint_names: All actuating joint names
+    :return: Intersection of the actuating joint names and the controller joint names
+    """
     joint_names_by_controller = rospy.get_param(
         f"/march/controller/{controller_name}/joints"
     )
     actuating_joint_names_by_controller = set(actuating_joint_names).intersection(
         set(joint_names_by_controller)
     )
-    return sorted(list(actuating_joint_names_by_controller))
+    return sorted(actuating_joint_names_by_controller)
 
 
 def main():
