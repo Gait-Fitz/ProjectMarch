@@ -44,7 +44,7 @@ std::map<std::string, std::string> SUBGAIT_NAME_TO_REALSENSE_FRAME_ID_MAP
           { /*__x=*/"left_swing", /*__y=*/"foot_left" },
           { /*__x=*/"right_close", /*__y=*/"foot_right" },
           { /*__x=*/"left_close", /*__y=*/"foot_left" },
-          { /*__x=*/"sit_down", /*__y=*/"foot_right" } };
+          { /*__x=*/"prepare_sit_down", /*__y=*/"foot_left" } };
 
 RealSenseReader::RealSenseReader(ros::NodeHandle* n)
     : n_(n)
@@ -135,10 +135,10 @@ void RealSenseReader::processPointcloud(const PointCloud::Ptr& pointcloud,
     march_shared_msgs::GetGaitParameters::Response& res)
 {
     Normals::Ptr normals = boost::make_shared<Normals>();
-
+    auto realsense_category = (RealSenseCategory)realsense_category_;
     // Preprocess
     bool preprocessing_was_successful = preprocessor_->preprocess(
-        pointcloud, normals, frame_id_to_transform_to_);
+        pointcloud, normals, realsense_category, frame_id_to_transform_to_);
 
     if (not preprocessing_was_successful) {
         res.error_message = "Preprocessing was unsuccessful, see debug output "
@@ -205,7 +205,6 @@ void RealSenseReader::processPointcloud(const PointCloud::Ptr& pointcloud,
     }
 
     // Setup data structures for parameter determining
-    auto realsense_category = (RealSenseCategory)realsense_category_;
     boost::shared_ptr<march_shared_msgs::GaitParameters> gait_parameters
         = boost::make_shared<march_shared_msgs::GaitParameters>();
     // Determine parameters
@@ -219,7 +218,7 @@ void RealSenseReader::processPointcloud(const PointCloud::Ptr& pointcloud,
         ROS_DEBUG(
             "Done determining parameters, now publishing a marker array to "
             "/camera/foot_locations_marker_array. The color coding of the "
-            "marker array is \n"
+            "marker array is: \n"
             "Blue: a foot location to try \n"
             "Yellow: a potential foot location which is outside the reachable "
             "area \n"
@@ -229,7 +228,8 @@ void RealSenseReader::processPointcloud(const PointCloud::Ptr& pointcloud,
             "positions \n"
             "Red: Gait information such as end points of gaits \n"
             "Green: A valid foot location \n"
-            "White: The optimal foot location");
+            "White: The optimal foot location \n"
+            "Ramp gait is colored based on the orientation of the surface");
         hull_parameter_determiner_publisher_.publish(
             parameter_determiner_->debug_marker_array);
         if (publish_hull_area_debug_) {
@@ -368,8 +368,8 @@ bool RealSenseReader::processPointcloudCallback(
         frame_id_to_transform_to_
             = SUBGAIT_NAME_TO_REALSENSE_FRAME_ID_MAP.at(subgait_name_);
     } catch (std::out_of_range& ex) {
-        res.error_message
-            = "Provided subgait name has no known associated frame id "
+        res.error_message = "Provided subgait name " + subgait_name_
+            + " has no known associated frame id "
               "to transform to.";
         ROS_WARN_STREAM(res.error_message);
         res.success = false;
