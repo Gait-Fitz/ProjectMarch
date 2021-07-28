@@ -136,6 +136,7 @@ class RealsenseGait(SetpointsGait):
         gait_graph: dict,
         gait_directory: str,
         process_service: Client,
+        gait_path_to_read: Dict,
     ):
         """
         Construct a realsense gait from the gait_config from the realsense_gaits.yaml.
@@ -150,6 +151,7 @@ class RealsenseGait(SetpointsGait):
         :param gait_graph: The graph from the .gait file with the subgait transitions.
         :param gait_directory: The gait_directory that is being used.
         :param process_service: The service from which to get the gait parameters
+        :param gait_path_to_read: The gait path from where the versions can be read
         :return: The constructed RealsenseGait
         """
         graph = SubgaitGraph(gait_graph)
@@ -168,7 +170,12 @@ class RealsenseGait(SetpointsGait):
             for subgait_name in subgait_version_map:
                 subgaits_to_interpolate[subgait_name] = [
                     Subgait.from_name_and_version(
-                        robot, gait_directory, gait_name, subgait_name, version
+                        robot,
+                        gait_directory,
+                        gait_name,
+                        subgait_name,
+                        version,
+                        gait_path_to_read,
                     )
                     for version in subgait_version_map[subgait_name]
                 ]

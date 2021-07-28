@@ -1,4 +1,5 @@
 import os
+from typing import Dict
 
 import yaml
 from ament_index_python.packages import get_package_share_directory
@@ -391,15 +392,25 @@ class GaitSelection(Node):
                 self._gait_version_map, gait_name
             )
             gaits[gait_name] = SetpointsGait.from_file(
-                gait_name, self._gait_directory, self._robot, self._gait_version_map, gait_path_to_read_from
+                gait_name,
+                self._gait_directory,
+                self._robot,
+                self._gait_version_map,
+                self._gait_path_to_read_map[gait_name],
             )
 
         for gait_name in self._dynamic_edge_version_map:
             self.get_logger().debug(f"Adding dynamic gait {gait_name}")
             gaits[gait_name] = DynamicEdgeSetpointsGait.from_file(
-                gait_name, self._gait_directory, self._robot, self._dynamic_edge_version_map
+                gait_name,
+                self._gait_directory,
+                self._robot,
+                self._dynamic_edge_version_map,
+                self._gait_path_to_read_map[gait_name],
             )
-            self._gait_version_map[gait_name] = self._dynamic_edge_version_map[gait_name]
+            self._gait_version_map[gait_name] = self._dynamic_edge_version_map[
+                gait_name
+            ]
         self._load_realsense_gaits(gaits)
         if self._balance_used and "balance_walk" in gaits.keys():
             balance_gait = BalanceGait(node=self, default_walk=gaits["balance_walk"])
@@ -440,6 +451,7 @@ class GaitSelection(Node):
                 gait_graph=gait_graph,
                 gait_directory=self._gait_directory,
                 process_service=get_gait_parameters_service,
+                gait_path_to_read=self._gait_path_to_read_map[gait_name],
             )
             gaits[gait_name] = gait
 
@@ -466,6 +478,9 @@ class GaitSelection(Node):
         if not isinstance(version_map, dict):
             raise TypeError("Gait version map should be of type; dictionary")
 
+        self._gait_path_to_read_map = self._get_gait_path_to_read_map({**version_map,
+                                                                      **self._realsense_gait_version_map})
+
         if not self._validate_version_map(version_map):
             raise GaitError(
                 msg="Gait version map: {gm}, is not valid".format(gm=version_map)
@@ -491,6 +506,14 @@ class GaitSelection(Node):
                 )
         return version_map, positions, dynamic_edge_version_map
 
+    def _get_gait_path_to_read_map(self, version_map: Dict):
+        gait_to_read_paths_map = {}
+        for gait_name in version_map:
+            gait_to_read_paths_map[
+                gait_name
+            ] = self._get_gait_directory_and_name_to_read_from(version_map, gait_name)
+        return gait_to_read_paths_map
+
     def _validate_version_map(self, version_map):
         """Validates if the current versions exist.
 
@@ -503,18 +526,14 @@ class GaitSelection(Node):
                 self.get_logger().warn("gait {gn} does not exist".format(gn=gait_name))
                 return False
 
-            gait_path_to_read_from = self._get_gait_directory_and_name_to_read_from(
-                version_map, gait_name
-            )
-
             for subgait_name in version_map[gait_name]["subgaits"]:
                 version = version_map[gait_name]["subgaits"][subgait_name]
                 if not Subgait.validate_version(
-                gait_path_to_read_from, subgait_name, version
+                    self._gait_path_to_read_map[gait_name], subgait_name, version
                 ):
                     self.get_logger().warn(
                         f"{subgait_name}, {version} does not exist for gait {gait_name}"
-                        f"which should be read from {gait_path_to_read_from}"
+                        f"which should be read from {self._gait_path_to_read_map[gait_name]}"
                     )
                     return False
         return True

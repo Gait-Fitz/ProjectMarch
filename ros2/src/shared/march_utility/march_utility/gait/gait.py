@@ -52,7 +52,7 @@ class Gait:
         gait_directory: str,
         robot: urdf.Robot,
         gait_version_map: dict,
-        gait_path_to_read_from: os.path
+        gait_path_to_read_from: os.path,
     ):
         """Extract the data from the .gait file.
 
@@ -72,7 +72,13 @@ class Gait:
         with open(gait_path, "r") as gait_file:
             gait_dictionary = yaml.load(gait_file, Loader=yaml.SafeLoader)
 
-        return cls.from_dict(robot, gait_dictionary, gait_directory, gait_version_map, gait_path_to_read_from)
+        return cls.from_dict(
+            robot,
+            gait_dictionary,
+            gait_directory,
+            gait_version_map,
+            gait_path_to_read_from,
+        )
 
     @classmethod
     def from_dict(
@@ -81,7 +87,7 @@ class Gait:
         gait_dictionary: dict,
         gait_directory: str,
         gait_version_map: dict,
-        gait_path_to_read_from: os.path
+        gait_path_to_read_from: os.path,
     ):
         """Create a new gait object using the .gait and .subgait files.
 
@@ -105,7 +111,12 @@ class Gait:
         graph = SubgaitGraph(subgaits)
         subgaits = {
             name: cls.load_subgait(
-                robot, gait_directory, gait_name, name, gait_version_map, gait_path_to_read_from
+                robot,
+                gait_directory,
+                gait_name,
+                name,
+                gait_version_map,
+                gait_path_to_read_from,
             )
             for name in subgaits
             if name not in ("start", "end")
@@ -153,7 +164,12 @@ class Gait:
 
         version = gait_version_map[gait_name]["subgaits"][subgait_name]
         return Subgait.from_name_and_version(
-            robot, gait_directory, gait_name, subgait_name, version, gait_path_to_read_from
+            robot,
+            gait_directory,
+            gait_name,
+            subgait_name,
+            version,
+            gait_path_to_read_from,
         )
 
     def _validate_trajectory_transition(self):

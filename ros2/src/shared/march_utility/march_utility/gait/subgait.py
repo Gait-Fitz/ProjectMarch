@@ -93,7 +93,7 @@ class Subgait:
         gait_name: str,
         subgait_name: str,
         version: str,
-        gait_path_to_read_from: Optional[os.path]
+        gait_path_to_read_from: Optional[os.path],
     ) -> Subgait:
         """
         Load subgait based from file(s) based on name and version.
