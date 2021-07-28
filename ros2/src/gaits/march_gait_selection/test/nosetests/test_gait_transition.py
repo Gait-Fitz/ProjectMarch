@@ -6,7 +6,7 @@ from march_gait_selection.gaits.transition_subgait import TransitionSubgait
 from march_utility.gait.subgait import Subgait
 
 VALID_PACKAGE = "march_gait_selection"
-VALID_DIRECTORY = "test/testing_gait_files  "
+VALID_DIRECTORY = "test/testing_gait_files"
 
 
 class TestTransitionTrajectory(unittest.TestCase):

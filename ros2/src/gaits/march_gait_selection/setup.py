@@ -45,7 +45,21 @@ def data_files():
             )
         )
     for file in iglob(
-        os.path.join(other_test_gait_files_source, "**", "*.gait"), recursive=True
+        os.path.join(test_gait_files_source, "**", "*.gait"), recursive=True
+    ):
+        data.append(
+            (
+                os.path.join(
+                    "share",
+                    package_name,
+                    test_gait_files_source,
+                    os.path.dirname(os.path.relpath(file, test_gait_files_source)),
+                ),
+                [file],
+            )
+        )
+    for file in iglob(
+        os.path.join(other_test_gait_files_source, "**", "*.subgait"), recursive=True
     ):
         data.append(
             (
@@ -58,6 +72,20 @@ def data_files():
                 [file],
             )
         )
+    for file in iglob(
+                os.path.join(other_test_gait_files_source, "**", "*.gait"), recursive=True
+        ):
+            data.append(
+                (
+                    os.path.join(
+                        "share",
+                        package_name,
+                        other_test_gait_files_source,
+                        os.path.dirname(os.path.relpath(file, other_test_gait_files_source)),
+                    ),
+                    [file],
+                )
+            )
     return data
 
 

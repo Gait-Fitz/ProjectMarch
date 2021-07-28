@@ -43,7 +43,6 @@ class GaitSelection(Node):
         super().__init__(
             NODE_NAME, automatically_declare_parameters_from_overrides=True
         )
-        self.get_logger().warn(f"gait_directory {directory}")
         self._balance_used = False
         try:
             # Initialize all parameters once, and set up a callback for dynamically
@@ -81,9 +80,6 @@ class GaitSelection(Node):
         self._directory_name = directory
         self._gait_package = gait_package
         self._gait_directory, self._default_yaml = self._initialize_gaits()
-        self.get_logger().warn(f"gait_directory {directory}")
-        self.get_logger().warn(f"gait_package {gait_package}")
-        self.get_logger().warn(f"gait directory full path {self._gait_directory}")
         if not os.path.isdir(self._gait_directory):
             self.get_logger().error(f"Gait directory does not exist: {directory}")
             raise FileNotFoundError(directory)
