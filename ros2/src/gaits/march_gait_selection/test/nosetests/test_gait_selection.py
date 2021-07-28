@@ -53,7 +53,8 @@ class TestGaitSelection(unittest.TestCase):
             "stairs_up",
             "walk_small",
             "walk",
-            "walk_single_step_reading_from_walk",
+            "walk_single_step_from_walk",
+            "walk_single_step_from_walk_other_directory"
         ]
         self.assertEqual(sorted(directory.keys()), sorted(directory_gaits))
 
@@ -90,8 +91,8 @@ class TestGaitSelection(unittest.TestCase):
 
     def test_gait_name_reading_elsewhere(self):
         self.assertEqual(
-            self.gait_selection._gait_version_map[
-                "walk_single_steip_reading_from_walk"
+            self.gait_selection._gaits[
+                "walk_single_step_from_walk"
             ].gait_name,
             "walk_single_step_from_walk",
         )
@@ -99,7 +100,7 @@ class TestGaitSelection(unittest.TestCase):
     def test_subgaits_reading_elsewhere(self):
         self.assertEqual(
             set(
-                self.gait_selection._gait_version_map[
+                self.gait_selection._gaits[
                     "walk_single_step_from_walk"
                 ].subgaits
             ),
@@ -108,17 +109,17 @@ class TestGaitSelection(unittest.TestCase):
 
     def test_subgait_name_reading_other_gait(self):
         self.assertEqual(
-            self.gait_selection._gait_version_map[
+            self.gait_selection._gaits[
                 "walk_single_step_from_walk"
-            ].subgaits["rightopen"].version,
+            ].subgaits["right_open"].version,
             "MV_walk_rightopen_v2",
         )
 
     def test_subgait_name_reading_other_gait_and_directory(self):
         self.assertEqual(
-        self.gait_selection._gait_version_map[
+        self.gait_selection._gaits[
             "walk_single_step_from_walk_other_directory"
-        ].subgaits["rightopen"].version,
+        ].subgaits["right_open"].version,
         "MV_walk_rightopen_other_directory_v2",
         )
 
