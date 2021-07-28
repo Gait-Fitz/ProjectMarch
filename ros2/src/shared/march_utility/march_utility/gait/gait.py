@@ -141,18 +141,13 @@ class Gait:
         gait_path_to_read_from: Optional[os.path],
     ) -> Subgait:
         """Read the .subgait file and extract the data.
-        :param robot:
-            the robot corresponding to the given .gait file
-        :param gait_directory:
-            path of the directory where the .gait file is located
-        :param gait_name:
-            the name of the gait where the subgait belongs to
-        :param subgait_name:
-            the name of the subgait to load
-        :param gait_version_map:
-            the parsed yaml file which states the version of the subgaits
-        :param gait_path_to_read_from:
-            The path where the subgait versions should be read
+        :param robot: the robot corresponding to the given .gait file
+        :param gait_directory: path of the directory where the .gait file is located
+        :param gait_name: the name of the gait where the subgait belongs to
+        :param subgait_name: the name of the subgait to load
+        :param gait_version_map: the parsed yaml file which states the version of the
+        subgaits
+        :param gait_path_to_read_from: The path where the subgait versions should be read
 
         :return:
             Gait if gait and subgait names are valid return populated Gait object

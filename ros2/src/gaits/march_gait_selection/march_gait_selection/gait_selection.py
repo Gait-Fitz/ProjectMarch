@@ -388,9 +388,6 @@ class GaitSelection(Node):
         gaits = {}
 
         for gait_name in self._gait_version_map:
-            gait_path_to_read_from = self._get_gait_directory_and_name_to_read_from(
-                self._gait_version_map, gait_name
-            )
             gaits[gait_name] = SetpointsGait.from_file(
                 gait_name,
                 self._gait_directory,
@@ -478,8 +475,9 @@ class GaitSelection(Node):
         if not isinstance(version_map, dict):
             raise TypeError("Gait version map should be of type; dictionary")
 
-        self._gait_path_to_read_map = self._get_gait_path_to_read_map({**version_map,
-                                                                      **self._realsense_gait_version_map})
+        self._gait_path_to_read_map = self._get_gait_path_to_read_map(
+            {**version_map, **self._realsense_gait_version_map}
+        )
 
         if not self._validate_version_map(version_map):
             raise GaitError(
@@ -552,11 +550,7 @@ class GaitSelection(Node):
         gait_name_to_read_from = version_map[gait_name].get(
             "reads_from_gait", gait_name
         )
-        gait_path_to_read_from = os.path.join(
-            gait_directory_to_read_from, gait_name_to_read_from
-        )
-
-        return gait_path_to_read_from
+        return os.path.join(gait_directory_to_read_from, gait_name_to_read_from)
 
     def __getitem__(self, name):
         """Returns a gait from the loaded gaits."""
