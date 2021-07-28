@@ -52,6 +52,7 @@ class TestGaitSelection(unittest.TestCase):
             "stairs_up",
             "walk_small",
             "walk",
+            "walk_single_step_reading_from_walk",
         ]
         self.assertEqual(sorted(directory.keys()), sorted(directory_gaits))
 
@@ -85,3 +86,24 @@ class TestGaitSelection(unittest.TestCase):
         response = ContainsGait.Response(contains=True)
         response = self.gait_selection.contains_gait_cb(request, response)
         self.assertFalse(response.contains)
+
+    def test_gait_name_reading_elsewhere(self):
+        self.assertEqual(
+            self.gait_selection._gait_version_map[
+                "walk_single_steip_reading_from_walk"].gait_name,
+            "walk_single_steip_reading_from_walk",
+        )
+
+    def test_subgaits_reading_elsewhere(self):
+        self.assertEqual(
+            set(self.gait_selection._gait_version_map[
+                    "walk_single_steip_reading_from_walk"].subgaits),
+            {"right_open", "left_close"},
+        )
+
+    def test_subgait_name_reading_eslewhere(self):
+        self.assertEqual(
+            self.gait_selection._gait_version_map[
+                "walk_single_steip_reading_from_walk"].gait_name,
+            "walk_single_steip_reading_from_walk",
+        )
