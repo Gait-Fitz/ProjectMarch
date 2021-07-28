@@ -84,7 +84,7 @@ class GaitTest(unittest.TestCase):
             )
 
     def test_load_subgait_unexisting_version_error(self):
-        self.gait_version_map["walk"][
+        self.gait_version_map["walk"]["subgaits"][
             "right_open"
         ] = "MV_walk_rightopen_non_existing_banana_version"
 
