@@ -8,7 +8,7 @@ from march_gait_selection.state_machine.gait_interface import GaitInterface
 from march_utility.gait.gait import Gait
 
 VALID_PACKAGE = "march_gait_selection"
-VALID_DIRECTORY = "test/resources"
+VALID_DIRECTORY = "test/testing_gait_files"
 
 
 class TestGaitSelection(unittest.TestCase):
@@ -23,6 +23,7 @@ class TestGaitSelection(unittest.TestCase):
         self.gait_selection = GaitSelection(
             gait_package=VALID_PACKAGE, directory=VALID_DIRECTORY, robot=self.robot
         )
+        self.gait_selection.get_logger().warn(f"gait_directory called with {VALID_DIRECTORY}")
 
     # __init__ tests
     def test_init_with_wrong_package(self):

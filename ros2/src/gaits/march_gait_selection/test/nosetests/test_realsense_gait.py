@@ -10,7 +10,7 @@ from urdf_parser_py import urdf
 
 
 TEST_PACKAGE = "march_gait_selection"
-TEST_DIRECTORY = "test/resources"
+TEST_DIRECTORY = "test/testing_gait_files"
 
 
 class TestRealsenseGait(unittest.TestCase):

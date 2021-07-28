@@ -13,7 +13,7 @@ from urdf_parser_py import urdf
 from march_utility.utilities.duration import Duration
 
 VALID_PACKAGE = "march_gait_selection"
-VALID_DIRECTORY = "test/resources"
+VALID_DIRECTORY = "test/testing_gait_files"
 
 
 class TestSetpointsGait(unittest.TestCase):
