@@ -23,7 +23,9 @@ class TestGaitSelection(unittest.TestCase):
         self.gait_selection = GaitSelection(
             gait_package=VALID_PACKAGE, directory=VALID_DIRECTORY, robot=self.robot
         )
-        self.gait_selection.get_logger().warn(f"gait_directory called with {VALID_DIRECTORY}")
+        self.gait_selection.get_logger().warn(
+            f"gait_directory called with {VALID_DIRECTORY}"
+        )
 
     # __init__ tests
     def test_init_with_wrong_package(self):
@@ -54,7 +56,7 @@ class TestGaitSelection(unittest.TestCase):
             "walk_small",
             "walk",
             "walk_single_step_from_walk",
-            "walk_single_step_from_walk_other_directory"
+            "walk_single_step_from_walk_other_directory",
         ]
         self.assertEqual(sorted(directory.keys()), sorted(directory_gaits))
 
@@ -91,36 +93,28 @@ class TestGaitSelection(unittest.TestCase):
 
     def test_gait_name_reading_elsewhere(self):
         self.assertEqual(
-            self.gait_selection._gaits[
-                "walk_single_step_from_walk"
-            ].gait_name,
+            self.gait_selection._gaits["walk_single_step_from_walk"].gait_name,
             "walk_single_step_from_walk",
         )
 
     def test_subgaits_reading_elsewhere(self):
         self.assertEqual(
-            set(
-                self.gait_selection._gaits[
-                    "walk_single_step_from_walk"
-                ].subgaits
-            ),
+            set(self.gait_selection._gaits["walk_single_step_from_walk"].subgaits),
             {"right_open", "left_close"},
         )
 
     def test_subgait_name_reading_other_gait(self):
         self.assertEqual(
-            self.gait_selection._gaits[
-                "walk_single_step_from_walk"
-            ].subgaits["right_open"].version,
+            self.gait_selection._gaits["walk_single_step_from_walk"]
+            .subgaits["right_open"]
+            .version,
             "MV_walk_rightopen_v2",
         )
 
     def test_subgait_name_reading_other_gait_and_directory(self):
         self.assertEqual(
-        self.gait_selection._gaits[
-            "walk_single_step_from_walk_other_directory"
-        ].subgaits["right_open"].version,
-        "MV_walk_rightopen_other_directory_v2",
+            self.gait_selection._gaits["walk_single_step_from_walk_other_directory"]
+            .subgaits["right_open"]
+            .version,
+            "MV_walk_rightopen_other_directory_v2",
         )
-
-
