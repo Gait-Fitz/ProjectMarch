@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import os
 import re
-from typing import List, Tuple, Collection
+from typing import List, Tuple, Collection, Optional
 
 import yaml
 from march_utility.exceptions.gait_exceptions import (
@@ -57,7 +57,6 @@ class Subgait:
         self.description = str(description)
         self.duration = duration
 
-    # region Create subgait
     @classmethod
     def from_file(cls, robot: urdf.Robot, file_name: str) -> Subgait:
         """
@@ -85,6 +84,7 @@ class Subgait:
 
         return cls.from_dict(robot, subgait_dict, gait_name, subgait_name, version)
 
+    # region Create subgait
     @classmethod
     def from_name_and_version(
         cls,
@@ -93,6 +93,7 @@ class Subgait:
         gait_name: str,
         subgait_name: str,
         version: str,
+        gait_path_to_read_from: Optional[os.path]
     ) -> Subgait:
         """
         Load subgait based from file(s) based on name and version.
@@ -102,9 +103,15 @@ class Subgait:
         :param gait_name: The name of the corresponding gait
         :param subgait_name: The name of the subgait to load
         :param version: The version to use, this can be parametric
+        :param gait_path_to_read_from: The path where the subgait versions should be read
+
         :return: A populated Subgait object.
         """
-        subgait_path = os.path.join(gait_dir, gait_name, subgait_name)
+        if gait_path_to_read_from is None:
+            subgait_path = os.path.join(gait_dir, gait_name, subgait_name)
+        else:
+            subgait_path = os.path.join(gait_path_to_read_from, subgait_name)
+
         if version.startswith(PARAMETRIC_GAITS_PREFIX):
             base_version, other_version, parameter = Subgait.unpack_parametric_version(
                 version

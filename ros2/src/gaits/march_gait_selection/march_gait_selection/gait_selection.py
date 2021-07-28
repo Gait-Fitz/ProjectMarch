@@ -386,17 +386,20 @@ class GaitSelection(Node):
         """
         gaits = {}
 
-        for gait in self._gait_version_map:
-            gaits[gait] = SetpointsGait.from_file(
-                gait, self._gait_directory, self._robot, self._gait_version_map
+        for gait_name in self._gait_version_map:
+            gait_path_to_read_from = self._get_gait_directory_and_name_to_read_from(
+                self._gait_version_map, gait_name
+            )
+            gaits[gait_name] = SetpointsGait.from_file(
+                gait_name, self._gait_directory, self._robot, self._gait_version_map, gait_path_to_read_from
             )
 
-        for gait in self._dynamic_edge_version_map:
-            self.get_logger().debug(f"Adding dynamic gait {gait}")
-            gaits[gait] = DynamicEdgeSetpointsGait.from_file(
-                gait, self._gait_directory, self._robot, self._dynamic_edge_version_map
+        for gait_name in self._dynamic_edge_version_map:
+            self.get_logger().debug(f"Adding dynamic gait {gait_name}")
+            gaits[gait_name] = DynamicEdgeSetpointsGait.from_file(
+                gait_name, self._gait_directory, self._robot, self._dynamic_edge_version_map
             )
-            self._gait_version_map[gait] = self._dynamic_edge_version_map[gait]
+            self._gait_version_map[gait_name] = self._dynamic_edge_version_map[gait_name]
         self._load_realsense_gaits(gaits)
         if self._balance_used and "balance_walk" in gaits.keys():
             balance_gait = BalanceGait(node=self, default_walk=gaits["balance_walk"])
@@ -500,14 +503,41 @@ class GaitSelection(Node):
                 self.get_logger().warn("gait {gn} does not exist".format(gn=gait_name))
                 return False
 
-            for subgait_name in version_map[gait_name]:
-                version = version_map[gait_name][subgait_name]
-                if not Subgait.validate_version(gait_path, subgait_name, version):
+            gait_path_to_read_from = self._get_gait_directory_and_name_to_read_from(
+                version_map, gait_name
+            )
+
+            for subgait_name in version_map[gait_name]["subgaits"]:
+                version = version_map[gait_name]["subgaits"][subgait_name]
+                if not Subgait.validate_version(
+                gait_path_to_read_from, subgait_name, version
+                ):
                     self.get_logger().warn(
-                        "{0}, {1} does not exist".format(subgait_name, version)
+                        f"{subgait_name}, {version} does not exist for gait {gait_name}"
+                        f"which should be read from {gait_path_to_read_from}"
                     )
                     return False
         return True
+
+    def _get_gait_directory_and_name_to_read_from(self, version_map, gait_name):
+        gait_directory_to_read_from = version_map[gait_name].get(
+            "reads_from_directory", None
+        )
+        if gait_directory_to_read_from is None:
+            gait_directory_to_read_from = self._gait_directory
+        else:
+            gait_directory_to_read_from = os.path.join(
+                os.path.dirname(self._gait_directory), gait_directory_to_read_from
+            )
+
+        gait_name_to_read_from = version_map[gait_name].get(
+            "reads_from_gait", gait_name
+        )
+        gait_path_to_read_from = os.path.join(
+            gait_directory_to_read_from, gait_name_to_read_from
+        )
+
+        return gait_path_to_read_from
 
     def __getitem__(self, name):
         """Returns a gait from the loaded gaits."""

@@ -52,6 +52,7 @@ class Gait:
         gait_directory: str,
         robot: urdf.Robot,
         gait_version_map: dict,
+        gait_path_to_read_from: os.path
     ):
         """Extract the data from the .gait file.
 
@@ -63,13 +64,15 @@ class Gait:
             the robot corresponding to the given .gait file
         :param gait_version_map:
             The parsed yaml file which states the version of the subgaits
+        :param gait_path_to_read_from:
+            The path where the subgait versions should be read
         """
         gait_folder = gait_name
         gait_path = os.path.join(gait_directory, gait_folder, gait_name + ".gait")
         with open(gait_path, "r") as gait_file:
             gait_dictionary = yaml.load(gait_file, Loader=yaml.SafeLoader)
 
-        return cls.from_dict(robot, gait_dictionary, gait_directory, gait_version_map)
+        return cls.from_dict(robot, gait_dictionary, gait_directory, gait_version_map, gait_path_to_read_from)
 
     @classmethod
     def from_dict(
@@ -78,6 +81,7 @@ class Gait:
         gait_dictionary: dict,
         gait_directory: str,
         gait_version_map: dict,
+        gait_path_to_read_from: os.path
     ):
         """Create a new gait object using the .gait and .subgait files.
 
@@ -89,6 +93,8 @@ class Gait:
             path of the directory where the .gait file is located
         :param gait_version_map:
             The parsed yaml file which states the version of the subgaits
+        :param gait_path_to_read_from:
+            The path where the subgait versions should be read
 
         :return:
             If the data in the files is validated a gait object is returned
@@ -99,7 +105,7 @@ class Gait:
         graph = SubgaitGraph(subgaits)
         subgaits = {
             name: cls.load_subgait(
-                robot, gait_directory, gait_name, name, gait_version_map
+                robot, gait_directory, gait_name, name, gait_version_map, gait_path_to_read_from
             )
             for name in subgaits
             if name not in ("start", "end")
@@ -121,24 +127,33 @@ class Gait:
         gait_name: str,
         subgait_name: str,
         gait_version_map: dict,
+        gait_path_to_read_from: os.path,
     ) -> Subgait:
         """Read the .subgait file and extract the data.
-        :param robot: the robot corresponding to the given .gait file
-        :param gait_directory: path of the directory where the .gait file is located
-        :param gait_name: the name of the gait where the subgait belongs to
-        :param subgait_name: the name of the subgait to load
-        :param gait_version_map: the parsed yaml file which states the version of
-        the subgaits
-        :return: Gait if gait and subgait names are valid return populated Gait object
+        :param robot:
+            the robot corresponding to the given .gait file
+        :param gait_directory:
+            path of the directory where the .gait file is located
+        :param gait_name:
+            the name of the gait where the subgait belongs to
+        :param subgait_name:
+            the name of the subgait to load
+        :param gait_version_map:
+            the parsed yaml file which states the version of the subgaits
+        :param gait_path_to_read_from:
+            The path where the subgait versions should be read
+
+        :return:
+            Gait if gait and subgait names are valid return populated Gait object
         """
         if gait_name not in gait_version_map:
             raise GaitNameNotFoundError(gait_name)
-        if subgait_name not in gait_version_map[gait_name]:
+        if subgait_name not in gait_version_map[gait_name]["subgaits"]:
             raise SubgaitNameNotFoundError(subgait_name, gait_name)
 
-        version = gait_version_map[gait_name][subgait_name]
+        version = gait_version_map[gait_name]["subgaits"][subgait_name]
         return Subgait.from_name_and_version(
-            robot, gait_directory, gait_name, subgait_name, version
+            robot, gait_directory, gait_name, subgait_name, version, gait_path_to_read_from
         )
 
     def _validate_trajectory_transition(self):
