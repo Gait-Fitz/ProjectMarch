@@ -90,20 +90,25 @@ class TestGaitSelection(unittest.TestCase):
     def test_gait_name_reading_elsewhere(self):
         self.assertEqual(
             self.gait_selection._gait_version_map[
-                "walk_single_steip_reading_from_walk"].gait_name,
+                "walk_single_steip_reading_from_walk"
+            ].gait_name,
             "walk_single_steip_reading_from_walk",
         )
 
     def test_subgaits_reading_elsewhere(self):
         self.assertEqual(
-            set(self.gait_selection._gait_version_map[
-                    "walk_single_steip_reading_from_walk"].subgaits),
+            set(
+                self.gait_selection._gait_version_map[
+                    "walk_single_steip_reading_from_walk"
+                ].subgaits
+            ),
             {"right_open", "left_close"},
         )
 
     def test_subgait_name_reading_eslewhere(self):
         self.assertEqual(
             self.gait_selection._gait_version_map[
-                "walk_single_steip_reading_from_walk"].gait_name,
+                "walk_single_steip_reading_from_walk"
+            ].gait_name,
             "walk_single_steip_reading_from_walk",
         )
