@@ -1,4 +1,4 @@
-name: walk_single_step_reading_from_walk
+name: walk_single_step_from_walk_other_directory
 subgaits:
   start:
     to: right_open

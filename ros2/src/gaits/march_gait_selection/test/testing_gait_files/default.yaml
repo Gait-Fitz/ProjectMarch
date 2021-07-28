@@ -37,13 +37,19 @@ gaits:
       right_swing_2: MV_balancewalk_rightswing2_v2
       right_close: MV_walk_rightclose_v2
       left_close: MV_walk_leftclose_v2
-  walk_single_step_reading_from_walk:
+
+  walk_single_step_from_walk_other_directory:
     reads_from_directory: other_testing_gait_files
     reads_from_gait: walk
     subgaits:
-      right_open: MV_walk_rightopen_v2
-      right_close: MV_walk_rightclose_v2
+      right_open: MV_walk_rightopen_other_directory_v2
+      left_close: MV_walk_leftclose_other_directory_v2
 
+  walk_single_step_from_walk:
+    reads_from_gait: walk
+    subgaits:
+      right_open: MV_walk_rightopen_v2
+      left_close: MV_walk_leftclose_v2
 positions:
   stand:
     gait_type: walk_like

@@ -531,7 +531,7 @@ class GaitSelection(Node):
                 ):
                     self.get_logger().warn(
                         f"{subgait_name}, {version} does not exist for gait {gait_name}"
-                        f"which should be read from {self._gait_path_to_read_map[gait_name]}"
+                        f" which should be read from {self._gait_path_to_read_map[gait_name]}"
                     )
                     return False
         return True
