@@ -52,7 +52,7 @@ class Gait:
         gait_directory: str,
         robot: urdf.Robot,
         gait_version_map: dict,
-        gait_path_to_read_from: Optional[os.path],
+        gait_path_to_read_from: os.path = None,
     ):
         """Extract the data from the .gait file.
 
@@ -87,7 +87,7 @@ class Gait:
         gait_dictionary: dict,
         gait_directory: str,
         gait_version_map: dict,
-        gait_path_to_read_from: Optional[os.path],
+        gait_path_to_read_from: os.path = None,
     ):
         """Create a new gait object using the .gait and .subgait files.
 
@@ -138,7 +138,7 @@ class Gait:
         gait_name: str,
         subgait_name: str,
         gait_version_map: dict,
-        gait_path_to_read_from: Optional[os.path],
+        gait_path_to_read_from: os.path = None,
     ) -> Subgait:
         """Read the .subgait file and extract the data.
         :param robot: the robot corresponding to the given .gait file
