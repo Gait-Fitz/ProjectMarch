@@ -80,8 +80,8 @@ gaits:
   walk_single_step:
     reads_from_gait: walk
     subgaits:
-      right_open: MVI_walksinglestep_rightopen_v8
-      left_close: MVI_walksinglestep_leftclose_v8
+      right_open: MVI_walk_rightopen_v8
+      left_close: MVI_walk_leftclose_v8
   walk_large:
     subgaits:
       left_close: MVI_walklarge_leftclose_v5
