@@ -1,5 +1,6 @@
 import re
 from enum import Enum
+import traceback
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QComboBox, QLabel, QWidget
@@ -249,7 +250,7 @@ class GaitVersionToolView(QWidget):
         except GaitVersionToolError as e:
             self._log("Something went wrong when requesting the gait map from the gait "
                       "selection and displaying the available gaits. \n"
-                      + str(e), LogLevel.ERROR)
+                      + str(traceback), LogLevel.ERROR)
         finally:
             self._is_refresh_active = False
             self.update_version_menus()
@@ -297,7 +298,8 @@ class GaitVersionToolView(QWidget):
                     msg if msg else "Failed to set default versions", LogLevel.ERROR
                 )
         except GaitVersionToolError as e:
-            self._log("Someting went wrong in is saving default versions. \n" + str(e), \
+            self._log("Someting went wrong in is saving default versions. \n" + str(
+                traceback), \
                                                                           LogLevel.ERROR)
 
     def _apply(self):
@@ -330,7 +332,7 @@ class GaitVersionToolView(QWidget):
                 )
         except GaitVersionToolError as e:
             self._log("Something went wrong when applying newly selected subgaits. \n " +
-                      str(e),
+                      str(traceback),
                       LogLevel.ERROR)
 
     def _select_same_versions(self):
@@ -385,7 +387,7 @@ class GaitVersionToolView(QWidget):
             version_map = self._controller.get_version_map()
         except GaitVersionToolError as e:
             self._log("Something went wrong when showing the version map pop up. \n "
-                      + str(e), LogLevel.ERROR)
+                      + str(traceback), LogLevel.ERROR)
             return
 
         version_map_string = ""
