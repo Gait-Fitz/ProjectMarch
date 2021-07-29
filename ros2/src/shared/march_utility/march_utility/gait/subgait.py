@@ -57,6 +57,7 @@ class Subgait:
         self.description = str(description)
         self.duration = duration
 
+    # region Create subgait
     @classmethod
     def from_file(cls, robot: urdf.Robot, file_name: str) -> Subgait:
         """
@@ -84,7 +85,6 @@ class Subgait:
 
         return cls.from_dict(robot, subgait_dict, gait_name, subgait_name, version)
 
-    # region Create subgait
     @classmethod
     def from_name_and_version(
         cls,
