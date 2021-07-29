@@ -6,7 +6,8 @@ package_name = "march_gait_selection"
 
 
 def data_files():
-    """Generates the list of data files necessary for gait selection, the gait and subgait files
+    """Generates the list of data files necessary for gait selection, the gait and
+    subgait files
     required for testing are taken from the ros1 directory to decrease duplication."""
     test_gait_files_sources = [
         "test/testing_gait_files",

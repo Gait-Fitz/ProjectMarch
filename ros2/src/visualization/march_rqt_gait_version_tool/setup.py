@@ -42,7 +42,8 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "gait_version_tool = march_rqt_gait_version_tool.gait_version_tool_plugin:main"
+            "gait_version_tool = march_rqt_gait_version_tool.gait_version_tool_plugin"
+            ":main"
         ],
     },
 )

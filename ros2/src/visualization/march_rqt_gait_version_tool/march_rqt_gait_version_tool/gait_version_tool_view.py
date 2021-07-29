@@ -220,7 +220,8 @@ class GaitVersionToolView(QWidget):
                             subgait_menu.addItem(new_version)
                             subgait_menu.setCurrentIndex(subgait_menu.count() - 1)
                         else:
-                            # parametric pop up window unsuccessful stopped, reset version to default
+                            # parametric pop up window unsuccessful stopped,
+                            # reset version to default
                             current_version_index = versions.index(
                                 self.version_map[gait_name]["subgait"][subgait_name]
                             )
@@ -247,10 +248,11 @@ class GaitVersionToolView(QWidget):
             self._gait_menu.addItems(sorted(self.available_gaits.keys()))
 
             self._log("Directory data refreshed", LogLevel.SUCCESS)
-        except GaitVersionToolError as e:
+        except GaitVersionToolError:
             self._log(
                 "Something went wrong when requesting the gait map from the gait "
-                "selection and displaying the available gaits. \n" + str(traceback),
+                "selection and displaying the available gaits. \n"
+                + str(traceback.format_exc()),  # noqa: W503
                 LogLevel.ERROR,
             )
         finally:
@@ -299,10 +301,10 @@ class GaitVersionToolView(QWidget):
                 self._log(
                     msg if msg else "Failed to set default versions", LogLevel.ERROR
                 )
-        except GaitVersionToolError as e:
+        except GaitVersionToolError:
             self._log(
                 "Someting went wrong in is saving default versions. \n"
-                + str(traceback),
+                + str(traceback.format_exc()),  # noqa: W503
                 LogLevel.ERROR,
             )
 
@@ -334,10 +336,10 @@ class GaitVersionToolView(QWidget):
                 self._log(
                     msg if msg else "Version change applied failed", LogLevel.ERROR
                 )
-        except GaitVersionToolError as e:
+        except GaitVersionToolError:
             self._log(
                 "Something went wrong when applying newly selected subgaits. \n "
-                + str(traceback),
+                + str(traceback.format_exc()),  # noqa: W503
                 LogLevel.ERROR,
             )
 
@@ -388,13 +390,14 @@ class GaitVersionToolView(QWidget):
                 subgait_menu.setCurrentIndex(version_index)
 
     def _show_version_map_pop_up(self):
-        """Use a pop up window to display all the gait, subgaits and currently used versions."""
+        """Use a pop up window to display all the gait, subgaits and currently used
+        versions."""
         try:
             version_map = self._controller.get_version_map()
-        except GaitVersionToolError as e:
+        except GaitVersionToolError:
             self._log(
                 "Something went wrong when showing the version map pop up. \n "
-                + str(traceback),
+                + str(traceback.format_exc()),  # noqa: W503
                 LogLevel.ERROR,
             )
             return

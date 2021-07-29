@@ -314,11 +314,11 @@ class GaitSelection(Node):
             response.success = True
             response.message = ""
             return response
-        except Exception as e:  # noqa: PIE786
+        except Exception:  # noqa: PIE786
             response.success = False
             response.message = (
                 "Something went wrong when setting the gait version"
-                + str(traceback.format_exc())
+                + str(traceback.format_exc())  # noqa: W503
             )
             return response
 
@@ -538,7 +538,8 @@ class GaitSelection(Node):
                 ):
                     self.get_logger().warn(
                         f"{subgait_name}, {version} does not exist for gait {gait_name}"
-                        f" which should be read from {self._gait_path_to_read_map[gait_name]}"
+                        f" which should be read from "
+                        f"{self._gait_path_to_read_map[gait_name]}"
                     )
                     return False
         return True
