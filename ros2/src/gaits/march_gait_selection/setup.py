@@ -8,8 +8,7 @@ package_name = "march_gait_selection"
 def data_files():
     """Generates the list of data files necessary for gait selection, the gait and subgait files
     required for testing are taken from the ros1 directory to decrease duplication."""
-    test_gait_files_source = "test/testing_gait_files"
-    other_test_gait_files_source = "test/other_testing_gait_files"
+    test_gait_files_sources = ["test/testing_gait_files", "test/other_testing_gait_files"]
     data = [
         (
             os.path.join("share", "ament_index", "resource_index", "packages"),
@@ -17,79 +16,48 @@ def data_files():
         ),
         (os.path.join("share", package_name), ["package.xml"]),
         (
-            os.path.join("share", package_name, test_gait_files_source),
-            [os.path.join(test_gait_files_source, "default.yaml")],
+            os.path.join("share", package_name, test_gait_files_sources[0]),
+            [os.path.join(test_gait_files_sources[0], "default.yaml")],
         ),
         (
-            os.path.join("share", package_name, other_test_gait_files_source),
-            [os.path.join(other_test_gait_files_source, "default.yaml")],
+            os.path.join("share", package_name, test_gait_files_sources[0]),
+            [os.path.join(test_gait_files_sources[1], "default.yaml")],
         ),
         (
-            os.path.join("share", package_name, test_gait_files_source),
-            [os.path.join(test_gait_files_source, "realsense_gaits.yaml")],
+            os.path.join("share", package_name, test_gait_files_sources[0]),
+            [os.path.join(test_gait_files_sources[0], "realsense_gaits.yaml")],
         ),
         (os.path.join("share", package_name, "launch"), glob("launch/*.launch.py")),
     ]
-    for file in iglob(
-        os.path.join(test_gait_files_source, "**", "*.subgait"), recursive=True
-    ):
-        data.append(
-            (
-                os.path.join(
-                    "share",
-                    package_name,
-                    test_gait_files_source,
-                    os.path.dirname(os.path.relpath(file, test_gait_files_source)),
-                ),
-                [file],
-            )
-        )
-    for file in iglob(
-        os.path.join(test_gait_files_source, "**", "*.gait"), recursive=True
-    ):
-        data.append(
-            (
-                os.path.join(
-                    "share",
-                    package_name,
-                    test_gait_files_source,
-                    os.path.dirname(os.path.relpath(file, test_gait_files_source)),
-                ),
-                [file],
-            )
-        )
-    for file in iglob(
-        os.path.join(other_test_gait_files_source, "**", "*.subgait"), recursive=True
-    ):
-        data.append(
-            (
-                os.path.join(
-                    "share",
-                    package_name,
-                    other_test_gait_files_source,
-                    os.path.dirname(
-                        os.path.relpath(file, other_test_gait_files_source)
+    for test_gait_files_source in test_gait_files_sources:
+        for file in iglob(
+            os.path.join(test_gait_files_source, "**", "*.subgait"), recursive=True
+        ):
+            data.append(
+                (
+                    os.path.join(
+                        "share",
+                        package_name,
+                        test_gait_files_source,
+                        os.path.dirname(os.path.relpath(file, test_gait_files_source)),
                     ),
-                ),
-                [file],
+                    [file],
+                )
             )
-        )
-    for file in iglob(
-        os.path.join(other_test_gait_files_source, "**", "*.gait"), recursive=True
-    ):
-        data.append(
-            (
-                os.path.join(
-                    "share",
-                    package_name,
-                    other_test_gait_files_source,
-                    os.path.dirname(
-                        os.path.relpath(file, other_test_gait_files_source)
+        for file in iglob(
+            os.path.join(test_gait_files_source, "**", "*.gait"), recursive=True
+        ):
+            data.append(
+                (
+                    os.path.join(
+                        "share",
+                        package_name,
+                        test_gait_files_source,
+                        os.path.dirname(os.path.relpath(file, test_gait_files_source)),
                     ),
-                ),
-                [file],
+                    [file],
+                )
             )
-        )
     return data
 
 
