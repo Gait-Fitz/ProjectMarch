@@ -306,16 +306,20 @@ class GaitSelection(Node):
 
         version_map = dict(zip(request.subgaits, request.versions))
         try:
-            self.get_logger().info(f"Setting gait versions for gait {request.gait} with "
-                                   f"version map {version_map}")
+            self.get_logger().info(
+                f"Setting gait versions for gait {request.gait} with "
+                f"version map {version_map}"
+            )
             self.set_gait_versions(request.gait, version_map)
             response.success = True
             response.message = ""
             return response
         except Exception as e:  # noqa: PIE786
             response.success = False
-            response.message = "Something went wrong when setting the gait version" + \
-                               str(traceback.format_exc())
+            response.message = (
+                "Something went wrong when setting the gait version"
+                + str(traceback.format_exc())
+            )
             return response
 
     def contains_gait_cb(self, request, response):

@@ -248,9 +248,11 @@ class GaitVersionToolView(QWidget):
 
             self._log("Directory data refreshed", LogLevel.SUCCESS)
         except GaitVersionToolError as e:
-            self._log("Something went wrong when requesting the gait map from the gait "
-                      "selection and displaying the available gaits. \n"
-                      + str(traceback), LogLevel.ERROR)
+            self._log(
+                "Something went wrong when requesting the gait map from the gait "
+                "selection and displaying the available gaits. \n" + str(traceback),
+                LogLevel.ERROR,
+            )
         finally:
             self._is_refresh_active = False
             self.update_version_menus()
@@ -298,9 +300,11 @@ class GaitVersionToolView(QWidget):
                     msg if msg else "Failed to set default versions", LogLevel.ERROR
                 )
         except GaitVersionToolError as e:
-            self._log("Someting went wrong in is saving default versions. \n" + str(
-                traceback), \
-                                                                          LogLevel.ERROR)
+            self._log(
+                "Someting went wrong in is saving default versions. \n"
+                + str(traceback),
+                LogLevel.ERROR,
+            )
 
     def _apply(self):
         """Apply newly selected subgait versions to the gait selection node."""
@@ -331,9 +335,11 @@ class GaitVersionToolView(QWidget):
                     msg if msg else "Version change applied failed", LogLevel.ERROR
                 )
         except GaitVersionToolError as e:
-            self._log("Something went wrong when applying newly selected subgaits. \n " +
-                      str(traceback),
-                      LogLevel.ERROR)
+            self._log(
+                "Something went wrong when applying newly selected subgaits. \n "
+                + str(traceback),
+                LogLevel.ERROR,
+            )
 
     def _select_same_versions(self):
         """Select same versions of subgaits using common pre- and postfixes.
@@ -386,8 +392,11 @@ class GaitVersionToolView(QWidget):
         try:
             version_map = self._controller.get_version_map()
         except GaitVersionToolError as e:
-            self._log("Something went wrong when showing the version map pop up. \n "
-                      + str(traceback), LogLevel.ERROR)
+            self._log(
+                "Something went wrong when showing the version map pop up. \n "
+                + str(traceback),
+                LogLevel.ERROR,
+            )
             return
 
         version_map_string = ""
