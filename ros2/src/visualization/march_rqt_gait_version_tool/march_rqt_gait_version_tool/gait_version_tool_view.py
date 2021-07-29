@@ -163,7 +163,7 @@ class GaitVersionToolView(QWidget):
             subgait_menu.addItem("parametric")
 
             try:
-                current_version = self.version_map[gait_name][subgait_name]
+                current_version = self.version_map[gait_name]["subgaits"][subgait_name]
                 current_version_index = versions.index(current_version)
                 subgait_menu.setCurrentIndex(current_version_index)
 
@@ -221,12 +221,12 @@ class GaitVersionToolView(QWidget):
                         else:
                             # parametric pop up window unsuccessful stopped, reset version to default
                             current_version_index = versions.index(
-                                self.version_map[gait_name][subgait_name]
+                                self.version_map[gait_name]["subgait"][subgait_name]
                             )
                             subgait_menu.setCurrentIndex(
                                 max(current_version_index - 1, 0)
                             )
-                    if str(self.version_map[gait_name][subgait_name]) != str(
+                    if str(self.version_map[gait_name]["subgait"][subgait_name]) != str(
                         subgait_menu.currentText()
                     ):
                         subgait_label.setStyleSheet(f"color:{LogLevel.WARNING.value}")
@@ -385,7 +385,8 @@ class GaitVersionToolView(QWidget):
         version_map_string = ""
         for gait_name in sorted(version_map.keys()):
             version_map_string += "{gait} \n".format(gait=gait_name)
-            for subgait_name, version in version_map[gait_name].items():
+            gait_to_read = version_map[gait_name].get("reads_from_gait", gait_name)
+            for subgait_name, version in version_map[gait_to_read]["subgaits"].items():
                 version_map_string += "\t{sb:<30} \t {vs} \n".format(
                     sb=subgait_name, vs=version
                 )
