@@ -1,5 +1,6 @@
 import os
 from typing import Dict
+import traceback
 
 import yaml
 from ament_index_python.packages import get_package_share_directory
@@ -282,7 +283,7 @@ class GaitSelection(Node):
         version_map = {
             name: version
             for name, version in version_map.items()
-            if version != self._gait_version_map[gait_name][name]
+            if version != self._gait_version_map[gait_name]["subgaits"][name]
         }
         self._gaits[gait_name].set_subgait_versions(
             self._robot, self._gait_directory, version_map
@@ -305,14 +306,16 @@ class GaitSelection(Node):
 
         version_map = dict(zip(request.subgaits, request.versions))
         try:
-            self.get_logger().info(f"Setting gait versions from {request}")
+            self.get_logger().info(f"Setting gait versions for gait {request.gait} with "
+                                   f"version map {version_map}")
             self.set_gait_versions(request.gait, version_map)
             response.success = True
             response.message = ""
             return response
         except Exception as e:  # noqa: PIE786
             response.success = False
-            response.message = str(e)
+            response.message = "Something went wrong when setting the gait version" + \
+                               str(traceback.format_exc())
             return response
 
     def contains_gait_cb(self, request, response):
