@@ -1,6 +1,7 @@
 import re
 from enum import Enum
 import traceback
+import os
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QComboBox, QLabel, QWidget
@@ -143,7 +144,7 @@ class GaitVersionToolView(QWidget):
         self._clear_gui()
 
         gait_name = self._gait_menu.currentText()
-        gait_to_read_from = self._gait_path_to_read_map[gait_name]
+        gait_to_read_from = os.path.basename(self._gait_path_to_read_map[gait_name])
         subgaits = self.available_gaits[gait_to_read_from]
 
         if len(subgaits) > len(self._subgait_labels):
@@ -215,7 +216,7 @@ class GaitVersionToolView(QWidget):
             if subgait_name != "Unused":
                 try:
                     if "parametric" == str(subgait_menu.currentText()):
-                        gait_to_read_from = self._gait_path_to_read_map[gait_name]
+                        gait_to_read_from = os.path.basename(self._gait_path_to_read_map[gait_name])
                         versions = self.available_gaits[gait_to_read_from][subgait_name]
                         if self._show_parametric_pop_up(versions):
                             if self._parametric_pop_up.four_subgait_interpolation:
@@ -425,8 +426,8 @@ class GaitVersionToolView(QWidget):
         version_map_string = ""
         for gait_name in sorted(version_map.keys()):
             version_map_string += "{gait} \n".format(gait=gait_name)
-            gait_to_read = version_map[gait_name].get("reads_from_gait", gait_name)
-            for subgait_name, version in version_map[gait_to_read]["subgaits"].items():
+            gait_to_read_from = os.path.basename(self._gait_path_to_read_map[gait_name])
+            for subgait_name, version in version_map[gait_to_read_from]["subgaits"].items():
                 version_map_string += "\t{sb:<30} \t {vs} \n".format(
                     sb=subgait_name, vs=version
                 )
