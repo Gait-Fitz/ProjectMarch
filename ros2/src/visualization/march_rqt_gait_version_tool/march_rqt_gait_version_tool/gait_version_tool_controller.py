@@ -32,6 +32,9 @@ class GaitVersionToolController:
         self._get_directory_structure = node.create_client(
             srv_type=Trigger, srv_name="/march/gait_selection/get_directory_structure"
         )
+        self._get_gait_path_to_read_map = node.create_client(
+            srv_type=Trigger, srv_name="/march/gait_selection/get_gait_path_to_read_map"
+        )
 
         self._set_gait_version = node.create_client(
             srv_type=SetGaitVersion, srv_name="/march/gait_selection/set_gait_version"
@@ -65,6 +68,18 @@ class GaitVersionToolController:
             self.wait_for_service(self._get_version_map)
             return dict(
                 ast.literal_eval(self._get_version_map.call(Trigger.Request()).message)
+            )
+        except ValueError:
+            raise InvalidResponseError
+
+    def get_gait_path_to_read_map(self):
+        """Get the paths where the gaits should be read from"""
+        try:
+            self.wait_for_service(self._get_gait_path_to_read_map)
+            return dict(
+                ast.literal_eval(
+                    self._get_gait_path_to_read_map.call(Trigger.Request()).message
+                )
             )
         except ValueError:
             raise InvalidResponseError

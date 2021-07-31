@@ -143,7 +143,8 @@ class GaitVersionToolView(QWidget):
         self._clear_gui()
 
         gait_name = self._gait_menu.currentText()
-        subgaits = self.available_gaits[gait_name]
+        gait_to_read_from = self._gait_path_to_read_map[gait_name]
+        subgaits = self.available_gaits[gait_to_read_from]
 
         if len(subgaits) > len(self._subgait_labels):
             amount_of_new_subgait_menus = len(subgaits) - len(self._subgait_labels)
@@ -172,7 +173,7 @@ class GaitVersionToolView(QWidget):
                 current_version_index = versions.index(current_version)
                 self._log(f"Current version index is {current_version_index}")
                 subgait_menu.setCurrentIndex(current_version_index)
-                self._log(f"Subgait man")
+                self._log(f"Successfully set the current index for the subgait menu")
 
             except ValueError:
                 if current_version.startswith(PARAMETRIC_GAIT_PREFIX):
@@ -214,7 +215,8 @@ class GaitVersionToolView(QWidget):
             if subgait_name != "Unused":
                 try:
                     if "parametric" == str(subgait_menu.currentText()):
-                        versions = self.available_gaits[gait_name][subgait_name]
+                        gait_to_read_from = self._gait_path_to_read_map[gait_name]
+                        versions = self.available_gaits[gait_to_read_from][subgait_name]
                         if self._show_parametric_pop_up(versions):
                             if self._parametric_pop_up.four_subgait_interpolation:
                                 new_version = self.get_four_parametric_version()
@@ -250,6 +252,7 @@ class GaitVersionToolView(QWidget):
 
         try:
             self.available_gaits = self._controller.get_directory_structure()
+            self._gait_path_to_read_map = self._controller.get_gait_path_to_read_map()
             self.version_map = self._controller.get_version_map()
             self._gait_menu.addItems(sorted(self.available_gaits.keys()))
 
@@ -384,7 +387,7 @@ class GaitVersionToolView(QWidget):
         if gait_name not in self.version_map:
             return
 
-        subgaits = self.available_gaits[gait_name]
+        subgaits = self.version_map[gait_name]["subgaits"]
         selected_versions = {}
         for subgait, versions in subgaits.items():
             subgait_no_underscores = subgait.replace("_", "")

@@ -51,14 +51,14 @@ class GaitSelection(Node):
             if gait_package is None:
                 gait_package = (
                     self.get_parameter("gait_package")
-                    .get_parameter_value()
-                    .string_value
+                        .get_parameter_value()
+                        .string_value
                 )
             if directory is None:
                 directory = (
                     self.get_parameter("gait_directory")
-                    .get_parameter_value()
-                    .string_value
+                        .get_parameter_value()
+                        .string_value
                 )
             if balance is None:
                 self._balance_used = (
@@ -110,7 +110,6 @@ class GaitSelection(Node):
             qos_profile=10,
         )
 
-        self._create_services()
         self._gaits = self._load_gaits()
 
         self._early_schedule_duration = self._parse_duration_parameter(
@@ -128,6 +127,7 @@ class GaitSelection(Node):
                 "the base subgait instead. Realsense gaits will "
                 "not be loaded."
             )
+        self._create_services()
         self.get_logger().info("Successfully initialized gait selection node.")
 
     @property
@@ -212,6 +212,13 @@ class GaitSelection(Node):
             srv_name="/march/gait_selection/get_directory_structure",
             callback=lambda req, res: Trigger.Response(
                 success=True, message=str(self.scan_directory())
+            ),
+        )
+        self.create_service(
+            srv_type=Trigger,
+            srv_name="/march/gait_selection/get_gait_path_to_read_map",
+            callback=lambda req, res: Trigger.Response(
+                success=True, message=str(self._gait_path_to_read_map)
             ),
         )
 
