@@ -166,11 +166,13 @@ class GaitVersionToolView(QWidget):
             try:
                 current_version = self.version_map[gait_name]["subgaits"][subgait_name]
                 self._log(
-                    "Stil fine in line after getting from current version",
+                    f"Stil fine in line after getting from current version. Version is {current_version}",
                     LogLevel.INFO,
                 )
                 current_version_index = versions.index(current_version)
+                self._log(f"Current version index is {current_version_index}")
                 subgait_menu.setCurrentIndex(current_version_index)
+                self._log(f"Subgait man")
 
             except ValueError:
                 if current_version.startswith(PARAMETRIC_GAIT_PREFIX):
