@@ -25,13 +25,13 @@ def main():
 
     for controller, config in all_controllers_config.items():
         controller_spawn_name = f" {CONTROLLER_NAMESPACE}/{controller}"
-        if "JointTrajectoryController" in config["type"]:
-            if num_trajectory_controllers == len(controllers_list):
-                controllers_list.append([])
-            controllers_list[num_trajectory_controllers].append(controller_spawn_name)
-            num_trajectory_controllers += 1
-        else:
-            controllers_list[0].append(controller_spawn_name)
+        # if "JointTrajectoryController" in config["type"]:
+        #     if num_trajectory_controllers == len(controllers_list):
+        #         controllers_list.append([])
+        #     controllers_list[num_trajectory_controllers].append(controller_spawn_name)
+        #     num_trajectory_controllers += 1
+        # else:
+        controllers_list[0].append(controller_spawn_name)
 
     nodes: List[Node] = []
     for i, controllers in enumerate(controllers_list):

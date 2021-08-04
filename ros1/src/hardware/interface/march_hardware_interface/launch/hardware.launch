@@ -12,7 +12,7 @@
     <arg name="enable_safety_controller" default="false" doc="Whether to enable the safety controller"/>
 
     <group if="$(eval robot != 'pdb')">
-        <rosparam file="$(find march_hardware_interface)/config/$(arg controller_name)/controllers.yaml" command="load"/>
+        <rosparam file="$(find march_hardware_interface)/config/$(arg controller_type)/$(arg controller_name).yaml" command="load"/>
         <node name="upload_controller_values" pkg="march_launch"
             type="upload_controller_values.py"/>
         <param name="robot_description" textfile="$(find march_description)/urdf/$(arg robot_description).urdf"/>
