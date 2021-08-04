@@ -11,15 +11,17 @@
          are also not in the ethercat train."/>
     <arg name="enable_safety_controller" default="false" doc="Whether to enable the safety controller"/>
 
-    <rosparam file="$(find march_hardware_interface)/config/$(arg controller_type)/$(arg controller_name).yaml" command="load"/>
-    <node name="upload_controller_values" pkg="march_launch"
-          type="upload_controller_values.py"/>
-    <param name="robot_description" textfile="$(find march_description)/urdf/$(arg robot_description).urdf"/>
+    <group if="$(eval robot != 'pdb')">
+        <rosparam file="$(find march_hardware_interface)/config/$(arg controller_name)/controllers.yaml" command="load"/>
+        <node name="upload_controller_values" pkg="march_launch"
+            type="upload_controller_values.py"/>
+        <param name="robot_description" textfile="$(find march_description)/urdf/$(arg robot_description).urdf"/>
+    </group>
 
     <group ns="march">
-        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
-
-        <node name="spawn_all_controllers" pkg="march_launch" type="spawn_all_controllers.py"/>
+        <group if="$(eval robot != 'pdb')">
+            <node name="spawn_all_controllers" pkg="march_launch" type="spawn_all_controllers.py"/>
+        </group>
 
         <node
                 launch-prefix="ethercat_grant"

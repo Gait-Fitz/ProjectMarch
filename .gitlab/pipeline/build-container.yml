@@ -114,3 +114,26 @@ clang_format container build:
     DOCKER_FILE: ".gitlab/dockerfiles/clang_format"
   extends:
     - .ci_tool_container_builder
+
+sphinx container build:
+  variables:
+    CACHE: "false"
+    DOCKER_FILE: ".gitlab/dockerfiles/sphinx"
+    REGISTRY_IMAGE: "$CI_REGISTRY_IMAGE/sphinx"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - "$DOCKER_FILE"
+        - "docs/requirements.pip"
+      variables:
+        TAG: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
+      when: never
+    - if: '$CI_COMMIT_BRANCH'
+      changes:
+        - "$DOCKER_FILE"
+        - "docs/requirements.pip"
+      variables:
+       TAG: $CI_COMMIT_BRANCH
+  extends:
+    - .container_builder
