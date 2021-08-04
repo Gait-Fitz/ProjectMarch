@@ -23,7 +23,7 @@ bool ModelPredictiveControllerInterface::init(
 
     // Get the names of the joints to control
     std::vector<std::string> joint_names;
-    ros::param::get("/march/joint_names", joint_names);
+    nh.getParam("joints", joint_names);
 
     // Initialize desired inputs
     desired_inputs.reserve(ACADO_NU);
@@ -41,8 +41,8 @@ bool ModelPredictiveControllerInterface::init(
     mpc_pub_->msg_.joint.resize(num_joints_);
 
     // Initialize the model predictive controller
-    model_predictive_controller_
-        = std::make_unique<ModelPredictiveController>(getWeights(joint_names));
+    model_predictive_controller_ = std::make_unique<ModelPredictiveController>(
+        getWeights(joint_names, nh));
     model_predictive_controller_->init();
 
     // Initialize the MPC message
@@ -53,7 +53,7 @@ bool ModelPredictiveControllerInterface::init(
 
 // Retrieve the weights from the parameter server for a joint.
 std::vector<float> ModelPredictiveControllerInterface::getWeights(
-    std::vector<std::string> joint_names)
+    std::vector<std::string> joint_names, ros::NodeHandle& nh)
 {
     // get path to controller parameters
     std::string parameter_path = "/march/controller/trajectory";
@@ -71,11 +71,11 @@ std::vector<float> ModelPredictiveControllerInterface::getWeights(
     JOINT_NU.reserve(num_joints_);
 
     for (int i = 0; i < num_joints_; i++) {
+        std::string Q_param = "weights/" + joint_names[i] + "/Q";
+        std::string R_param = "weights/" + joint_names[i] + "/R";
 
-        ros::param::get(
-            parameter_path + "/weights/" + joint_names[i] + "/Q", Q_temp);
-        ros::param::get(
-            parameter_path + "/weights/" + joint_names[i] + "/R", R_temp);
+        nh.getParam(Q_param, Q_temp);
+        nh.getParam(R_param, R_temp);
 
         // Add Q_temp and R_temp to Q and R respectively
         Q.insert(Q.end(), Q_temp.begin(), Q_temp.end());

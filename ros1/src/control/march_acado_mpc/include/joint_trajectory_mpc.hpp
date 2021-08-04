@@ -85,10 +85,12 @@ private:
      * @brief Retrieve the weights from the parameter server for a joint.
      *        Weights are used for tuning the MPC
      * @param joint_name Joint to retrieve weights for
+     * @param nh Node handle to use when retrieving parameters
      * @return Returns a vector: The weight values belonging to the diagonal of
      * the MPC weight matrix.
      */
-    std::vector<float> getWeights(std::vector<std::string> joint_names);
+    std::vector<float> getWeights(
+        std::vector<std::string> joint_names, ros::NodeHandle& nh);
 
     // Pointer to the joints to control
     std::vector<hardware_interface::JointHandle>* joint_handles_ptr_;
