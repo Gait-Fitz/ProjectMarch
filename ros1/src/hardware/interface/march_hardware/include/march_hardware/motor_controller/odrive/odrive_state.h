@@ -27,6 +27,8 @@ public:
         HOMING = 11,
         ENCODER_HALL_POLARITY_CALIBRATION = 12,
         ENCODER_HALL_PHASE_CALIBRATION = 13,
+        FIND_ABS_INDEX_REPRESENTATION = 14,
+        SET_INCR_INDEX_WITH_ABS = 15,
 
         // Custom MARCH-made request-only states
         // This will execute functions on the DieBoSlave while the ODrive stays
