@@ -46,7 +46,7 @@ std::optional<ros::Duration> ODrive::prepareActuation()
     if (!index_found_
         && getAxisState() != ODriveAxisState::CLOSED_LOOP_CONTROL) {
         setAxisState(ODriveAxisState::SET_INCR_INDEX_WITH_ABS);
-        return ros::Duration(/*t=*/5);
+        return ros::Duration(/*t=*/2);
     } else {
         return std::nullopt;
     }
