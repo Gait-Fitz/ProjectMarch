@@ -324,8 +324,13 @@ class SetpointsGait(GaitInterface, Gait):
         """Called when the gait has finished."""
         self._current_subgait = None
 
-    def set_subgait_versions(self, robot, gait_directory, version_map, gait_path_to_read_from: os.path = None,
-                             ):
+    def set_subgait_versions(
+        self,
+        robot,
+        gait_directory,
+        version_map,
+        gait_path_to_read_from: os.path = None,
+    ):
         """
         Change the versions of the subgaits.
         :param robot: The robot model used.
