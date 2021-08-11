@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 
 from march_gait_selection.gaits.transition_subgait import TransitionSubgait
