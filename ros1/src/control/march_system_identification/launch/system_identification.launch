@@ -1,0 +1,8 @@
+<launch>
+    <arg name="moticon_ip" default="192.168.8.105" doc="The ip-adress with Moticon software running on it, defaults to
+            EMS switch laptop on standard router"/>
+
+    <node name="march_system_identification" pkg="march_system_identification" type="march_system_identification" output="screen">
+        <param name="moticon_ip" value="$(arg moticon_ip)" />
+    </node>
+</launch>
