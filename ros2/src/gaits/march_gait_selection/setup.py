@@ -34,7 +34,7 @@ def data_files():
         (os.path.join("share", package_name, "launch"), glob("launch/*.launch.py")),
     ]
     for test_gait_files_source in test_gait_files_sources:
-        for file in iglob(
+        for file_name in iglob(
             os.path.join(test_gait_files_source, "**", "*.subgait"), recursive=True
         ):
             data.append(
@@ -43,12 +43,12 @@ def data_files():
                         "share",
                         package_name,
                         test_gait_files_source,
-                        os.path.dirname(os.path.relpath(file, test_gait_files_source)),
+                        os.path.dirname(os.path.relpath(file_name, test_gait_files_source)),
                     ),
-                    [file],
+                    [file_name],
                 )
             )
-        for file in iglob(
+        for file_name in iglob(
             os.path.join(test_gait_files_source, "**", "*.gait"), recursive=True
         ):
             data.append(
@@ -57,9 +57,9 @@ def data_files():
                         "share",
                         package_name,
                         test_gait_files_source,
-                        os.path.dirname(os.path.relpath(file, test_gait_files_source)),
+                        os.path.dirname(os.path.relpath(file_name, test_gait_files_source)),
                     ),
-                    [file],
+                    [file_name],
                 )
             )
     return data

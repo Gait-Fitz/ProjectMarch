@@ -6,8 +6,8 @@ if os.getenv("CI"):
 else:
     import subprocess  # noqa: S404
 
-    g = ["git", "branch", "--show-current"]
-    command = subprocess.run(g, capture_output=True)  # noqa: S603, S607
+    git = ["git", "branch", "--show-current"]
+    command = subprocess.run(git, capture_output=True)  # noqa: S603, S607
     branch_name = str(command.stdout, "utf-8").strip()
 
 extensions = [
@@ -22,16 +22,16 @@ todo_include_todos = True
 master_doc = "index"
 
 project = "Project MARCH"
-copyright = "2021, Project MARCH"  # noqa: A001
+copyright = "2021, Project MARCH"  # noqa: A001, VNE003
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = "Noetic"
+version = "VI"
 # The full version, including alpha/beta/rc tags.
-release = "Noetic"
+release = "VI"
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "default"
@@ -53,7 +53,7 @@ html_last_updated_fmt = "%b %d, %Y"
 html_show_copyright = True
 
 html_context = {
-    "display_gitlab": True,
+    "display_gitlab": False,
     "gitlab_user": "project-march",
     "gitlab_repo": "march",
     "gitlab_version": branch_name,
