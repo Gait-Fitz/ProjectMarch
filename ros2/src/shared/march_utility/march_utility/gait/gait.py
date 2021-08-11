@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os
 from typing import Dict, Optional
 
@@ -51,7 +52,7 @@ class Gait:
         gait_directory: str,
         robot: urdf.Robot,
         gait_version_map: dict,
-        gait_path_to_read_from: os.path = None,
+        gait_path_to_read_from: Path = None,
     ):
         """Extract the data from the .gait file.
 
@@ -282,20 +283,30 @@ class Gait:
             raise e
 
     def set_subgait_versions(
-        self, robot: urdf.Robot, gait_directory: str, version_map: dict
+        self,
+        robot: urdf.Robot,
+        gait_directory: str,
+        version_map: dict,
+        gait_path_to_read_from: os.path = None,
     ):
         """Updates the given subgait versions and verifies transitions.
 
         :param robot: URDF matching subgaits
         :param str gait_directory: path to the gait directory
         :param dict version_map: Mapping subgait names to versions
+        :param gait_path_to_read_from: The path to read the subgaits from
         """
         new_subgaits = self.subgaits.copy()
         for subgait_name, version in version_map.items():
             if subgait_name not in self.subgaits:
                 raise SubgaitNameNotFoundError(subgait_name, self.gait_name)
             new_subgaits[subgait_name] = Subgait.from_name_and_version(
-                robot, gait_directory, self.gait_name, subgait_name, version
+                robot,
+                gait_directory,
+                self.gait_name,
+                subgait_name,
+                version,
+                gait_path_to_read_from,
             )
 
         try:

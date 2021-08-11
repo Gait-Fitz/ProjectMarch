@@ -134,8 +134,9 @@ dynamic_edge_gaits:
   ramp_down_last_step:
     start_is_dynamic: true
     final_is_dynamic: false
-    left_close: MVI_rampdownlaststep_leftclose_flat_v1
-    right_open: MVI_rampdownlaststep_rightopen_flat_v1
+    subgaits:
+      left_close: MVI_rampdownlaststep_leftclose_flat_v1
+      right_open: MVI_rampdownlaststep_rightopen_flat_v1
     
 positions:
   low_sit:

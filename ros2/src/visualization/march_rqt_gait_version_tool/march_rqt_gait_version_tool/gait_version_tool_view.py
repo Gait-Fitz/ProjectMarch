@@ -145,7 +145,10 @@ class GaitVersionToolView(QWidget):
 
         gait_name = self._gait_menu.currentText()
         gait_to_read_from = os.path.basename(self._gait_path_to_read_map[gait_name])
-        subgaits = self.available_gaits[gait_to_read_from]
+        subgaits = {}
+        for subgait_name, version in self.available_gaits[gait_to_read_from].items():
+            if subgait_name in self.version_map[gait_name]["subgaits"].keys():
+                subgaits[subgait_name] = version
 
         if len(subgaits) > len(self._subgait_labels):
             amount_of_new_subgait_menus = len(subgaits) - len(self._subgait_labels)
@@ -216,7 +219,9 @@ class GaitVersionToolView(QWidget):
             if subgait_name != "Unused":
                 try:
                     if str(subgait_menu.currentText()) == "parametric":
-                        gait_to_read_from = os.path.basename(self._gait_path_to_read_map[gait_name])
+                        gait_to_read_from = os.path.basename(
+                            self._gait_path_to_read_map[gait_name]
+                        )
                         versions = self.available_gaits[gait_to_read_from][subgait_name]
                         if self._show_parametric_pop_up(versions):
                             if self._parametric_pop_up.four_subgait_interpolation:
@@ -286,7 +291,7 @@ class GaitVersionToolView(QWidget):
             self._controller._node.get_logger().error(msg)
         else:
             self._controller._node.get_logger().error(
-                f"Invalid log level specified, " f"logging for message: {msg}",
+                f"Invalid log level specified for message: \n {msg}",
             )
             return
         self._logger.appendHtml(
@@ -427,7 +432,9 @@ class GaitVersionToolView(QWidget):
         for gait_name in sorted(version_map.keys()):
             version_map_string += "{gait} \n".format(gait=gait_name)
             gait_to_read_from = os.path.basename(self._gait_path_to_read_map[gait_name])
-            for subgait_name, version in version_map[gait_to_read_from]["subgaits"].items():
+            for subgait_name, version in version_map[gait_to_read_from][
+                "subgaits"
+            ].items():
                 version_map_string += "\t{sb:<30} \t {vs} \n".format(
                     sb=subgait_name, vs=version
                 )

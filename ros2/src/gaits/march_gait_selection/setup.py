@@ -43,7 +43,9 @@ def data_files():
                         "share",
                         package_name,
                         test_gait_files_source,
-                        os.path.dirname(os.path.relpath(file_name, test_gait_files_source)),
+                        os.path.dirname(
+                            os.path.relpath(file_name, test_gait_files_source)
+                        ),
                     ),
                     [file_name],
                 )
@@ -57,7 +59,9 @@ def data_files():
                         "share",
                         package_name,
                         test_gait_files_source,
-                        os.path.dirname(os.path.relpath(file_name, test_gait_files_source)),
+                        os.path.dirname(
+                            os.path.relpath(file_name, test_gait_files_source)
+                        ),
                     ),
                     [file_name],
                 )

@@ -51,14 +51,14 @@ class GaitSelection(Node):
             if gait_package is None:
                 gait_package = (
                     self.get_parameter("gait_package")
-                        .get_parameter_value()
-                        .string_value
+                    .get_parameter_value()
+                    .string_value
                 )
             if directory is None:
                 directory = (
                     self.get_parameter("gait_directory")
-                        .get_parameter_value()
-                        .string_value
+                    .get_parameter_value()
+                    .string_value
                 )
             if balance is None:
                 self._balance_used = (
@@ -292,7 +292,10 @@ class GaitSelection(Node):
             if version != self._gait_version_map[gait_name]["subgaits"][name]
         }
         self._gaits[gait_name].set_subgait_versions(
-            self._robot, self._gait_directory, version_map
+            self._robot,
+            self._gait_directory,
+            version_map,
+            self._gait_path_to_read_map[gait_name],
         )
         self._gait_version_map[gait_name].update(version_map)
         self.get_logger().info(
@@ -323,7 +326,7 @@ class GaitSelection(Node):
         except Exception:  # noqa: PIE786
             response.success = False
             response.message = (
-                "Something went wrong when setting the gait version"
+                "Something went wrong when setting the gait version: \n"
                 + str(traceback.format_exc())  # noqa: W503
             )
             return response
@@ -367,9 +370,9 @@ class GaitSelection(Node):
                     if os.path.isdir(subgait_path):
                         versions = sorted(
                             [
-                                v.replace(".subgait", "")
-                                for v in os.listdir(os.path.join(subgait_path))
-                                if v.endswith(".subgait")
+                                version.replace(".subgait", "")
+                                for version in os.listdir(os.path.join(subgait_path))
+                                if version.endswith(".subgait")
                             ]
                         )
                         subgaits[subgait] = versions
@@ -409,16 +412,16 @@ class GaitSelection(Node):
                 self._gait_path_to_read_map[gait_name],
             )
 
-        for gait in self._dynamic_edge_version_map:
-            self.get_logger().debug(f"Adding dynamic gait {gait}")
-            start_is_dynamic = self._dynamic_edge_version_map[gait].pop(
+        for gait_name in self._dynamic_edge_version_map:
+            self.get_logger().debug(f"Adding dynamic gait {gait_name}")
+            start_is_dynamic = self._dynamic_edge_version_map[gait_name].pop(
                 "start_is_dynamic", True
             )
-            final_is_dynamic = self._dynamic_edge_version_map[gait].pop(
+            final_is_dynamic = self._dynamic_edge_version_map[gait_name].pop(
                 "final_is_dynamic", True
             )
-            gaits[gait] = DynamicEdgeSetpointsGait.dynamic_from_file(
-                gait,
+            gaits[gait_name] = DynamicEdgeSetpointsGait.dynamic_from_file(
+                gait_name,
                 self._gait_directory,
                 self._robot,
                 self._dynamic_edge_version_map,
@@ -496,7 +499,11 @@ class GaitSelection(Node):
             raise TypeError("Gait version map should be of type; dictionary")
 
         self._gait_path_to_read_map = self._get_gait_path_to_read_map(
-            {**version_map, **self._realsense_gait_version_map}
+            {
+                **version_map,
+                **self._realsense_gait_version_map,
+                **dynamic_edge_version_map,
+            }
         )
 
         if not self._validate_version_map(version_map):

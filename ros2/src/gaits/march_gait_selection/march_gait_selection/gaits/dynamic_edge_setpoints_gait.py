@@ -103,7 +103,12 @@ class DynamicEdgeSetpointsGait(SetpointsGait):
         graph = SubgaitGraph(subgaits)
         subgaits = {
             name: cls.load_subgait(
-                robot, gait_directory, gait_name, name, gait_version_map, gait_path_to_read_from
+                robot,
+                gait_directory,
+                gait_name,
+                name,
+                gait_version_map,
+                gait_path_to_read_from,
             )
             for name in subgaits
             if name not in ("start", "end")
