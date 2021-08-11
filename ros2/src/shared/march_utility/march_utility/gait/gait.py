@@ -52,7 +52,7 @@ class Gait:
         gait_directory: str,
         robot: urdf.Robot,
         gait_version_map: dict,
-        gait_path_to_read_from: Path = None,
+        gait_path_to_read_from: os.ath = None,
     ):
         """Extract the data from the .gait file.
 

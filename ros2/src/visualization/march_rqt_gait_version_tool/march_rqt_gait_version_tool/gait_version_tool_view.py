@@ -147,7 +147,7 @@ class GaitVersionToolView(QWidget):
         gait_to_read_from = os.path.basename(self._gait_path_to_read_map[gait_name])
         subgaits = {}
         for subgait_name, version in self.available_gaits[gait_to_read_from].items():
-            if subgait_name in self.version_map[gait_name]["subgaits"].keys():
+            if subgait_name in self.version_map[gait_name]["subgaits"]:
                 subgaits[subgait_name] = version
 
         if len(subgaits) > len(self._subgait_labels):
@@ -177,7 +177,7 @@ class GaitVersionToolView(QWidget):
                 current_version_index = versions.index(current_version)
                 self._log(f"Current version index is {current_version_index}")
                 subgait_menu.setCurrentIndex(current_version_index)
-                self._log(f"Successfully set the current index for the subgait menu")
+                self._log("Successfully set the current index for the subgait menu")
 
             except ValueError:
                 if current_version.startswith(PARAMETRIC_GAIT_PREFIX):
