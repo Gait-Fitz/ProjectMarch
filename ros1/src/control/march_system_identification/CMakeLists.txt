@@ -16,7 +16,8 @@ catkin_package(
         std_msgs
 )
 
-catkin_install_python(PROGRAMS scripts/${PROJECT_NAME}
+catkin_install_python(PROGRAMS 
+        nodes/frequency_response_analysis_node
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
 install(DIRECTORY launch

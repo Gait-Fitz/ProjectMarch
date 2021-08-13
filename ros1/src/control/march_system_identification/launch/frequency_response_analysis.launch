@@ -1,0 +1,9 @@
+<launch>
+    <arg name="type" default="awgn" doc="Add additive white gaussian noise (awgn) to the input of the joint"/>
+    <arg name="joint" default="rotational_joint" doc="The joint to perform the frequency response analysis on"/>
+
+    <node name="frequency_response_analysis" pkg="march_system_identification" type="frequency_response_analysis" output="screen">
+        <param name="type" value="$(arg type)" />
+        <param name="joint" value="$(arg joint)" />
+    </node>
+</launch>

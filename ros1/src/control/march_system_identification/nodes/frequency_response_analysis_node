@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+import rospy
+from std_msgs.msg import Float32
+from march_system_identification import frequency_response_analysis as fra
+
+def main():
+
+    pub = rospy.Publisher('/march/feedforward', Float32, queue_size=10)
+    rospy.init_node('frequency_response_analysis', anonymous=True)
+    rate = rospy.Rate(250) #250hz
+    while not rospy.is_shutdown():
+        feedforward = fra.additive_gaussian_white_noise()
+        pub.publish(feedforward)
+        rate.sleep()
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except rospy.ROSInterruptException:
+        pass
