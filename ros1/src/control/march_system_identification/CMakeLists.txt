@@ -17,7 +17,7 @@ catkin_package(
 )
 
 catkin_install_python(PROGRAMS 
-        nodes/frequency_response_analysis_node
+        nodes/frequency_response_analysis
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
 install(DIRECTORY launch
