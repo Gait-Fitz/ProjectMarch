@@ -1,0 +1,64 @@
+#!/usr/bin/env python
+
+# ROS imports
+import rospy
+from std_msgs import msg
+from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import MultiArrayDimension
+
+# MARCH imports
+from march_system_identification import frequency_response_analysis as fra
+
+# Python imports
+import numpy as np
+
+
+class frequencyResponseAnalysisNode():
+    def __init__(self) -> None:
+
+        # define parameter server address
+        node_param = "/frequency_response_analysis"
+
+        # Get parameters from the parameter server
+        _rate = float(rospy.get_param(f"{node_param}/rate", "250")) #Hz
+        _joint = str(rospy.get_param(f"{node_param}/joint"))
+
+        # Initialize the rosnode
+        rospy.init_node("frequency_response_analysis", anonymous=True)
+        rospy.loginfo("Starting frequency response analysis")
+        rate = rospy.Rate(_rate) #250hz
+
+        # Create a dynamic reconfigure server
+        # ...
+
+        # Get joint names and index of joint to perform FRA on
+        joint_names = rospy.get_param("/march/joint_names")
+        joint_index = joint_names.index(_joint)
+
+        # Initialize message data
+        msg = Float32MultiArray()
+        msg.data = np.zeros((len(joint_names),1))
+
+        # Create the publisher for the feedforward message
+        pub = rospy.Publisher('/march/feedforward', Float32MultiArray, queue_size=10)
+
+        # main loop
+        while not rospy.is_shutdown():
+
+            # Calculate feedforward data and fill the msg array
+            feedforward = fra.additive_gaussian_white_noise(mean=0.0, std=1.0, num_samples=1)
+            msg.data[joint_index] = feedforward
+
+            # Publish the feedforward data
+            pub.publish(msg)
+
+            # Sleep to achieve the defined update rate
+            rate.sleep()
+
+
+if __name__ == '__main__':
+    try:
+        ros_node = frequencyResponseAnalysisNode()
+        rospy.spin()
+    except rospy.ROSInterruptException:
+        pass
