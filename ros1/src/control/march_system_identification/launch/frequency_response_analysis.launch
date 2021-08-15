@@ -1,10 +1,8 @@
 <launch>
-    <arg name="type" default="awgn" doc="Add additive white gaussian noise (awgn) to the input of the joint"/>
     <arg name="joint" doc="The joint to perform the frequency response analysis on"/>
     <arg name="rate" default="250" doc="frequency analysis node update rate in Hz"/>
 
-    <node name="frequency_response_analysis" pkg="march_system_identification" type="frequency_response_analysis" output="screen">
-        <param name="type" value="$(arg type)" />
+    <node name="frequency_response_analysis" pkg="march_system_identification" type="frequency_response_analysis" output="screen" cwd="ROS_HOME">
         <param name="joint" value="$(arg joint)" />
         <param name="rate" value="$(arg rate)"/>
     </node>
