@@ -10,8 +10,7 @@
     <buildtool_depend>catkin</buildtool_depend>
     <buildtool_depend>python3-setuptools</buildtool_depend>
 
-    <depend>control_msgs</depend>
-    <depend>march_shared_msgs</depend>
+    <depend>sensor_msgs</depend>
     <depend>std_msgs</depend>>
 
     <exec_depend>rospy</exec_depend>
