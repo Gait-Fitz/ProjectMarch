@@ -11,17 +11,17 @@ gaits:
     
   ramp_up:
     subgaits:
-      left_close: MVI_rampup_leftclose_flat_v7
-      left_open: MVI_rampup_leftopen_flat_v9
-      left_swing: MVI_rampup_leftswing_flat_v7
-      right_close: MVI_rampup_rightclose_flat_v7
-      right_open: MVI_rampup_rightopen_flat_v9
-      right_swing: MVI_rampup_rightswing_flat_v7
+      left_close: MVI_rampup_leftclose_flat_v13
+      left_open: MVI_rampup_leftopen_flat_v13
+      left_swing: MVI_rampup_leftswing_flat_v13
+      right_close: MVI_rampup_rightclose_flat_v13
+      right_open: MVI_rampup_rightopen_flat_v13
+      right_swing: MVI_rampup_rightswing_flat_v13
 
   ramp_up_single_step:
     subgaits:
-      left_close: MVI_rampup_singlestep_leftclose_flat_v9
-      right_open: MVI_rampup_singlestep_rightopen_flat_v9
+      left_close: MVI_rampup_singlestep_leftclose_flat_v13
+      right_open: MVI_rampup_singlestep_rightopen_flat_v13
 
   stairs_up:
     subgaits:
@@ -33,8 +33,8 @@ gaits:
 
   stairs_up_single_step:
     subgaits:
-      right_open: MVI_stairsupsinglestep_rightopen_cybathlon_v5
-      left_close: MVI_stairsupsinglestep_leftclose_cybathlon_v5
+      right_open: MVI_stairsupsinglestep_rightopen_high_undeep_v7
+      left_close: MVI_stairsupsinglestep_leftclose_high_undeep_v7
 
   stairs_down:
     subgaits:
@@ -59,8 +59,8 @@ gaits:
 
   stairs_down_backwards_single_step:
     subgaits:
-      left_close: MVI_stairsdownbackwardssinglestep_leftclose_cybathlon_v5
-      right_open: MVI_stairsdownbackwardssinglestep_rightopen_cybathlon_v5
+      left_close: MVI_stairsdownbackwards_leftclose_high_undeep_v7
+      right_open: MVI_stairsdownbackwards_rightopen_high_undeep_v7
 
   walk:
     subgaits:
@@ -122,33 +122,33 @@ dynamic_edge_gaits:
     start_is_dynamic: false
     final_is_dynamic: true
     subgaits:
-      left_close: MVI_rampdown_leftclose_flat_v5
-      left_open: MVI_rampdown_leftopen_flat_v5
-      left_swing: MVI_rampdown_leftswing_flat_v5
-      right_close: MVI_rampdown_rightclose_flat_v5
-      right_open: MVI_rampdown_rightopen_flat_v5
-      right_swing: MVI_rampdown_rightswing_flat_v5
+      left_close: MVI_rampdown_leftclose_flat_v7
+      left_open: MVI_rampdown_leftopen_flat_v7
+      left_swing: MVI_rampdown_leftswing_flat_v7
+      right_close: MVI_rampdown_rightclose_flat_v7
+      right_open: MVI_rampdown_rightopen_flat_v7
+      right_swing: MVI_rampdown_rightswing_flat_v7
 
   ramp_down_start_single_step:
     start_is_dynamic: false
     final_is_dynamic: true
     subgaits:
-      left_close: MVI_rampdown_startsinglestep_leftclose_flat_v5
-      right_open: MVI_rampdown_startsinglestep_rightopen_flat_v5
+      left_close: MVI_rampdown_startsinglestep_leftclose_flat_v7
+      right_open: MVI_rampdown_startsinglestep_rightopen_flat_v7
     
   ramp_down_single_step:
     start_is_dynamic: true
     final_is_dynamic: true
     subgaits:
-      left_close: MVI_rampdown_singlestep_leftclose_flat_v5
-      right_open: MVI_rampdown_singlestep_rightopen_flat_v5
+      left_close: MVI_rampdown_singlestep_leftclose_flat_v7
+      right_open: MVI_rampdown_singlestep_rightopen_flat_v7
 
   ramp_down_last_step:
     start_is_dynamic: true
     final_is_dynamic: false
     subgaits:
-      left_close: MVI_rampdownlaststep_leftclose_flat_v3
-      right_open: MVI_rampdownlaststep_rightopen_flat_v3
+      left_close: MVI_rampdownlaststep_leftclose_flat_v5
+      right_open: MVI_rampdownlaststep_rightopen_flat_v5
     
 positions:
   stand:
