@@ -20,11 +20,11 @@ class frequencyResponseAnalysisNode():
         node_param = "/frequency_response_analysis"
 
         # Get parameters from the parameter server
-        rate_ = float(rospy.get_param(f"{node_param}/rate", "250")) #Hz
+        rate_ = float(rospy.get_param(f"{node_param}/rate")) #Hz
         joint_ = str(rospy.get_param(f"{node_param}/joint"))
-        self.mean = 0.0
-        self.std = 1.0
         self.desired_data_points = int(rospy.get_param(f"{node_param}/desired_data_points", "1000"))
+        self.mean = float(rospy.get_param(f"{node_param}/mean"))
+        self.std = float(rospy.get_param(f"{node_param}/std"))
 
         # Initialize the rosnode
         rospy.init_node("frequency_response_analysis", anonymous=True)
@@ -32,7 +32,7 @@ class frequencyResponseAnalysisNode():
         rate = rospy.Rate(rate_) #250hz
 
         # # Initialize shutdown procedure
-        rospy.on_shutdown(self.shutdown_node)
+        rospy.on_shutdown(self.shutdown_node_processes)
 
         # Initialize measurement arrays
         self.position = np.array([])
@@ -72,10 +72,15 @@ class frequencyResponseAnalysisNode():
             rate.sleep()
 
         # Shutdown the experiment in nice way
+        rospy.loginfo("Gathered desired data points, shutting down experiment")
         self.shutdown_experiment()
 
         # Performing FRF estimation
-        # self.estimate_frf()
+        rospy.loginfo("Performing FRF estimation")
+        self.estimate_frf()
+
+        # Exit the node
+        rospy.signal_shutdown("The FRA experiment has finished, shutting down the node")
 
         pass
 
@@ -125,10 +130,8 @@ class frequencyResponseAnalysisNode():
         np.savez_compressed(f"frf_measurements_{self.joint_names[self.joint_index]}_{timestamp}", 
             position=self.position, velocity=self.velocity, effort=self.effort)
 
-        # Save the measurements
-        self.save_measurements()
+    def shutdown_node_processes(self):
 
-    def shutdown_node(self):
         # Publish zero valued feedforward data
         self.msg.data = np.zeros((len(self.joint_names),1))
         self.pub.publish(self.msg)
@@ -137,7 +140,7 @@ class frequencyResponseAnalysisNode():
         self.sub.unregister()
 
     def shutdown_experiment(self):
-        self.shutdown_node()
+        self.shutdown_node_processes()
         self.save_measurements()
 
         
