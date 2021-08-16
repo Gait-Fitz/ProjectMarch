@@ -1,9 +1,11 @@
 <launch>
     <arg name="joint" doc="The joint to perform the frequency response analysis on"/>
     <arg name="rate" default="250" doc="frequency analysis node update rate in Hz"/>
+    <arg name="desired_data_points" default="1000" doc="The amount of data points getting gathered"/>
 
     <node name="frequency_response_analysis" pkg="march_system_identification" type="frequency_response_analysis" output="screen" cwd="ROS_HOME">
         <param name="joint" value="$(arg joint)" />
         <param name="rate" value="$(arg rate)"/>
+        <param name="desired_data_points" value="$(arg desired_data_points)"/>
     </node>
 </launch>

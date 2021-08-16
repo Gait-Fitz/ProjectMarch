@@ -2,15 +2,15 @@
 
 # ROS imports
 import rospy
-from std_msgs import msg
 from std_msgs.msg import Float32MultiArray
-from std_msgs.msg import MultiArrayDimension
 from sensor_msgs.msg import JointState
 
 # Python imports
 import numpy as np
 from numpy.random import sample
+from scipy.fft import fft, ifft, fftfreq
 from datetime import datetime
+import matplotlib.pyplot as plt
 
 
 class frequencyResponseAnalysisNode():
@@ -24,14 +24,15 @@ class frequencyResponseAnalysisNode():
         joint_ = str(rospy.get_param(f"{node_param}/joint"))
         self.mean = 0.0
         self.std = 1.0
+        self.desired_data_points = int(rospy.get_param(f"{node_param}/desired_data_points", "1000"))
 
         # Initialize the rosnode
         rospy.init_node("frequency_response_analysis", anonymous=True)
         rospy.loginfo("Starting frequency response analysis")
         rate = rospy.Rate(rate_) #250hz
 
-        # Initialize shutdown procedure
-        rospy.on_shutdown(self.shutdown)
+        # # Initialize shutdown procedure
+        rospy.on_shutdown(self.shutdown_node)
 
         # Initialize measurement arrays
         self.position = np.array([])
@@ -46,32 +47,37 @@ class frequencyResponseAnalysisNode():
         self.joint_index = self.joint_names.index(joint_)
 
         # Initialize message data
-        msg = Float32MultiArray()
-        msg.data = np.zeros((len(self.joint_names),1))
+        self.msg = Float32MultiArray()
+        self.msg.data = np.zeros((len(self.joint_names),1))
 
         # Create the publisher for the feedforward message
-        pub = rospy.Publisher('/march/feedforward', Float32MultiArray, queue_size=10)
+        self.pub = rospy.Publisher('/march/joint_effort_feedforward', Float32MultiArray, queue_size=10)
 
         # Create the subscriber for storing the joint states
-        rospy.Subscriber("/march/joint_states", JointState, callback=self.get_measurements)
+        self.sub = rospy.Subscriber("/march/joint_states", JointState, callback=self.get_measurements)
         
         # main loop
-        while not rospy.is_shutdown():
-
+        while not rospy.is_shutdown() and len(self.effort) <= self.desired_data_points:
+            
             # Generate gaussian white noise (gnw)
-            gwn_data = self.gaussian_white_noise()
+            feedforward = self.gaussian_white_noise()
 
             # Fill the message data
-            msg.data[self.joint_index] = gwn_data
+            self.msg.data[self.joint_index] = feedforward
 
             # Publish the feedforward data
-            pub.publish(msg)
+            self.pub.publish(self.msg)
 
             # Sleep to achieve the defined update rate
             rate.sleep()
 
-        pass
+        # Shutdown the experiment in nice way
+        self.shutdown_experiment()
 
+        # Performing FRF estimation
+        # self.estimate_frf()
+
+        pass
 
     def gaussian_white_noise(self):
         output = np.random.normal(self.mean, self.std, size=1)
@@ -82,7 +88,35 @@ class frequencyResponseAnalysisNode():
         self.velocity = np.append(self.velocity, data.velocity[self.joint_index])
         self.effort = np.append(self.effort, data.effort[self.joint_index])
 
-    def shutdown(self):
+    def estimate_frf(self):
+        # Perform fft on the input and output
+        Y_N = fft(self.position)
+        U_N = fft(self.effort)
+
+        # Make sure the arrays are the same size by finding the lowest length 
+        # and using that in futher calculations
+        N = min(len(Y_N), len(U_N))
+
+        # Calculate the FRF (G_N)
+        G_N = Y_N[:N]/U_N[:N]
+
+        # # Generating Bode plot
+        # dt = 1.0 / 50.0
+        # freq = fftfreq(N, dt)[:N//2]
+        # db2, phase2 = bode_utils.bode_plot2(freq, G_N)
+
+        # Plotting results
+        T = 1.0 / 50.0
+        xf = fftfreq(N, T)[:N//2]
+        
+        plt.figure()
+        plt.plot(xf, 2.0/N * np.abs(G_N[0:N//2]))
+        plt.yscale("log")
+        plt.xscale("log")
+        plt.grid()
+        plt.show()
+
+    def save_measurements(self):
         # Create timestamp for naming the measurement data file
         timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 
@@ -91,9 +125,23 @@ class frequencyResponseAnalysisNode():
         np.savez_compressed(f"frf_measurements_{self.joint_names[self.joint_index]}_{timestamp}", 
             position=self.position, velocity=self.velocity, effort=self.effort)
 
-        # Performing FRF estimation
-        # ...
+        # Save the measurements
+        self.save_measurements()
+
+    def shutdown_node(self):
+        # Publish zero valued feedforward data
+        self.msg.data = np.zeros((len(self.joint_names),1))
+        self.pub.publish(self.msg)
+
+        # Stop the subscriber
+        self.sub.unregister()
+
+    def shutdown_experiment(self):
+        self.shutdown_node()
+        self.save_measurements()
+
         
+
 
 if __name__ == '__main__':
     try:
