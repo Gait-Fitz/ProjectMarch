@@ -15,7 +15,7 @@ catkin_package(
 )
 
 catkin_install_python(PROGRAMS 
-        src/march_system_identification/frequency_response_analysis
+        src/${PROJECT_NAME}/frequency_response_analysis
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
 install(DIRECTORY launch
