@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 # ROS imports
+from numpy.core.fromnumeric import reshape, shape
+from numpy.fft import fftshift
 import rospy
 from std_msgs.msg import Float32MultiArray
 from sensor_msgs.msg import JointState
@@ -57,7 +59,7 @@ class frequencyResponseAnalysisNode():
         self.sub = rospy.Subscriber("/march/joint_states", JointState, callback=self.get_measurements)
         
         # main loop
-        while not rospy.is_shutdown() and len(self.effort) <= self.desired_data_points:
+        while not rospy.is_shutdown() and len(self.effort) <= self.desired_data_points - 1:
             
             # Generate gaussian white noise (gnw)
             feedforward = self.gaussian_white_noise()
@@ -94,31 +96,56 @@ class frequencyResponseAnalysisNode():
         self.effort = np.append(self.effort, data.effort[self.joint_index])
 
     def estimate_frf(self):
-        # Perform fft on the input and output
-        Y_N = fft(self.position)
-        U_N = fft(self.effort)
-
-        # Make sure the arrays are the same size by finding the lowest length 
-        # and using that in futher calculations
-        N = min(len(Y_N), len(U_N))
-
-        # Calculate the FRF (G_N)
-        G_N = Y_N[:N]/U_N[:N]
-
-        # # Generating Bode plot
-        # dt = 1.0 / 50.0
-        # freq = fftfreq(N, dt)[:N//2]
-        # db2, phase2 = bode_utils.bode_plot2(freq, G_N)
-
-        # Plotting results
-        T = 1.0 / 50.0
-        xf = fftfreq(N, T)[:N//2]
         
+        # Set input output data
+        yN = self.position
+        uN = self.effort
+        assert(len(yN) == len(uN))
+
+        # Define general parameters
+        Tf = 0.02 #s
+
+        # Setup hamming window
+        win_width = 25
+        hamming_win = np.hamming(win_width)
+        num_slices = int(len(yN) // win_width)
+
+        # Create slices of the input output data and apply the hamming window
+        yN_slices = np.reshape(self.position, (num_slices, win_width))
+        yN_slices = (yN_slices * hamming_win).T
+        
+        uN_slices = np.reshape(self.effort, (num_slices, win_width))
+        uN_slices = (uN_slices * hamming_win).T
+
+        # Calculate the DFT and FRF
+        YN = np.fft.fft(yN_slices, axis=0)[:win_width // 2 + 1:-1]
+        UN = np.fft.fft(uN_slices, axis=0)[:win_width // 2 + 1:-1]
+
+        # Calculate the FRF
+        N = len(YN)*len(YN[0])
+        YN = np.reshape(YN, (N, 1))
+        UN = np.reshape(UN, (N, 1))
+        GN = YN/UN
+
+        # Calculate bode and nyquist plot parameters
+        mag = 2.0/N * np.abs(GN[0:N//2])
+        db = 20 * np.log10(mag / np.max(mag))
+        freq = fftfreq(N, Tf)[:N//2] * 2*np.pi
+        real = np.real(GN)
+        imag = np.imag(GN)
+        
+        # Plotting bode plot
         plt.figure()
-        plt.plot(xf, 2.0/N * np.abs(G_N[0:N//2]))
-        plt.yscale("log")
+        plt.subplot(2,1,1)
+        plt.plot(freq, db)
         plt.xscale("log")
         plt.grid()
+
+        # Generating nyquist plot
+        plt.subplot(2,1,2)
+        plt.scatter(real, imag)
+        plt.grid()
+        
         plt.show()
 
     def save_measurements(self):
