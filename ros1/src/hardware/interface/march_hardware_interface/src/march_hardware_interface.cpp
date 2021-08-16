@@ -1,6 +1,7 @@
 // Copyright 2019 Project March.
 #include "march_hardware_interface/march_hardware_interface.h"
 
+#include "std_msgs/Float32MultiArray.h"
 #include <march_hardware/joint.h>
 #include <march_hardware/motor_controller/actuation_mode.h>
 #include <march_hardware/motor_controller/imotioncube/imotioncube.h>
@@ -147,6 +148,14 @@ bool MarchHardwareInterface::init(
         MarchTemperatureSensorHandle temperature_sensor_handle(joint.getName(),
             &joint_temperature_[i], &joint_temperature_variance_[i]);
         march_temperature_interface_.registerHandle(temperature_sensor_handle);
+
+        // initialize joint_effort_feedforward and create the subscriber
+        std::fill(joint_effort_feedforward.begin(),
+            joint_effort_feedforward.end(), 0.0);
+        joint_effort_feedforward_sub
+            = nh.subscribe<std_msgs::Float32MultiArray>(
+                "/march/joint_effort_feedforward", 10,
+                &MarchHardwareInterface::setFeedforwardEffort, this);
     }
 
     // Wait some time to make sure the EtherCAT network is ready
@@ -294,9 +303,10 @@ void MarchHardwareInterface::write(
         // Enlarge joint_effort_command for IMotionCube because ROS control
         // limits the pid values to a certain maximum
         joint_effort_command_[i] = joint_effort_command_[i]
-            * march_robot_->getJoint(i)
-                  .getMotorController()
-                  ->effortMultiplicationConstant();
+                * march_robot_->getJoint(i)
+                      .getMotorController()
+                      ->effortMultiplicationConstant()
+            + joint_effort_feedforward[i];
         if (std::abs(joint_last_effort_command_[i] - joint_effort_command_[i])
             > MAX_EFFORT_CHANGE) {
             joint_effort_command_[i] = joint_last_effort_command_[i]
@@ -356,6 +366,12 @@ void MarchHardwareInterface::write(
     this->updateAfterLimitJointCommand();
 }
 
+void MarchHardwareInterface::setFeedforwardEffort(
+    const std_msgs::Float32MultiArray::ConstPtr& msg)
+{
+    joint_effort_feedforward.assign(msg->data.begin(), msg->data.end());
+}
+
 int MarchHardwareInterface::getEthercatCycleTime() const
 {
     return this->march_robot_->getEthercatCycleTime();
@@ -370,6 +386,7 @@ void MarchHardwareInterface::reserveMemory()
     joint_effort_.resize(num_joints_);
     joint_effort_command_.resize(num_joints_);
     joint_last_effort_command_.resize(num_joints_);
+    joint_effort_feedforward.resize(num_joints_);
     joint_temperature_.resize(num_joints_);
     joint_temperature_variance_.resize(num_joints_);
     soft_limits_.resize(num_joints_);
