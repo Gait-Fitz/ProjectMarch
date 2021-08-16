@@ -16,6 +16,7 @@
 #include <realtime_tools/realtime_publisher.h>
 #include <ros/ros.h>
 
+#include "std_msgs/Float32MultiArray.h"
 #include <march_hardware/march_robot.h>
 #include <march_hardware_builder/hardware_builder.h>
 #include <march_shared_msgs/AfterLimitJointCommand.h>
@@ -96,6 +97,7 @@ private:
     static void getSoftJointLimitsError(const std::string& name,
         const urdf::JointConstSharedPtr& urdf_joint,
         joint_limits_interface::SoftJointLimits& error_soft_limits);
+    void setFeedforwardEffort(const std_msgs::Float32MultiArray::ConstPtr& msg);
 
     /**
      * Call a function that returns an optional sleeping duration for each joint
@@ -145,6 +147,7 @@ private:
     std::vector<double> joint_effort_;
     std::vector<double> joint_effort_command_;
     std::vector<double> joint_last_effort_command_;
+    std::vector<double> joint_effort_feedforward;
 
     std::vector<double> joint_temperature_;
     std::vector<double> joint_temperature_variance_;
@@ -168,6 +171,9 @@ private:
         pressure_sole_data_pub_;
     RtPublisherPtr<march_shared_msgs::PowerDistributionBoardData>
         power_distribution_board_data_pub_;
+
+    // Initialize joint_effort_feedforward subscriber
+    ros::Subscriber joint_effort_feedforward_sub;
 };
 
 #endif // MARCH_HARDWARE_INTERFACE_MARCH_HARDWARE_INTERFACE_H
