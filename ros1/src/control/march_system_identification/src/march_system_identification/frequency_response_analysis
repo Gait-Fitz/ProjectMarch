@@ -40,6 +40,7 @@ class frequencyResponseAnalysisNode():
         self.position = np.array([])
         self.velocity = np.array([])
         self.effort = np.array([])
+        self.noise = np.array([])
 
         # Create a dynamic reconfigure server
         # ...
@@ -59,10 +60,11 @@ class frequencyResponseAnalysisNode():
         self.sub = rospy.Subscriber("/march/joint_states", JointState, callback=self.get_measurements)
         
         # main loop
-        while not rospy.is_shutdown() and len(self.effort) <= self.desired_data_points - 1:
+        while not rospy.is_shutdown() and len(self.effort) <= self.desired_data_points:
             
             # Generate gaussian white noise (gnw)
             feedforward = self.gaussian_white_noise()
+            self.noise = feedforward
 
             # Fill the message data
             self.msg.data[self.joint_index] = feedforward
@@ -98,9 +100,9 @@ class frequencyResponseAnalysisNode():
     def estimate_frf(self):
         
         # Set input output data
+        # min_len = min(len(self.position), len(self.effort))
         yN = self.position
         uN = self.effort
-        assert(len(yN) == len(uN))
 
         # Define general parameters
         Tf = 0.02 #s
@@ -109,12 +111,13 @@ class frequencyResponseAnalysisNode():
         win_width = 25
         hamming_win = np.hamming(win_width)
         num_slices = int(len(yN) // win_width)
+        num_data_points = num_slices * win_width
 
         # Create slices of the input output data and apply the hamming window
-        yN_slices = np.reshape(self.position, (num_slices, win_width))
+        yN_slices = np.reshape(yN[:num_data_points], (num_slices, win_width))
         yN_slices = (yN_slices * hamming_win).T
-        
-        uN_slices = np.reshape(self.effort, (num_slices, win_width))
+
+        uN_slices = np.reshape(uN[:num_data_points], (num_slices, win_width))
         uN_slices = (uN_slices * hamming_win).T
 
         # Calculate the DFT and FRF
@@ -155,7 +158,7 @@ class frequencyResponseAnalysisNode():
         # Save FRA measurement data
         rospy.loginfo("Saving the measurement data")
         np.savez_compressed(f"frf_measurements_{self.joint_names[self.joint_index]}_{timestamp}", 
-            position=self.position, velocity=self.velocity, effort=self.effort)
+            position=self.position, velocity=self.velocity, effort=self.effort, noise=self.effort)
 
     def shutdown_node_processes(self):
 
