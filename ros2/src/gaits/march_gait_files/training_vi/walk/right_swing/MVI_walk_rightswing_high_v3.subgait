@@ -1,4 +1,4 @@
-description: MVI_walk_v9 but faster.
+description: 'The MVI_walk_v3 high rightswing with the v2 HAA movements. '
 duration: 1300000000
 gait_type: walk_like
 joints:
@@ -10,22 +10,31 @@ joints:
     time_from_start: 1300000000
     velocity: 0.0
   left_hip_aa:
-  - position: 0.0349
+  - position: 0.0
     time_from_start: 0
-    velocity: 0.0
-  - position: 0.0349
+    velocity: -0.0
+  - position: -0.0611
+    time_from_start: 325000000
+    velocity: -0.1948
+  - position: -0.0611
+    time_from_start: 975000000
+    velocity: 0.1948
+  - position: 0.0
     time_from_start: 1300000000
     velocity: 0.0
   left_hip_fe:
-  - position: -0.1745
+  - position: 0.3752
     time_from_start: 0
-    velocity: 0.0
-  - position: -0.1658
+    velocity: -0.32
+  - position: -0.1396
     time_from_start: 1300000000
     velocity: 0.0
   left_knee:
-  - position: 0.0
+  - position: 0.1396
     time_from_start: 0
+    velocity: 0.0
+  - position: 0.2094
+    time_from_start: 260000000
     velocity: 0.0
   - position: 0.1396
     time_from_start: 884000000
@@ -37,34 +46,46 @@ joints:
   - position: 0.0
     time_from_start: 0
     velocity: 0.0
+  - position: -0.1396
+    time_from_start: 195000000
+    velocity: 0.0
+  - position: 0.0
+    time_from_start: 595800000
+    velocity: 0.0
   - position: 0.0
     time_from_start: 1300000000
     velocity: 0.0
   right_hip_aa:
-  - position: 0.0349
+  - position: 0.0
     time_from_start: 0
+    velocity: -0.0
+  - position: 0.0873
+    time_from_start: 650000000
     velocity: 0.0
-  - position: 0.0349
+  - position: 0.0
     time_from_start: 1300000000
     velocity: 0.0
   right_hip_fe:
-  - position: -0.1745
+  - position: -0.1396
     time_from_start: 0
     velocity: 0.0
-  - position: 0.6109
-    time_from_start: 780000000
-    velocity: 0.1396
-  - position: 0.3142
+  - position: 0.7916
+    time_from_start: 750000000
+    velocity: 0.0
+  - position: 0.3752
     time_from_start: 1300000000
     velocity: -0.32
   right_knee:
-  - position: 0.0
+  - position: 0.1396
     time_from_start: 0
     velocity: 0.0
-  - position: 0.8727
-    time_from_start: 693300000
+  - position: 1.309
+    time_from_start: 546000000
+    velocity: 0.0
+  - position: 1.2741
+    time_from_start: 724000000
     velocity: 0.0
   - position: 0.1396
     time_from_start: 1300000000
     velocity: 0.0
-name: right_open
+name: right_swing
