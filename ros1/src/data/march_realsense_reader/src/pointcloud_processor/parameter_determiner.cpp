@@ -219,7 +219,7 @@ bool HullParameterDeterminer::getObstacleInformation()
             return getOptimalFootLocation();
             break;
         }
-     case RealSenseCategory::ramp_down:
+        case RealSenseCategory::ramp_down:
         case RealSenseCategory::ramp_up: {
             return getRampSlope();
             break;
@@ -336,7 +336,7 @@ void HullParameterDeterminer::addDebugGaitInformation()
             }
             break;
         }
-    case RealSenseCategory::sit: {
+        case RealSenseCategory::sit: {
             geometry_msgs::Point marker_point;
             marker_point.y = sit_pos_y;
             marker_point.x = sit_pos_x;

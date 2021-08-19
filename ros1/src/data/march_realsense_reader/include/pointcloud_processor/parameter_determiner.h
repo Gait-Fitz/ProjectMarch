@@ -226,7 +226,7 @@ protected:
         const PointNormalCloud::Ptr& potential_exo_support_points,
         PointNormalCloud::Ptr& exo_support_points);
 
-  // Updates the gait information limits after calling a transform to the
+    // Updates the gait information limits after calling a transform to the
     // fixed frame
     bool transformGaitInformation();
 
@@ -271,7 +271,7 @@ protected:
     float minimal_needed_support_sit {};
     bool general_most_desirable_location_is_mid {};
     bool general_most_desirable_location_is_small {};
-    float sit_height
+    float sit_height;
     float ramp_slope {};
 
     std::string subgait_name_;
