@@ -385,7 +385,6 @@ class GaitVersionToolView(QWidget):
         ):
             return
 
-<<<<<<< HEAD
         parameters = self._parametric_same_versions_pop_up.parameters
         all_selected_versions = (
             self._parametric_same_versions_pop_up.all_selected_versions
@@ -399,29 +398,7 @@ class GaitVersionToolView(QWidget):
             ]
             for subgait in self.available_gaits[self.current_gait]
         }
-=======
-        subgaits = self.available_gaits[gait_name]
-        selected_versions = {}
-        for subgait, versions in subgaits.items():
-
-            subgait_no_underscores = subgait.replace("_", "")
-            regex_string = f"{prefix}(_?{gait_name})?_({subgait}|{subgait_no_underscores})_{postfix}"
-            pattern = re.compile(regex_string)
-
-            version_is_found = False
-            for version_name in versions:
-                match = pattern.match(version_name)
-                if match is not None:
-                    selected_versions[subgait] = version_name
-                    version_is_found = True
-
-            if not version_is_found:
-                self._log(
-                    f"Unable to find a matching version for subgait {subgait}",
-                    LogLevel.WARNING,
-                )
->>>>>>> 1088-improve-sedygas-continues-stair-gaits
-
+        
         for subgait_label, subgait_menu in zip(
             self._subgait_labels, self._subgait_menus
         ):
