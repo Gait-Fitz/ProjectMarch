@@ -455,6 +455,27 @@ bool HullParameterDeterminer::transformGaitInformation()
 
             break;
         }
+        case RealSenseCategory::curb_up:
+        case RealSenseCategory::curb_down: {
+            point = point_utilities::makePointXYZ(
+                (min_curb_search + max_curb_search) / 2.0F, y_deviation_foot,
+                min_curb_height);
+            gait_information_cloud->push_back(point);
+            point = point_utilities::makePointXYZ(
+                (min_curb_search + max_curb_search) / 2.0F, y_deviation_foot,
+                max_curb_height);
+            gait_information_cloud->push_back(point);
+
+            // Transform to the fixed frame
+            transformer_->transformPointCloud(gait_information_cloud);
+
+            // Update gait dimensions as seen from fixed frame
+            min_curb_height_world = gait_information_cloud->points[0].z;
+            max_curb_height_world = gait_information_cloud->points[1].z;
+            curb_position_x = gait_information_cloud->points[0].x;
+            curb_position_y = gait_information_cloud->points[0].y;
+            break;
+        }
 
         case RealSenseCategory::sit: {
             point = point_utilities::makePointXYZ(
