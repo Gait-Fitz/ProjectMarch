@@ -24,8 +24,10 @@ def generate_launch_description():
     imu_to_use = LaunchConfiguration("imu_to_use")
     imu_topic = LaunchConfiguration("imu_topic")
     simulation = LaunchConfiguration("simulation")
+    jointless = LaunchConfiguration("jointless")
 
     # Simulation arguments
+    realsense = LaunchConfiguration("realsense")
     realsense_simulation = LaunchConfiguration("realsense_simulation")
     to_world_transform = LaunchConfiguration("to_world_transform")
 
@@ -63,7 +65,7 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 name="layout",
-                default_value="default",
+                default_value="training",
                 description="Input device layout .json file to use.",
             ),
             DeclareLaunchArgument(
@@ -88,13 +90,18 @@ def generate_launch_description():
                 "This file must be available in the march_desrciption/urdf/ folder",
             ),
             DeclareLaunchArgument(
-                name="realsense_simulation",
+                name="realsense",
                 default_value="True",
+                description="Whether any realsense camera will be used",
+            ),
+            DeclareLaunchArgument(
+                name="realsense_simulation",
+                default_value=realsense,
                 description="Whether the simulation camera or the physical camera should be used",
             ),
             DeclareLaunchArgument(
                 name="ground_gait",
-                default_value="False",
+                default_value=realsense,
                 description="Whether the simulation should be simulating "
                 "ground_gaiting instead of airgaiting.",
             ),
@@ -107,7 +114,7 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 name="use_imu_data",
-                default_value="False",
+                default_value=realsense,
                 description="Whether to use the camera imu to know the real "
                 "orientation of the exoskeleton",
             ),
@@ -159,6 +166,11 @@ def generate_launch_description():
                 default_value="0.004",
                 description="",
             ),
+            DeclareLaunchArgument(
+                "jointless",
+                default_value="False",
+                description="If true, no joints will be actuated",
+            ),
             # FAKE SENSOR DATA ARGUMENTS
             DeclareLaunchArgument(
                 name="fake_sensor_data",
@@ -196,6 +208,7 @@ def generate_launch_description():
                     ("imu_to_use", imu_to_use),
                     ("robot_description", robot_description),
                     ("ground_gait", ground_gait),
+                    ("realsense", realsense),
                     ("realsense_simulation", realsense_simulation),
                     ("to_world_transform", to_world_transform),
                     ("gait_package", gait_package),
@@ -208,6 +221,7 @@ def generate_launch_description():
                     ("minimum_fake_temperature", minimum_fake_temperature),
                     ("maximum_fake_temperature", maximum_fake_temperature),
                     ("simulation", simulation),
+                    ("jointlesss", jointless),
                 ],
             ),
         ]

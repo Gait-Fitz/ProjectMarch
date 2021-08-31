@@ -23,11 +23,13 @@ def generate_launch_description():
     use_imu_data = LaunchConfiguration("use_imu_data")
     imu_topic = LaunchConfiguration("imu_topic")
     simulation = LaunchConfiguration("simulation")
+    jointless = LaunchConfiguration("jointless")
 
     # HUD arguments
     use_hud = LaunchConfiguration("use_hud")
 
-    # Simulation arguments
+    # RealSense/simulation arguments
+    realsense = LaunchConfiguration("realsense")
     ground_gait = LaunchConfiguration("ground_gait")
     realsense_simulation = LaunchConfiguration("realsense_simulation")
     to_world_transform = LaunchConfiguration("to_world_transform")
@@ -66,7 +68,7 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 name="layout",
-                default_value="default",
+                default_value="training",
                 description="Input device layout .json file to use.",
             ),
             DeclareLaunchArgument(
@@ -91,6 +93,12 @@ def generate_launch_description():
                 "This file must be available in the march_desrciption/urdf/ folder",
             ),
             DeclareLaunchArgument(
+                name="realsense",
+                default_value="True",
+                description="Whether to start up everything for working with the "
+                "realsense",
+            ),
+            DeclareLaunchArgument(
                 name="realsense_simulation",
                 default_value="False",
                 description="Whether the simulation camera or the physical camera should be used",
@@ -102,7 +110,7 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 name="use_imu_data",
-                default_value="False",
+                default_value=realsense,
                 description="Whether to use the camera imu to know the real "
                 "orientation of the exoskeleton",
             ),
@@ -123,6 +131,11 @@ def generate_launch_description():
                 description="Whether a transform from the world to base_link is "
                 "necessary, this is the case when you are "
                 "groundgaiting.",
+            ),
+            DeclareLaunchArgument(
+                "jointless",
+                default_value="False",
+                description="If true, no joints will be actuated",
             ),
             DeclareLaunchArgument(
                 name="imu_topic",
@@ -219,6 +232,7 @@ def generate_launch_description():
                     ("use_imu_data", use_imu_data),
                     ("imu_topic", imu_topic),
                     ("simulation", simulation),
+                    ("jointless", jointless),
                 ],
                 condition=IfCondition(robot_state_publisher),
             ),
