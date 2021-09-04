@@ -154,7 +154,7 @@ bool MarchHardwareInterface::init(
             joint_effort_feedforward.end(), 0.0);
         joint_effort_feedforward_sub
             = nh.subscribe<std_msgs::Float32MultiArray>(
-                "/march/joint_effort_feedforward", 10,
+                "/march/joint_effort_feedforward", /*queue_size=*/10,
                 &MarchHardwareInterface::setFeedforwardEffort, this);
     }
 
