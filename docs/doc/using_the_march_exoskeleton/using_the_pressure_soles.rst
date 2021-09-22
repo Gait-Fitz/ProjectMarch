@@ -1,6 +1,6 @@
 .. _using-the-pressure-soles-label:
 
-Using the pressure soles
+Using the pressure soles (Outdated)
 ========================
 At March we currently use the `Moticon <https://www.moticon.de/>`_ pressure soles. Live reading of the data from the pressure soles is very cumbersome. You need the following things:
 
