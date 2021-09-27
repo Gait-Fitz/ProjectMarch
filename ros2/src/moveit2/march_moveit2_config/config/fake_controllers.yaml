@@ -1,0 +1,19 @@
+controller_list:
+  - name: fake_chain_controller
+    type: $(arg execution_type)
+    joints:
+      - left_ankle
+      - left_knee
+      - left_hip
+      - right_hip
+      - right_knee
+      - right_ankle
+  - name: fake_right_foot_controller
+    type: $(arg execution_type)
+    joints:
+      - right_ankle
+initial:  # Define initial robot poses.
+#  - group: chain
+#    pose: home
+
+  []
