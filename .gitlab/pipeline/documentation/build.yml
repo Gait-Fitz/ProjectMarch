@@ -19,18 +19,18 @@ Sphinx build:
   needs:
     - job: "sphinx container build"
       optional: true
-  rules:
-    # The first three rules are only relevant when the Dockerfile has changed, because
-    # it defines the correct TAG
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      changes:
-        - $DOCKER_FILE
-      variables:
-        TAG: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      changes:
-        - "ros1/src/**/README.md"
-        - "ros2/src/**/README.md"
+#  rules:
+#    # The first three rules are only relevant when the Dockerfile has changed, because
+#    # it defines the correct TAG
+#    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+#      changes:
+#        - $DOCKER_FILE
+#      variables:
+#        TAG: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+#    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+#      changes:
+#        - "ros1/src/**/README.md"
+#        - "ros2/src/**/README.md"
 
 # Run a separate pipeline if we are merged into main.
 # This will actually publish the files to docs.projectmarch.nl
