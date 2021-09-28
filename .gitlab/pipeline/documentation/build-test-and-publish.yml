@@ -52,6 +52,9 @@ pages:
   script:
     - echo 'Publishing pages...'
     - mv docs/build/ public/
+  enviroment:
+    name: docs
+    url: https://docs.projectmarch.nl
   artifacts:
     paths:
       - public
