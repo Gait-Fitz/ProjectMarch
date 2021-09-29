@@ -132,7 +132,7 @@ void RealSenseReader::readConfigCb(
     hull_finder_->readParameters(config);
 }
 
-// This method extracts the highest point from a pointcloud
+// This method executes the logic to process a pointcloud
 void RealSenseReader::processPointcloud(const PointCloud::Ptr& pointcloud,
     march_shared_msgs::GetGaitParameters::Response& res)
 {
