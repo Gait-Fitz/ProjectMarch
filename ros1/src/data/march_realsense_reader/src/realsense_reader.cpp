@@ -11,10 +11,12 @@
 #include <pointcloud_processor/parameter_determiner.h>
 #include <pointcloud_processor/preprocessor.h>
 #include <pointcloud_processor/region_creator.h>
+#include <pointcloud_processor/highest_point_finder.h>
 #include <ros/console.h>
 #include <ros/ros.h>
 
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
+using PointXYZ = pcl::PointXYZ;
 using Normals = pcl::PointCloud<pcl::Normal>;
 using PointsVector = std::vector<PointCloud::Ptr>;
 using NormalsVector = std::vector<Normals::Ptr>;
@@ -130,7 +132,7 @@ void RealSenseReader::readConfigCb(
     hull_finder_->readParameters(config);
 }
 
-// This method executes the logic to process a pointcloud
+// This method extracts the highest point from a pointcloud
 void RealSenseReader::processPointcloud(const PointCloud::Ptr& pointcloud,
     march_shared_msgs::GetGaitParameters::Response& res)
 {
@@ -252,6 +254,16 @@ void RealSenseReader::processPointcloud(const PointCloud::Ptr& pointcloud,
     // Returning false means that the service was not able to respond at all,
     // this causes problems with the bridge, therefore always return true!
     return;
+}
+
+void RealSenseReader::findHighestPoint(const PointCloud::Ptr& pointcloud,
+    march_shared_msgs::GetGaitParameters::Response& res)
+{
+    Normals::Ptr normals = boost::make_shared<Normals>();
+    auto realsense_category = (RealSenseCategory)realsense_category_;
+    HighestPointFinder highestPointFinder = HighestPointFinder();
+    highestPointFinder.findHighestPoint(pointcloud, normals,      realsense_category, frame_id_to_transform_to_);
+    highest_point_ = highestPointFinder.highest_point_;
 }
 
 // Publish a pointcloud of any point type on a publisher
@@ -399,6 +411,11 @@ bool RealSenseReader::processPointcloudCallback(
     pcl::fromROSMsg(*input_cloud, converted_cloud);
     PointCloud::Ptr point_cloud
         = boost::make_shared<PointCloud>(converted_cloud);
+
+    findHighestPoint(point_cloud, res);
+    ROS_DEBUG_STREAM("Highest point in current point cloud is: ("
+        << highest_point_.x << ", " << highest_point_.y << ", " <<
+        highest_point_.z << ")" << std::endl);
 
     clock_t start_of_processing_time = clock();
 

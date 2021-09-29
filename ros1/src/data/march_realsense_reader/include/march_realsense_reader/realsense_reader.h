@@ -18,6 +18,7 @@
 #include <march_realsense_reader/pointcloud_parametersConfig.h>
 
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
+using PointXYZ = pcl::PointXYZ;
 
 class RealSenseReader {
 public:
@@ -30,6 +31,10 @@ public:
      */
     void processPointcloud(const PointCloud::Ptr& input_cloud,
         march_shared_msgs::GetGaitParameters::Response& res);
+
+    /** Takes the pointcloud and extracts the highest point */
+    void findHighestPoint(const PointCloud::Ptr& input_cloud,
+        march_shared_msgs::GetGaitParameters::Response& res);  
 
     /** A callback that starts the entire pointcloud processing when the
      * /camera/process_pointcloud service is called.
@@ -82,6 +87,8 @@ public:
 
 private:
     PointCloud last_pointcloud_;
+
+    PointXYZ highest_point_;
 
     ros::NodeHandle* n_;
 
