@@ -26,6 +26,9 @@ void ComControllerPlugin::Load(
     model_ = _parent;
     controller_ = std::make_unique<WalkController>(model_);
 
+    //Initialize paramter to turn on and off balance support
+    ros::param::set("correct_balance", true);
+
     // Listen to the update event. This event is broadcast every
     // simulation iteration.
     update_connection_ = event::Events::ConnectWorldUpdateBegin(
@@ -86,11 +89,18 @@ void ComControllerPlugin::onUpdate()
 
     controller_->update(torque_left, torque_right);
 
-    for (auto const& link : model_->GetLinks()) {
-        if (link->GetName().find(/*__s=*/"left") != std::string::npos) {
-            link->AddTorque(torque_left);
-        } else if (link->GetName().find(/*__s=*/"right") != std::string::npos) {
-            link->AddTorque(torque_right);
+    //Check if balance_correction is on or off:
+    bool correct_balance;
+    ros::param::get("/correct_balance", correct_balance);
+
+    //Perform balance correction if it is on:
+    if (correct_balance){
+        for (auto const& link : model_->GetLinks()) {
+            if (link->GetName().find(/*__s=*/"left") != std::string::npos) {
+                link->AddTorque(torque_left);
+            } else if (link->GetName().find(/*__s=*/"right") != std::string::npos) {
+                link->AddTorque(torque_right);
+            }
         }
     }
 }
