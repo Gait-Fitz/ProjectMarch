@@ -107,6 +107,7 @@ private:
     ros::Publisher hull_ground_pointcloud_publisher_;
     ros::Publisher hull_parameter_determiner_publisher_;
     ros::Publisher pointcloud_publisher_;
+    ros::Publisher highest_point_publisher_;
 
     // Debugging flag at launch
     bool debugging_launch;
@@ -123,5 +124,5 @@ private:
     int realsense_category_;
     bool use_left_foot_;
 };
-
+    
 #endif // MARCH_REALSENSE_READER_HPP

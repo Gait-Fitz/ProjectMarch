@@ -14,6 +14,8 @@
 #include <pointcloud_processor/highest_point_finder.h>
 #include <ros/console.h>
 #include <ros/ros.h>
+#include "std_msgs/String.h"
+#include <sstream>
 
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
 using PointXYZ = pcl::PointXYZ;
@@ -104,6 +106,9 @@ RealSenseReader::RealSenseReader(ros::NodeHandle* n)
             = n_->advertise<visualization_msgs::MarkerArray>(
                 "/camera/foot_locations_marker_array", /*queue_size=*/1);
     }
+
+    highest_point_publisher_ = n_->advertise<std_msgs::String>(
+        "/camera/highest_point", 1000);
 }
 
 void RealSenseReader::readConfigCb(
@@ -413,6 +418,13 @@ bool RealSenseReader::processPointcloudCallback(
         = boost::make_shared<PointCloud>(converted_cloud);
 
     findHighestPoint(point_cloud, res);
+
+    std_msgs::String msg;
+    std::stringstream ss;
+    ss << "(" << highest_point_.x << ", " << highest_point_.y << ", " << highest_point_.z << ")";
+    msg.data = ss.str();
+    highest_point_publisher_.publish(msg);
+
     ROS_DEBUG_STREAM("Highest point in current point cloud is: ("
         << highest_point_.x << ", " << highest_point_.y << ", " <<
         highest_point_.z << ")" << std::endl);
