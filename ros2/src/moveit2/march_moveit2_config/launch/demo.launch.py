@@ -69,7 +69,7 @@ def generate_launch_description():
 
     # Trajectory Execution Functionality
     moveit_simple_controllers_yaml = load_yaml(
-        "march_moveit2_config", "config/ros_controllers.yaml"
+        "march_moveit2_config", "config/controllers.yaml"
     )
     moveit_controllers = {
         "moveit_simple_controller_manager": moveit_simple_controllers_yaml,
@@ -100,6 +100,9 @@ def generate_launch_description():
             robot_description_semantic,
             kinematics_yaml,
             ompl_planning_pipeline_config,
+            trajectory_execution,
+            moveit_controllers,
+            planning_scene_monitor_parameters,
         ],
     )
 
@@ -138,8 +141,8 @@ def generate_launch_description():
         parameters=[robot_description],
     )
 
-    # ros2_control using FakeSystem as hardware
-    ros2_controllers_path = os.path.join(
+    # Start the ROS controller manager node:
+    ros2_controller_manager_yaml = os.path.join(
         get_package_share_directory("march_moveit2_config"),
         "config",
         "ros_controllers.yaml",
@@ -147,17 +150,28 @@ def generate_launch_description():
     ros2_control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[robot_description, ros2_controllers_path],
+        parameters=[robot_description, ros2_controller_manager_yaml],
         output={
             "stdout": "screen",
             "stderr": "screen",
         },
     )
 
+    # Load controllers:
+    load_controllers = []
+    for controller in ["joint_trajectory_controller", "joint_state_broadcaster"]:
+        load_controllers += [
+            ExecuteProcess(
+                cmd=["ros2 run controller_manager spawner.py {}".format(controller)],
+                shell=True,
+                output="screen",
+            )
+        ]
+
     return LaunchDescription([
-        rviz_node,                  #required to start Rviz
-        #static_tf,
-        run_move_group_node,        #required for planning
-        robot_state_publisher,      #required to let Rviz know the robot frames
-        #ros2_control_node,
-    ])
+        rviz_node,  # start rviz
+        static_tf,  # makes a link between first link and world
+        run_move_group_node,  # start move_group, required for planning
+        robot_state_publisher,  # start state_publisher, required to let rviz know robot state
+        ros2_control_node,  # start ros control_manager
+    ] + load_controllers)   # load all controllers in the load_controllers list

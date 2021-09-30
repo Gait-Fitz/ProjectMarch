@@ -175,4 +175,46 @@
         <limit effort="20" lower="-0.75" upper="0.5" velocity="1" />
     </joint>
 
+    <ros2_control name="FakeSystem" type="system">
+        <hardware>
+            <plugin>fake_components/GenericSystem</plugin>
+        </hardware>
+        <joint name="left_ankle">
+            <param name="initial_position">0.0</param>
+            <command_interface name="position"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+        <joint name="left_knee">
+            <param name="initial_position">0.0</param>
+            <command_interface name="position"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+        <joint name="left_hip">
+            <param name="initial_position">0.0</param>
+            <command_interface name="position"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+        <joint name="right_hip">
+            <param name="initial_position">0.0</param>
+            <command_interface name="position"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+        <joint name="right_knee">
+            <param name="initial_position">0.0</param>
+            <command_interface name="position"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+        <joint name="right_ankle">
+            <param name="initial_position">0.0</param>
+            <command_interface name="position"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+    </ros2_control>
+
 </robot>

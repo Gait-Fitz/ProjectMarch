@@ -1,0 +1,14 @@
+controller_names:
+  - joint_trajectory_controller
+
+joint_trajectory_controller:
+  action_ns: follow_joint_trajectory
+  type: FollowJointTrajectory
+  default: true
+  joints:
+    - left_ankle
+    - left_knee
+    - left_hip
+    - right_hip
+    - right_knee
+    - right_ankle
