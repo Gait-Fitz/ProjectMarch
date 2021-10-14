@@ -9,7 +9,7 @@ from march_utility.gait.edge_position import (
     EdgePosition, 
     StaticEdgePosition,
     DynamicEdgePosition, 
-    UnknownEdgePosition
+    UnknownEdgePosition,
 )
 
 
