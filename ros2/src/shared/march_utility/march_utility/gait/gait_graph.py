@@ -5,9 +5,12 @@ from march_gait_selection.state_machine.gait_state_machine_error import (
     GaitStateMachineError,
 )
 from march_gait_selection.gaits.home_gait import HomeGait
-from march_utility.gait.edge_position import DynamicEdgePosition
-
-from .edge_position import EdgePosition, StaticEdgePosition, UnknownEdgePosition
+from march_utility.gait.edge_position import (
+    EdgePosition, 
+    StaticEdgePosition,
+    DynamicEdgePosition, 
+    UnknownEdgePosition
+)
 
 
 class GaitGraph:
@@ -85,7 +88,7 @@ class GaitGraph:
         Then the final position is checked, and a transition from the gait name
         to the final position is added.
         """
-        for gait in self._gait_selection._gaits.values():
+        for gait in self._gait_selection.gaits.values():
             if (gait.starting_position not in self._named_positions) and isinstance(
                 gait.starting_position, StaticEdgePosition
             ):
