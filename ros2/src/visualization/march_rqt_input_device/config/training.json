@@ -29,6 +29,9 @@
     },
     {
       "name": "walk_single_step_large"
+    },
+    {
+      "name": "balanced_walk"
     }
   ],
   [
