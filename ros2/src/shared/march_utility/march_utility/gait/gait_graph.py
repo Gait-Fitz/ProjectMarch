@@ -6,9 +6,9 @@ from march_gait_selection.state_machine.gait_state_machine_error import (
 )
 from march_gait_selection.gaits.home_gait import HomeGait
 from march_utility.gait.edge_position import (
-    EdgePosition, 
+    EdgePosition,
     StaticEdgePosition,
-    DynamicEdgePosition, 
+    DynamicEdgePosition,
     UnknownEdgePosition,
 )
 
