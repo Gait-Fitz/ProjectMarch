@@ -3,6 +3,8 @@ from copy import deepcopy
 from math import sqrt
 from typing import Tuple
 
+import numpy as np
+
 from geometry_msgs.msg import Point, Pose
 from march_data_collector.inverted_pendulum import InvertedPendulum
 import rospy
@@ -89,6 +91,23 @@ class CPCalculator:
         self._center_of_mass = deepcopy(updated_center_of_mass.pose.position)
         self._prev_t = current_time
 
+    def rotation_matrix_from_vectors(self, vec1, vec2):
+        """ Find the rotation matrix that aligns vec1 to vec2
+        :param vec1: A 3d "source" vector
+        :param vec2: A 3d "destination" vector
+        :return mat: A transform matrix (3x3) which when applied to vec1, aligns it with vec2.
+        """
+        a, b = (
+            (vec1 / np.linalg.norm(vec1)).reshape(3),
+            (vec2 / np.linalg.norm(vec2)).reshape(3),
+        )
+        v = np.cross(a, b)
+        c = np.dot(a, b)
+        s = np.linalg.norm(v)
+        kmat = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
+        rotation_matrix = np.eye(3) + kmat + kmat.dot(kmat) * ((1 - c) / (s ** 2))
+        return rotation_matrix
+
     def _calculate_capture_point(self, duration: float) -> Tuple[float, Pose]:
         """Calculate a future capture point pose using the inverted pendulum and center of mass.
 
@@ -119,6 +138,24 @@ class CPCalculator:
                 capture_point_duration,
             )
 
+            # make vectors for easy maths
+            curr_com = np.array(
+                [
+                    self._center_of_mass.x - static_foot_position.x,
+                    self._center_of_mass.y - static_foot_position.y,
+                    self._center_of_mass.z - static_foot_position.z,
+                ]
+            )  # [x,y,z] relative to foot_pos
+            new_com = np.array(
+                [
+                    new_center_of_mass["x"],
+                    new_center_of_mass["y"],
+                    new_center_of_mass["z"],
+                ]
+            )
+
+            rotation_matrix = self.rotation_matrix_from_vectors(new_com, curr_com)
+
             if new_center_of_mass["z"] <= 0:
                 rospy.loginfo_throttle(
                     1, "Cannot calculate capture point; z of new center of mass <= 0"
@@ -138,10 +175,21 @@ class CPCalculator:
                 + new_center_of_mass["vy"] * capture_point_multiplier
             )
 
+            # make vector for easy maths
+            cp = np.array([x_cp, y_cp, 0])
+            rotated_cp = rotation_matrix.dot(cp)
+
             self._capture_point_marker.header.stamp = rospy.get_rostime()
-            self._capture_point_marker.pose.position.x = x_cp + static_foot_position.x
-            self._capture_point_marker.pose.position.y = y_cp + static_foot_position.y
-            self._capture_point_marker.pose.position.z = 0
+            # self._capture_point_marker.pose.position.x = x_cp + static_foot_position.x
+            self._capture_point_marker.pose.position.x = (
+                rotated_cp[0] + static_foot_position.x
+            )
+            # self._capture_point_marker.pose.position.y = y_cp + static_foot_position.y
+            self._capture_point_marker.pose.position.y = (
+                rotated_cp[1] + static_foot_position.y
+            )
+            # self._capture_point_marker.pose.position.z = 0
+            self._capture_point_marker.pose.position.z = rotated_cp[2]
 
             self.cp_publisher.publish(self._capture_point_marker)
         except tf2_ros.TransformException as e:
