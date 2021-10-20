@@ -81,18 +81,19 @@ bool NormalsPreprocessor::preprocess(PointCloud::Ptr pointcloud,
     bool success = true;
 
     success &= downsample();
-
+    clock_t fin_ds = clock();
     // Filter on distance before the transform to be able to find points close
     // the camera and remove them
     success &= filterOnDistanceFromOrigin();
+    clock_t fin_fodfo = clock();
 
     geometry_msgs::TransformStamped transform_stamped;
     success &= transformPointCloudFromUrdf(transform_stamped);
-
+    clock_t fin_tpcfu = clock();
     // Fill normal cloud after transformation so the normals do not have to be
     // transformed
     success &= fillNormalCloud(transform_stamped);
-
+    clock_t fin_fnc = clock();
     success &= filterOnNormalOrientation();
 
     clock_t end_preprocess = clock();
@@ -105,7 +106,31 @@ bool NormalsPreprocessor::preprocess(PointCloud::Ptr pointcloud,
             << pointcloud_normals_->points.size());
         return false;
     }
-
+    double ds_time
+        = double(fin_ds - start_preprocess) / double(CLOCKS_PER_SEC);
+    ROS_DEBUG_STREAM("Time taken by downsampling is : "
+        << std::fixed << ds_time << std::setprecision(5) << " sec "
+        << std::endl);
+    double fodfo_time
+        = double(fin_fodfo - fin_ds) / double(CLOCKS_PER_SEC);
+    ROS_DEBUG_STREAM("Time taken by filterOnDistanceFromOrigin is : "
+        << std::fixed << fodfo_time << std::setprecision(5) << " sec "
+        << std::endl);
+    double tpcfu_time
+        = double(fin_tpcfu - fin_fodfo) / double(CLOCKS_PER_SEC);
+    ROS_DEBUG_STREAM("Time taken by transformPointCloudFromUrdf is : "
+        << std::fixed << tpcfu_time << std::setprecision(5) << " sec "
+        << std::endl);
+    double fnc_time
+        = double(fin_fnc - fin_tpcfu) / double(CLOCKS_PER_SEC);
+    ROS_DEBUG_STREAM("Time taken by fillNormalCloud is : "
+        << std::fixed << fnc_time << std::setprecision(5) << " sec "
+        << std::endl);
+    double fono_time
+        = double(end_preprocess - fin_fnc) / double(CLOCKS_PER_SEC);
+    ROS_DEBUG_STREAM("Time taken by filterOnNormalOrientation is : "
+        << std::fixed << fono_time << std::setprecision(5) << " sec "
+        << std::endl);
     double time_taken
         = double(end_preprocess - start_preprocess) / double(CLOCKS_PER_SEC);
     ROS_DEBUG_STREAM("Time taken by pointcloud pre-processor is : "

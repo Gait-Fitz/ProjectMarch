@@ -396,7 +396,9 @@ bool RealSenseReader::processPointcloudCallback(
         return true;
     }
     PointCloud converted_cloud;
+    clock_t fromROSMsg_start = clock();
     pcl::fromROSMsg(*input_cloud, converted_cloud);
+    clock_t fromROSMsg_mid = clock();
     PointCloud::Ptr point_cloud
         = boost::make_shared<PointCloud>(converted_cloud);
 
@@ -405,6 +407,20 @@ bool RealSenseReader::processPointcloudCallback(
     processPointcloud(point_cloud, res);
 
     clock_t end_of_processing_time = clock();
+
+    double fromROSMsg_time
+        = double(fromROSMsg_mid - fromROSMsg_start)
+        / double(CLOCKS_PER_SEC);
+    ROS_DEBUG_STREAM("Time taken by fromROSMsg is : "
+        << std::fixed << fromROSMsg_time << std::setprecision(5)
+        << " sec " << std::endl);
+
+    double make_shared_time
+        = double(start_of_processing_time - fromROSMsg_mid)
+        / double(CLOCKS_PER_SEC);
+    ROS_DEBUG_STREAM("Time taken by point cloud processor is : "
+        << std::fixed << time_taken_by_processing << std::setprecision(5)
+        << " sec " << std::endl);
 
     double time_taken_by_processing
         = double(end_of_processing_time - start_of_processing_time)
