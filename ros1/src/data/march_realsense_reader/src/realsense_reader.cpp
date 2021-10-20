@@ -419,7 +419,7 @@ bool RealSenseReader::processPointcloudCallback(
         = double(start_of_processing_time - fromROSMsg_mid)
         / double(CLOCKS_PER_SEC);
     ROS_DEBUG_STREAM("Time taken by point cloud processor is : "
-        << std::fixed << time_taken_by_processing << std::setprecision(5)
+        << std::fixed << make_shared_time << std::setprecision(5)
         << " sec " << std::endl);
 
     double time_taken_by_processing
