@@ -1,0 +1,9 @@
+stages:
+  - work A
+
+worker a:
+  stage: work A
+  script:
+    - echo "Hello, this is var a --> $VAR_A"
+  rules:
+    - if: $TAG

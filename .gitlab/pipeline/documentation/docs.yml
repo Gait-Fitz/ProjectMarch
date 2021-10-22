@@ -6,7 +6,7 @@
 Build, test and publish documentation:
   stage: Documentation
   trigger:
-    include: ".gitlab/pipeline/documentation/docs-build-test-and-publish.yml"
+    include: ".gitlab/pipeline/documentation/child.yml"
     strategy: depend
   variables:
     DOCKER_FILE: ".gitlab/dockerfiles/sphinx"
@@ -28,7 +28,11 @@ Build, test and publish documentation:
     #       otherwise the server would send out to many GET requests.
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       changes:
-        - $DOCKER_FILE
+        - "tmp.txt"
+      variables:
+        VAR_A: "111111111111111"
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
         - "ros1/src/**/README.md"
         - "ros2/src/**/README.md"
         - "docs/**/*" # To check if any file in the docs folder has changed.
