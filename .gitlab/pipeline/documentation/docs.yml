@@ -34,5 +34,3 @@ Build, test and publish documentation:
         - "docs/**/*" # To check if any file in the docs folder has changed.
       variables:
         HTMLPROOFER_ARGS: "--checks-to-ignore LinkCheck"
-        TAG: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
-        VAR_B: "111111111111111"
