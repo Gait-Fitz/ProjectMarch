@@ -6,7 +6,7 @@
 Build, test and publish documentation:
   stage: Documentation
   trigger:
-    include: ".gitlab/pipeline/documentation/child.yml"
+    include: ".gitlab/pipeline/documentation/docs-build-test-and-publish.yml"
     strategy: depend
   variables:
     DOCKER_FILE: ".gitlab/dockerfiles/sphinx"
@@ -26,11 +26,6 @@ Build, test and publish documentation:
     # we want to Build and HTMLPROOF, but not publish.
     # Note: We do not run the LinkCheck alive until it is actually published because,
     #       otherwise the server would send out to many GET requests.
-#    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-#      changes:
-#        - "tmp.txt"
-#      variables:
-#        VAR_A: "111111111111111"
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       changes:
         - "tmp.txt"

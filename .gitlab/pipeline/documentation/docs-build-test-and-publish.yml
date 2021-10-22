@@ -38,6 +38,9 @@ Sphinx HTML proofer:
   needs:
     - job: "Sphinx build"
       artifacts: true
+  environment:
+    name: docs
+    url: https://docs.projectmarch.nl/
   script:
     # This runs "htmlproofer", a tool that checks whether the generated HTML has certain properties, such as
     #   - a valid favicon
