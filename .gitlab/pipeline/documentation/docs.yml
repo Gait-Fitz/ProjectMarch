@@ -33,9 +33,11 @@ Build, test and publish documentation:
         VAR_A: "111111111111111"
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       changes:
+        - "tmp.txt"
         - "ros1/src/**/README.md"
         - "ros2/src/**/README.md"
         - "docs/**/*" # To check if any file in the docs folder has changed.
       variables:
         HTMLPROOFER_ARGS: "--checks-to-ignore LinkCheck"
         TAG: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+        VAR_B: "111111111111111"
