@@ -211,12 +211,14 @@ class JointTrajectory:
 
         time, position, velocity = self.get_setpoints_unzipped()
         yi = []
+        acceleration = [0.0 for i in range(len(time))] 
+
         for i in range(len(time)):
-            yi.append([position[i], velocity[i]])
+            yi.append([position[i], velocity[i], acceleration[i]])
 
         # We do a cubic spline here, like the ros joint_trajectory_action_controller,
         # https://wiki.ros.org/robot_mechanism_controllers/JointTrajectoryActionController
-        self.interpolated_position = BPoly.from_derivatives(time, yi)
+        self.interpolated_position = BPoly.from_derivatives(time, yi, 4)
         self.interpolated_velocity = self.interpolated_position.derivative()
 
     def get_interpolated_setpoint(self, time: Duration) -> Setpoint:
