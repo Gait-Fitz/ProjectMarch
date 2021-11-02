@@ -204,7 +204,8 @@ class GaitGraph:
                 s += f"\t{self._named_positions[position]} - {gait}\n"
         s += "Gait transitions:\n"
         for gait, position in self._gait_transitions.items():
-            if isinstance(position, DynamicEdgePosition):
+            # DynamicEdgePosition is not a predetermined position thus it is not part of _named_positions.
+            if isinstance(position, DynamicEdgePosition): 
                 s += f"\t{gait} - DynamicEdgePosition\n"
             else:
                 s += f"\t{gait} - {self._named_positions[position]}\n"
