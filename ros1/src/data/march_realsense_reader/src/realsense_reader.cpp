@@ -396,9 +396,9 @@ bool RealSenseReader::processPointcloudCallback(
         return true;
     }
     PointCloud converted_cloud;
-    pcl::fromROSMsg(*input_cloud, converted_cloud);
     PointCloud::Ptr point_cloud
         = boost::make_shared<PointCloud>(converted_cloud);
+    pcl::fromROSMsg(*input_cloud, *point_cloud);
 
     clock_t start_of_processing_time = clock();
 
