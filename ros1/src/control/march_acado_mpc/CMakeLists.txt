@@ -42,7 +42,8 @@ catkin_package(
 # is downloaded in the _deps/acado-solver-src folder in the build directory.
 fetchcontent_declare(acado-solver
     GIT_REPOSITORY "https://gitlab.com/project-march/libraries/acado-solver.git"
-    GIT_TAG "main"
+#    GIT_TAG "main"
+    GIT_TAG "20-make-model-for-rotational-testjoint"
     GIT_SHALLOW true
 )
 if(NOT acado-solver_POPULATED)
@@ -56,7 +57,8 @@ endif()
 #           march6_simulation_uncoupled
 #           test_joint_rotational,
 #           test_joint_linear
-set(MODEL_NAME haa_airgait)
+#           test_joint_rotational_Willemijn
+set(MODEL_NAME test_joint_rotational_Willemijn)
 
 
 # Define a variable that points to the location of the chosen ACADO model_export directory. This

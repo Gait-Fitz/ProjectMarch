@@ -1,0 +1,39 @@
+march:
+  controller:
+    pdb_state:
+      type: march_pdb_state_controller/MarchPdbStateController
+      publish_rate: 50
+    joint_state:
+      type: joint_state_controller/JointStateController
+      publish_rate: 250
+    temperature_sensor:
+      type: march_temperature_sensor_controller/MarchTemperatureSensorController
+      publish_rate: 1
+    trajectory:
+      type: model_predictive_trajectory_controller/JointTrajectoryController
+      N: 20
+      joints:
+        - rotational_joint
+
+      mpc_joints:
+        - rotational_joint
+
+      # Controller tuning parameters
+      # Q and R are the weights on the states and inputs of the system respectively
+      # The parameters represent the values on the diagonal of the MPC weighting matrix
+      # Both parameters are required for each joint
+      weights:
+        rotational_joint:
+          Q: [ 100.0, 1.0 ]
+          R: [ 0.01 ]
+
+      gains:
+        rotational_joint: {p: 60, i: 0, d: 5, i_clamp: 100, publish_state: true, antiwindup: true}
+
+      constraints:
+        goal_time: 0.5
+        rotational_joint:
+          stopped_velocity_tolerance: 0.1
+          margin_soft_limit_error: 0.5
+          goal: 0.5
+          trajectory: 0.5
