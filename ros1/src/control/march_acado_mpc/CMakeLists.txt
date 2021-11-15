@@ -57,8 +57,8 @@ endif()
 #           march6_simulation_uncoupled
 #           test_joint_rotational,
 #           test_joint_linear
-#           test_joint_rotational_Willemijn
-set(MODEL_NAME test_joint_rotational_Willemijn)
+#           test_joint_rotational_MPC
+set(MODEL_NAME test_joint_rotational_MPC)
 
 
 # Define a variable that points to the location of the chosen ACADO model_export directory. This
