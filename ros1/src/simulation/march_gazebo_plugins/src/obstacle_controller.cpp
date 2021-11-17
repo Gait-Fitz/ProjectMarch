@@ -125,8 +125,8 @@ void ObstacleController::update(
     // roll, pitch and yaw are defined in
     // https://docs.projectmarch.nl/doc/march_packages/march_simulation.html#torque-application
     // turn (bodge) off plug-in at right time when balance is set to true
-    if (balance_ == true && subgait_name_ != HOME_STAND
-        && subgait_name_ != STAND_IDLE) {
+    if (balance_ == true && !(subgait_name_ == HOME_STAND || subgait_name_ == "right_open_1" ||
+        subgait_name_ == STAND_IDLE)) {
         p_pitch_actual = p_pitch_balance_;
         p_roll_actual = p_roll_balance_;
         p_yaw_actual = p_yaw_balance_;
