@@ -32,7 +32,7 @@
     <!-- Add yaml files with properties -->
     <xacro:property name="config_yaml_file"
                     value="properties/test_joints.yaml"/>
-    <xacro:property name="properties" value="${load_yaml(config_yaml_file)}"/>
+    <xacro:property name="properties" value="${xacro.load_yaml(config_yaml_file)}"/>
     <xacro:property name="joint_limits" value="${properties['joint_limits']}"/>
     <xacro:property name="safety_values"
                     value="${properties['safety'][configuration]}"/>
