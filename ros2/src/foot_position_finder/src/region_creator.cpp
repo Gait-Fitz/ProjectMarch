@@ -22,12 +22,12 @@ RegionCreator::RegionCreator(PointCloud::Ptr pointcloud, NormalCloud::Ptr normal
 
 SeedRegionGrower::SeedRegionGrower(PointCloud::Ptr pointcloud, NormalCloud::Ptr normalcloud)
     : RegionCreator(pointcloud, normalcloud)
-    , queue_ {}
-    , checked_ {}
     , indices_(pointcloud->points.size())
     , dotproducts_(pointcloud->points.size())
+    , queue_ {}
+    , checked_ {}
 {
-    for (auto i = 0; i < pointcloud->points.size(); i++)
+    for (std::size_t i = 0; i < pointcloud->points.size(); i++)
     {
         indices_[i] = i;
     }
@@ -40,8 +40,8 @@ bool SeedRegionGrower::createRegions(boost::shared_ptr<IndicesVector> regions)
     return true;
 }
 
-bool SeedRegionGrower::growRegionsWithSeeds(int minimum_points_in_region,
-                                            int num_neirest_neighbours,   
+bool SeedRegionGrower::growRegionsWithSeeds(unsigned int minimum_points_in_region,
+                                            unsigned int num_neirest_neighbours,   
                                             boost::shared_ptr<IndicesVector> regions)
 {
     int current_index;
@@ -104,7 +104,7 @@ bool SeedRegionGrower::growRegionsWithSeeds(int minimum_points_in_region,
 
 bool SeedRegionGrower::computeDotProducts()
 {
-    for (auto i = 0; i < normalcloud_->points.size(); i++)
+    for (std::size_t i = 0; i < normalcloud_->points.size(); i++)
     {
         dotproducts_[i] = std::abs(linalg::dotProductNormal(z_unit, normalcloud_->points[i]));
     }

@@ -27,6 +27,4 @@ target_link_libraries(${PROJECT_NAME} CGAL::CGAL)
 target_link_libraries(${PROJECT_NAME} ${realsense2_LIBRARY})
 
 
-
-
 set(default_build_type "Release")
