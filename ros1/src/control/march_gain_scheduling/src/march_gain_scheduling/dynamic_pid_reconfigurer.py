@@ -33,6 +33,7 @@ class DynamicPIDReconfigurer:
         rospy.loginfo(
             f"Exoskeleton was started with gain tuning for " f"{self._configuration}"
         )
+        print("hello")
 
     def gait_selection_callback(self, msg):
         new_gait_type = msg.gait_type
