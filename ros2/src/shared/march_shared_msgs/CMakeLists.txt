@@ -71,6 +71,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/GetGaitParameters.srv"
   "srv/GetMoveItTrajectory.srv"
   "srv/GetJointNames.srv"
+  "srv/SolveInverseKinematic.srv"
   DEPENDENCIES std_msgs builtin_interfaces geometry_msgs rosgraph_msgs
         trajectory_msgs control_msgs actionlib_msgs sensor_msgs
  )

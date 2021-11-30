@@ -3,7 +3,7 @@ from march_utility.gait.setpoint import Setpoint
 from march_utility.utilities.duration import Duration
 from trajectory_msgs import msg as trajectory_msg
 import numpy as np
-from ik_solver import solve_ik
+from march_goniometric_ik_solver.ik_solver import solve_ik
 
 
 class DynamicSubgait:
@@ -55,7 +55,8 @@ class DynamicSubgait:
         """Calls IK solver to compute setpoint from CoViD location.
         Position is defined in centimeters and takes two argurments:
         forward distance and height. Ankle RoM should be given in degrees"""
-        self.desired_position = solve_ik(position, ankle_rom)
+        self.desired_position = solve_ik(20)
+        print(self.desired_position)
         if self.swing_leg == "left":
             self.desired_position.reverse()
 
