@@ -301,5 +301,5 @@ def solve_ik(
 
     pose.insert(3, np.rad2deg(0.03))
     pose.insert(4, np.rad2deg(0.03))
-    pose_rad = [np.deg2rad(angle) for angle in pose]
-    return pose_rad
+
+    return [np.deg2rad(angle) for angle in pose]
