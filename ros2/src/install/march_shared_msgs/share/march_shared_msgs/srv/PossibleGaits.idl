@@ -1,0 +1,15 @@
+// generated from rosidl_adapter/resource/srv.idl.em
+// with input from march_shared_msgs/srv/PossibleGaits.srv
+// generated code does not contain a copyright notice
+
+
+module march_shared_msgs {
+  module srv {
+    struct PossibleGaits_Request {
+      uint8 structure_needs_at_least_one_member;
+    };
+    struct PossibleGaits_Response {
+      sequence<string> gaits;
+    };
+  };
+};

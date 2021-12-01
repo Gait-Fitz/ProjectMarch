@@ -1,0 +1,34 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from march_shared_msgs/msg/GaitInstruction.msg
+// generated code does not contain a copyright notice
+
+#include "std_msgs/msg/Header.idl"
+
+module march_shared_msgs {
+  module msg {
+    module GaitInstruction_Constants {
+      const int8 UNKNOWN = -1;
+      const int8 STOP = 0;
+      const int8 GAIT = 1;
+      const int8 PAUSE = 2;
+      const int8 CONTINUE = 3;
+      const int8 INCREMENT_STEP_SIZE = 4;
+      const int8 DECREMENT_STEP_SIZE = 5;
+    };
+    struct GaitInstruction {
+      std_msgs::msg::Header header;
+
+      @verbatim (language="comment", text=
+        " The type of instruction.")
+      int8 type;
+
+      @verbatim (language="comment", text=
+        " If the type is a GAIT this is the name of the gait.")
+      string gait_name;
+
+      @verbatim (language="comment", text=
+        " Unique identifier for the input device sending this message. See `Alive`.")
+      string id;
+    };
+  };
+};

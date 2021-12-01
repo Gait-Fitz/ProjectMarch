@@ -1,0 +1,22 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from march_shared_msgs/msg/FollowJointTrajectoryFeedback.msg
+// generated code does not contain a copyright notice
+
+#include "std_msgs/msg/Header.idl"
+#include "trajectory_msgs/msg/JointTrajectoryPoint.idl"
+
+module march_shared_msgs {
+  module msg {
+    struct FollowJointTrajectoryFeedback {
+      std_msgs::msg::Header header;
+
+      sequence<string> joint_names;
+
+      trajectory_msgs::msg::JointTrajectoryPoint desired;
+
+      trajectory_msgs::msg::JointTrajectoryPoint actual;
+
+      trajectory_msgs::msg::JointTrajectoryPoint error;
+    };
+  };
+};

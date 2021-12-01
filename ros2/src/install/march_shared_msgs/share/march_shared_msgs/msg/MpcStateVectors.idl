@@ -1,0 +1,15 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from march_shared_msgs/msg/MpcStateVectors.msg
+// generated code does not contain a copyright notice
+
+#include "march_shared_msgs/msg/MpcArray.idl"
+
+module march_shared_msgs {
+  module msg {
+    struct MpcStateVectors {
+      sequence<march_shared_msgs::msg::MpcArray> states;
+
+      sequence<march_shared_msgs::msg::MpcArray> inputs;
+    };
+  };
+};

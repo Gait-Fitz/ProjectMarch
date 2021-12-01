@@ -1,0 +1,2 @@
+string gait
+string[] subgaits

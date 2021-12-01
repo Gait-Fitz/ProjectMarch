@@ -1,0 +1,19 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from march_shared_msgs/msg/AfterLimitJointCommand.msg
+// generated code does not contain a copyright notice
+
+#include "std_msgs/msg/Header.idl"
+
+module march_shared_msgs {
+  module msg {
+    struct AfterLimitJointCommand {
+      std_msgs::msg::Header header;
+
+      sequence<string> name;
+
+      sequence<double> position_command;
+
+      sequence<double> effort_command;
+    };
+  };
+};

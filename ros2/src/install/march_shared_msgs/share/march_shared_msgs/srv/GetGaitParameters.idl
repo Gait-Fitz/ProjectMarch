@@ -1,0 +1,44 @@
+// generated from rosidl_adapter/resource/srv.idl.em
+// with input from march_shared_msgs/srv/GetGaitParameters.srv
+// generated code does not contain a copyright notice
+
+#include "march_shared_msgs/msg/GaitParameters.idl"
+
+module march_shared_msgs {
+  module srv {
+    module GetGaitParameters_Request_Constants {
+      const uint8 STAIRS_UP = 0;
+      const uint8 STAIRS_DOWN = 1;
+      const uint8 RAMP_UP = 2;
+      const uint8 RAMP_DOWN = 3;
+      const uint8 SIT = 4;
+      const uint8 CURB_UP = 5;
+      const uint8 CURB_DOWN = 6;
+      const uint8 CAMERA_FRONT = 0;
+      const uint8 CAMERA_BACK = 1;
+      const uint8 TEST_CLOUD = 2;
+    };
+    @verbatim (language="comment", text=
+      " This enum is used for specifying the obstacle that should be dynamically" "\n"
+      " made with the RealSense camera. All supported obstacles should be" "\n"
+      " specified here")
+    struct GetGaitParameters_Request {
+      uint8 realsense_category;
+
+      uint8 camera_to_use;
+
+      string subgait_name;
+    };
+    @verbatim (language="comment", text=
+      " Whether a valid place to set the foot was found using the camera.")
+    struct GetGaitParameters_Response {
+      boolean success;
+
+      @verbatim (language="comment", text=
+        " If success is false, this string should provide more information as to what went wrong")
+      string error_message;
+
+      march_shared_msgs::msg::GaitParameters gait_parameters;
+    };
+  };
+};

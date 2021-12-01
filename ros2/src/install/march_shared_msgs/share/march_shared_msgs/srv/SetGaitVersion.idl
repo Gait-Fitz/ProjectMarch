@@ -1,0 +1,23 @@
+// generated from rosidl_adapter/resource/srv.idl.em
+// with input from march_shared_msgs/srv/SetGaitVersion.srv
+// generated code does not contain a copyright notice
+
+
+module march_shared_msgs {
+  module srv {
+    @verbatim (language="comment", text=
+      " Service for setting subgait versions of a gait.")
+    struct SetGaitVersion_Request {
+      string gait;
+
+      sequence<string> subgaits;
+
+      sequence<string> versions;
+    };
+    struct SetGaitVersion_Response {
+      boolean success;
+
+      string message;
+    };
+  };
+};

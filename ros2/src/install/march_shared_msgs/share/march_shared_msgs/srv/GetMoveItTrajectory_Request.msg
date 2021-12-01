@@ -1,0 +1,3 @@
+string swing_leg
+geometry_msgs/Pose swing_leg_target_pose
+sensor_msgs/JointState stance_leg_target

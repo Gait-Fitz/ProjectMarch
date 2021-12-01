@@ -1,0 +1,24 @@
+// generated from rosidl_adapter/resource/srv.idl.em
+// with input from march_shared_msgs/srv/GetMoveItTrajectory.srv
+// generated code does not contain a copyright notice
+
+#include "geometry_msgs/msg/Pose.idl"
+#include "sensor_msgs/msg/JointState.idl"
+#include "trajectory_msgs/msg/JointTrajectory.idl"
+
+module march_shared_msgs {
+  module srv {
+    struct GetMoveItTrajectory_Request {
+      string swing_leg;
+
+      geometry_msgs::msg::Pose swing_leg_target_pose;
+
+      sensor_msgs::msg::JointState stance_leg_target;
+    };
+    struct GetMoveItTrajectory_Response {
+      boolean success;
+
+      trajectory_msgs::msg::JointTrajectory trajectory;
+    };
+  };
+};

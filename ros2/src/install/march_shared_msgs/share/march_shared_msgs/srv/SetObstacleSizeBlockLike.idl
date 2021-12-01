@@ -1,0 +1,27 @@
+// generated from rosidl_adapter/resource/srv.idl.em
+// with input from march_shared_msgs/srv/SetObstacleSizeBlockLike.srv
+// generated code does not contain a copyright notice
+
+
+module march_shared_msgs {
+  module srv {
+    struct SetObstacleSizeBlockLike_Request {
+      string obstacle_name;
+
+      @verbatim (language="comment", text=
+        " 0 (default value) means default size will be used, this value is defined in the <obstacle>_macro.xacro file")
+      double new_height;
+
+      @verbatim (language="comment", text=
+        " 0 (default value)")
+      double new_width;
+
+      @verbatim (language="comment", text=
+        " 0 (default value)")
+      double new_length;
+    };
+    struct SetObstacleSizeBlockLike_Response {
+      boolean success;
+    };
+  };
+};

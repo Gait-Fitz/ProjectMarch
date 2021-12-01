@@ -1,0 +1,25 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from march_shared_msgs/msg/CurrentState.msg
+// generated code does not contain a copyright notice
+
+#include "std_msgs/msg/Header.idl"
+
+module march_shared_msgs {
+  module msg {
+    module CurrentState_Constants {
+      const int8 IDLE = 0;
+      const int8 GAIT = 1;
+    };
+    struct CurrentState {
+      std_msgs::msg::Header header;
+
+      @verbatim (language="comment", text=
+        " Name of the current state")
+      string state;
+
+      @verbatim (language="comment", text=
+        " Type of the current state. Can be either of the constants below")
+      int8 state_type;
+    };
+  };
+};

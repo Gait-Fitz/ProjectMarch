@@ -1,0 +1,39 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from march_shared_msgs/msg/GaitParameters.msg
+// generated code does not contain a copyright notice
+
+
+module march_shared_msgs {
+  module msg {
+    @verbatim (language="comment", text=
+      " The response should give the parameters that can be used for any" "\n"
+      " parametric gait see https://confluence.projectmarch.nl:8443/display/62tech/Obstacles+analysis" "\n"
+      " for more explanation about the range of heights and step sizes")
+    struct GaitParameters {
+      @verbatim (language="comment", text=
+        " Parameter that is used for the first interpolation, between 0 and 1" "\n"
+        "" "\n"
+        " Stairs: Determines step size, min depth is 20 cm, max is ? cm" "\n"
+        " Ramp: Determines gradient, min gradient is 5 degrees, max is  20 degrees")
+      double first_parameter;
+
+      @verbatim (language="comment", text=
+        " Parameter that is used for the second interpolation, if obstacle is done with 2D" "\n"
+        " interpolation." "\n"
+        "" "\n"
+        " Stairs: Determines the step height, min height is 12 cm, max height is 22 cm" "\n"
+        " Ramp: Not used for the ramp gait, since this is currently in 1D")
+      double second_parameter;
+
+      @verbatim (language="comment", text=
+        " Parameter that influences the amount the step should go sideways (using HAA mostly)" "\n"
+        " for the step chosen by the realsense, between 0 and 1, where 0 is regular angle and 1" "\n"
+        " is maximal sideways step for this obstacle. Currently, we have not implemented" "\n"
+        " this in the gaits yet." "\n"
+        "" "\n"
+        " Stairs: Not used yet, should always be 0" "\n"
+        " Ramp: Not used yet, should always be 0")
+      double side_step_parameter;
+    };
+  };
+};

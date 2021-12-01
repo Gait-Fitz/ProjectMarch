@@ -1,0 +1,19 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from march_shared_msgs/msg/FollowJointTrajectoryActionGoal.msg
+// generated code does not contain a copyright notice
+
+#include "actionlib_msgs/msg/GoalID.idl"
+#include "march_shared_msgs/msg/FollowJointTrajectoryGoal.idl"
+#include "std_msgs/msg/Header.idl"
+
+module march_shared_msgs {
+  module msg {
+    struct FollowJointTrajectoryActionGoal {
+      std_msgs::msg::Header header;
+
+      actionlib_msgs::msg::GoalID goal_id;
+
+      march_shared_msgs::msg::FollowJointTrajectoryGoal goal;
+    };
+  };
+};

@@ -1,0 +1,16 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from march_shared_msgs/msg/MpcTuning.msg
+// generated code does not contain a copyright notice
+
+
+module march_shared_msgs {
+  module msg {
+    struct MpcTuning {
+      sequence<float> q_weights;
+
+      sequence<float> r_weights;
+
+      int32 horizon;
+    };
+  };
+};

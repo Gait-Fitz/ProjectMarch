@@ -1,0 +1,41 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from march_shared_msgs/msg/MotorControllerState.msg
+// generated code does not contain a copyright notice
+
+#include "std_msgs/msg/Header.idl"
+
+module march_shared_msgs {
+  module msg {
+    struct MotorControllerState {
+      std_msgs::msg::Header header;
+
+      sequence<string> joint_names;
+
+      sequence<string> error_status;
+
+      sequence<string> operational_state;
+
+      sequence<float> motor_current;
+
+      sequence<float> motor_voltage;
+
+      sequence<float> temperature;
+
+      sequence<float> absolute_position_iu;
+
+      sequence<float> incremental_position_iu;
+
+      sequence<float> absolute_velocity_iu;
+
+      sequence<float> incremental_velocity_iu;
+
+      sequence<float> absolute_position;
+
+      sequence<float> incremental_position;
+
+      sequence<float> absolute_velocity;
+
+      sequence<float> incremental_velocity;
+    };
+  };
+};

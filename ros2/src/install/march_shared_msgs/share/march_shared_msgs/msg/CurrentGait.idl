@@ -1,0 +1,34 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from march_shared_msgs/msg/CurrentGait.msg
+// generated code does not contain a copyright notice
+
+#include "builtin_interfaces/msg/Duration.idl"
+#include "std_msgs/msg/Header.idl"
+
+module march_shared_msgs {
+  module msg {
+    struct CurrentGait {
+      std_msgs::msg::Header header;
+
+      @verbatim (language="comment", text=
+        " Gait name that is executing")
+      string gait;
+
+      @verbatim (language="comment", text=
+        " Subgait name that is executing, if the gait has subgaits, else empty string")
+      string subgait;
+
+      @verbatim (language="comment", text=
+        " Optional version name of the gait/subgait")
+      string version;
+
+      @verbatim (language="comment", text=
+        " Optional duration of the gait/subgait")
+      builtin_interfaces::msg::Duration duration;
+
+      @verbatim (language="comment", text=
+        " Optional gait type name of the gait/subgait")
+      string gait_type;
+    };
+  };
+};

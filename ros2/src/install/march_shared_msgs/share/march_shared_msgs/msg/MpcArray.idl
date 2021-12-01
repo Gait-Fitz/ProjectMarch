@@ -1,0 +1,12 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from march_shared_msgs/msg/MpcArray.msg
+// generated code does not contain a copyright notice
+
+
+module march_shared_msgs {
+  module msg {
+    struct MpcArray {
+      sequence<double> array;
+    };
+  };
+};

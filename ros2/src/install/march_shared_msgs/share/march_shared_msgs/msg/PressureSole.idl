@@ -1,0 +1,30 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from march_shared_msgs/msg/PressureSole.msg
+// generated code does not contain a copyright notice
+
+#include "builtin_interfaces/msg/Time.idl"
+#include "std_msgs/msg/Header.idl"
+
+module march_shared_msgs {
+  module msg {
+    @verbatim (language="comment", text=
+      " belonging to filter in Moticon software: \"force pressure cop\"")
+    struct PressureSole {
+      std_msgs::msg::Header header;
+
+      builtin_interfaces::msg::Time pressure_soles_time;
+
+      float total_force_left;
+
+      float total_force_right;
+
+      sequence<float> pressure_left;
+
+      sequence<float> pressure_right;
+
+      sequence<float> cop_left;
+
+      sequence<float> cop_right;
+    };
+  };
+};
