@@ -30,7 +30,6 @@ find_package(control_msgs REQUIRED)
 find_package(actionlib_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 
-
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/AfterLimitJointCommand.msg"
   "msg/Alive.msg"
@@ -61,6 +60,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/MpcTuning.msg"
   "msg/MpcJoint.msg"
   "msg/MpcMsg.msg"
+  # "msg/JointValues.msg"
   "srv/CapturePointPose.srv"
   "srv/ContainsGait.srv"
   "srv/PublishTestDataset.srv"
@@ -71,6 +71,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/GetGaitParameters.srv"
   "srv/GetMoveItTrajectory.srv"
   "srv/GetJointNames.srv"
+  "srv/ChangeComLevel.srv"
+  "srv/GetPossibleComLevels.srv"
   DEPENDENCIES std_msgs builtin_interfaces geometry_msgs rosgraph_msgs
         trajectory_msgs control_msgs actionlib_msgs sensor_msgs
  )
@@ -78,5 +80,10 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 install(
   FILES mapping_rules.yaml
   DESTINATION share/${PROJECT_NAME})
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION include/${PROJECT_NAME}}
+  FILES_MATCHING PATTERN "*.h"
+  PATTERN ".svn" EXCLUDE)
 
 ament_package()
