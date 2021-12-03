@@ -80,4 +80,4 @@ services_2_to_1:
   - { service: '/march/gain_scheduling/get_configuration',
       type: 'std_srvs/Trigger' }
   - { service: '/rl/inverse_kinematic_solver',
-      type: 'march_shared_msgs/srv/SolveInverseKinematic' }
+      type: 'march_shared_msgs/SolveInverseKinematic' }
