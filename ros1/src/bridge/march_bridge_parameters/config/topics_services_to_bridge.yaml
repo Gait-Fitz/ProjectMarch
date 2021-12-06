@@ -81,3 +81,5 @@ services_2_to_1:
       type: 'std_srvs/Trigger' }
   - { service: '/rl/inverse_kinematic_solver',
       type: 'march_shared_msgs/SolveInverseKinematic' }
+  - { service: '/lr/inverse_kinematic_solver',
+      type: 'march_shared_msgs/SolveInverseKinematic' }
