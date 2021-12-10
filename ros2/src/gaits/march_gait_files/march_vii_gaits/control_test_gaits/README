@@ -1,0 +1,8 @@
+The files in this directory were taken from the airgait folder of MVI.
+The most appropriate gaits were chosen, for the considerations about the gaits, check the following confluence page:
+https://confluence.projectmarch.nl/display/72/System+Analysis+-+Testplan
+
+Only the gait 'individual_joints_test' was created by MVII, based on the following work of MV:
+https://confluence.projectmarch.nl/display/51/Joint+performance+test+gait
+
+For questions about these gaits, contact Willemijn Drenth or Helena Huijsmans
