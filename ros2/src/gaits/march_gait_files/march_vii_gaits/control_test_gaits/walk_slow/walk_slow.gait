@@ -1,4 +1,4 @@
-name: walk
+name: walk_slow
 subgaits:
   start:
     to: right_open

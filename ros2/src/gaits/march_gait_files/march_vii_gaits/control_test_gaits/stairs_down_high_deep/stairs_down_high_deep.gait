@@ -1,4 +1,4 @@
-name: stairs_down
+name: stairs_down_high_deep
 subgaits:
   start:
     to: right_open
