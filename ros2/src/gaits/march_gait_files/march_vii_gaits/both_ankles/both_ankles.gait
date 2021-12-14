@@ -1,0 +1,6 @@
+name: both_ankles
+subgaits:
+  start:
+    to: both_ankles_subgait
+  both_ankles_subgait:
+    to: end

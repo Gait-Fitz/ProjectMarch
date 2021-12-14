@@ -1,0 +1,6 @@
+name: both_legs_straight
+subgaits:
+  start:
+    to: both_legs_straight_subgait
+  both_legs_straight_subgait:
+    to: end

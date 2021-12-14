@@ -14,6 +14,7 @@ install(DIRECTORY
         training_vi
         test_joint_rotational_gaits
         test_joint_linear_gaits
+        march_vii_gaits
     DESTINATION share/${PROJECT_NAME}
 )
 

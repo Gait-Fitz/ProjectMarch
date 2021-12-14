@@ -1,0 +1,24 @@
+gaits:
+  both_knees:
+    both_knees_subgait: both_knees_v1
+  both_hips:
+    both_hips_subgait: both_hips_v1
+  both_legs_straight:
+    both_legs_straight_subgait: both_legs_straight_v1
+  both_ankles:
+    both_ankles_subgait: both_ankles_v1
+  both_hips_aa:
+    both_hips_aa_subgait: both_hips_aa_v1
+
+positions:
+  stand:
+    gait_type: walk_like
+    joints:
+      left_ankle: 0.0
+      left_hip_aa: 0.0
+      left_hip_fe: 0.0
+      left_knee: 0.0
+      right_ankle: 0.0
+      right_hip_aa: 0.0
+      right_hip_fe: 0.0
+      right_knee: 0.0

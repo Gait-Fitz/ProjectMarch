@@ -1,0 +1,79 @@
+description: Both ankles move from 0 to 8 deg in 3 sec en back in 3 sec
+duration: 6000000000
+gait_type: walk_like
+joints:
+  left_ankle:
+  - position: 0.0
+    time_from_start: 0
+    velocity: 0.0
+  - position: 0.1396
+    time_from_start: 3000000000
+    velocity: 0.0
+  - position: 0.0
+    time_from_start: 6000000000
+    velocity: 0.0
+  left_hip_aa:
+  - position: 0.0
+    time_from_start: 0
+    velocity: 0.0
+  - position: 0.0
+    time_from_start: 6000000000
+    velocity: 0.0
+  left_hip_fe:
+  - position: 0.0
+    time_from_start: 0
+    velocity: 0.0
+  - position: 0.0
+    time_from_start: 4500000000
+    velocity: 0.0
+  - position: 0.0
+    time_from_start: 6000000000
+    velocity: 0.0
+  left_knee:
+  - position: 0.0
+    time_from_start: 0
+    velocity: 0.0
+  - position: 0.0
+    time_from_start: 4500000000
+    velocity: 0.0
+  - position: 0.0
+    time_from_start: 6000000000
+    velocity: 0.0
+  right_ankle:
+  - position: 0.0
+    time_from_start: 0
+    velocity: 0.0
+  - position: 0.1396
+    time_from_start: 3000000000
+    velocity: 0.0
+  - position: 0.0
+    time_from_start: 6000000000
+    velocity: 0.0
+  right_hip_aa:
+  - position: 0.0
+    time_from_start: 0
+    velocity: 0.0
+  - position: 0.0
+    time_from_start: 6000000000
+    velocity: 0.0
+  right_hip_fe:
+  - position: 0.0
+    time_from_start: 0
+    velocity: 0.0
+  - position: 0.0
+    time_from_start: 4500000000
+    velocity: 0.0
+  - position: 0.0
+    time_from_start: 6000000000
+    velocity: 0.0
+  right_knee:
+  - position: 0.0
+    time_from_start: 0
+    velocity: 0.0
+  - position: 0.0
+    time_from_start: 4500000000
+    velocity: 0.0
+  - position: 0.0
+    time_from_start: 6000000000
+    velocity: 0.0
+name: both_ankles

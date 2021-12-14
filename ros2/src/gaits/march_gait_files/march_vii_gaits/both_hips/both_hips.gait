@@ -1,0 +1,6 @@
+name: both_hips
+subgaits:
+  start:
+    to: both_hips_subgait
+  both_hips_subgait:
+    to: end

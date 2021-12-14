@@ -1,0 +1,41 @@
+[
+  [
+    {
+      "name": "home_stand"
+    },
+    {
+      "name": "both_knees"
+    },
+    {
+      "name": "both_hips"
+    },
+    {
+      "name": "both_legs_straight"
+    }
+  ],
+  [
+    {
+      "name": "both_ankles"
+    },
+    {
+      "name": "both_hips_aa"
+    },
+    {
+      "name":"stop",
+      "callback":"publish_stop",
+      "always_enabled":true
+    },
+    {
+      "name":"error",
+      "callback":"publish_error",
+      "always_enabled":true
+    }
+  ],
+  [
+    {
+      "name":"force unknown",
+      "callback":"publish_sm_to_unknown",
+      "always_enabled":true
+    }
+  ]
+]
