@@ -431,8 +431,14 @@ class GaitSelection(Node):
                 gaits["balanced_walk"] = balance_gait
 
         if self._dynamic_gait:
-            dynamic_gait = DynamicSetpointGait()
-            gaits["dynamic_walk"] = dynamic_gait
+            self.get_logger().info(
+                f"{self._dynamic_subgait_duration}, {self._middle_point_fraction}, {self._middle_point_height}"
+            )
+            gaits["dynamic_walk"] = DynamicSetpointGait(
+                self._dynamic_subgait_duration,
+                self._middle_point_fraction,
+                self._middle_point_height,
+            )
             self.get_logger().info("Added dynamic_walk to gaits")
 
         return gaits

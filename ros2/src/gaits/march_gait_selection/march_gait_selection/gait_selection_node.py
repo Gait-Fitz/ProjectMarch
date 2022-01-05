@@ -71,6 +71,15 @@ def parameter_callback(gait_selection, gait_state_machine, parameters):
             if param.value < 0:
                 return SetParametersResult(successful=False)
             gait_selection._first_subgait_delay = Duration(seconds=param.value)
+        elif param.name == "dynamic_subgait_duration":
+            gait_selection._dynamic_subgait_duration = param.value
+            gaits_updated = True
+        elif param.name == "middle_point_fraction":
+            gait_selection._middle_point_fraction = param.value
+            gaits_updated = True
+        elif param.name == "middle_point_height":
+            gait_selection._middle_point_height = param.value
+            gaits_updated = True
         elif param.name == "gait_package" and param.type_ == Parameter.Type.STRING:
             gait_selection._gait_package = param.value
             gaits_updated = True
@@ -85,7 +94,9 @@ def parameter_callback(gait_selection, gait_state_machine, parameters):
 
     if gaits_updated:
         gait_selection.update_gaits()
-        gait_state_machine._generate_graph()
+        # updated_gait_selection = gait_selection.update_gaits()
+        # gait_state_machine.update_gait_selection(updated_gait_selection)
+        gait_state_machine._gait_graph.generate_graph()
         gait_selection.get_logger().info("Gaits were updated")
 
     return SetParametersResult(successful=True)

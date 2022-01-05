@@ -276,6 +276,10 @@ class DynamicSetpointGait(GaitInterface):
             subgait_duration = 1.5  # s
         mid_point_frac = 0.45
 
+        roslog.get_logger("gait_selection").info(
+            f"{self.dynamic_subgait_duration}, {self.middle_point_fraction}, {self.middle_point_height}"
+        )
+
         self.dynamic_subgait = DynamicSubgait(
             subgait_duration,
             mid_point_frac,
