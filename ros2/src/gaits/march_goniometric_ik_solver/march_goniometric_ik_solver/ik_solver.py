@@ -31,7 +31,6 @@ MAX_HIP_ADDUCTION = get_limits_robot_from_urdf_for_inverse_kinematics(
 
 # Constants:
 LENGTH_FOOT = 0.10  # m
-MIDDLE_POINT_HEIGHT = 0.15  # m
 
 ANKLE_ZERO_ANGLE = np.pi / 2  # rad
 KNEE_ZERO_ANGLE = np.pi  # rad
@@ -350,6 +349,7 @@ class Pose:
         ankle_y: float,
         ankle_z: float,
         midpoint_fraction: float,
+        midpoint_height: float,
         subgait_id: str,
         plot: bool = False,
     ):
@@ -366,7 +366,7 @@ class Pose:
         # Get swing distance in current pose and calculate ankle2 midpoint location:
         swing_distance = self.get_ankle_distance()
         midpoint_x = midpoint_fraction * (swing_distance + ankle_x) - swing_distance
-        midpoint_y = ankle_y + MIDDLE_POINT_HEIGHT
+        midpoint_y = ankle_y + midpoint_height
         pos_ankle2 = np.array([midpoint_x, midpoint_y])
 
         # Reset pose to zero_pose and calculate distance between hip and ankle2 midpoint location:
