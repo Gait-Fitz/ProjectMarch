@@ -40,6 +40,7 @@ class DynamicSubgait:
         joint_names,
         position_x,
         position_y,
+        position_z,
     ):
         self.middle_point_fraction = middle_point_fraction
         self.middle_point_height = middle_point_height
@@ -47,6 +48,7 @@ class DynamicSubgait:
         self.starting_position = starting_position
         self.position_x = position_x
         self.position_y = position_y
+        self.position_z = position_z
         self.joint_names = joint_names
         self.subgait_id = subgait_id
         self.pose = Pose()
@@ -60,6 +62,7 @@ class DynamicSubgait:
         middle_position = self.pose.solve_mid_position(
             self.position_x,
             self.position_y,
+            self.position_z,
             self.middle_point_fraction,
             self.middle_point_height,
             self.subgait_id,
@@ -81,7 +84,7 @@ class DynamicSubgait:
         :type position_y: float
         """
         self.desired_position = self.pose.solve_end_position(
-            self.position_x, self.position_y, self.subgait_id
+            self.position_x, self.position_y, self.position_z, self.subgait_id
         )
 
         self.desired_setpoint_dict = self._from_list_to_setpoint(

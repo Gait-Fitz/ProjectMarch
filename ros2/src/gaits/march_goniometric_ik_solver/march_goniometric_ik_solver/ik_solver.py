@@ -325,6 +325,8 @@ class Pose:
         ) * qas.get_angle_between_points([pos_knee1, pos_hip, point_below_hip])
 
     def perform_side_step(self, side_step: float):
+        print("performing side_step!")
+
         # determine side step distance per leg (assuming flat ground for now):
         dist_per_leg = side_step / 2 + LENGTH_HIP_AA
 
@@ -395,7 +397,7 @@ class Pose:
         # set hip_aa to average of current hip_aa and next hip_aa:
         if ankle_z != 0.0:
             next_pose = Pose()
-            next_pose.solve_end_position(ankle_x, ankle_y, subgait_id, ankle_z)
+            next_pose.solve_end_position(ankle_x, ankle_y, ankle_z, subgait_id)
             next_pose.perform_side_step(ankle_z)
             next_hip_aa = next_pose.aa_hip1
             self.aa_hip1 = self.aa_hip2 = (self.aa_hip1 + next_hip_aa) / 2

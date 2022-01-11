@@ -52,6 +52,7 @@ def generate_launch_description():
     # Fake covid
     location_x = LaunchConfiguration("location_x")
     location_y = LaunchConfiguration("location_y")
+    location_z = LaunchConfiguration("location_z")
 
     return launch.LaunchDescription(
         [
@@ -234,6 +235,11 @@ def generate_launch_description():
                 default_value="0.0",
                 description="y-location for fake covid topic",
             ),
+            DeclareLaunchArgument(
+                name="location_z",
+                default_value="0.0",
+                description="z-location for fake covid topic",
+            ),
             # Use normal launch file with different launch_arguments
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
@@ -276,6 +282,7 @@ def generate_launch_description():
                     ("jointlesss", jointless),
                     ("location_x", location_x),
                     ("location_y", location_y),
+                    ("location_z", location_z),
                 ],
             ),
         ]

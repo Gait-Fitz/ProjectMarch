@@ -22,6 +22,9 @@ class FakeCovidPublisher(Node):
         self.location_y = (
             self.get_parameter("location_y").get_parameter_value().double_value
         )
+        self.location_z = (
+            self.get_parameter("location_z").get_parameter_value().double_value
+        )
 
         self.left_foot_publisher = self.create_publisher(
             Point,
@@ -50,7 +53,7 @@ class FakeCovidPublisher(Node):
         else:
             point.y = self.location_y
 
-        point.z = 0.0
+        point.z = self.location_z
 
         self.left_foot_publisher.publish(point)
         self.right_foot_publisher.publish(point)
@@ -86,6 +89,9 @@ def parameter_callback(fake_covid_publisher, parameters):
                 fake_covid_publisher.random_y = False
                 fake_covid_publisher.location_y = param.value
                 fake_covid_publisher.get_logger().info(f"y set to {param.value}")
+        if param.name == "location_z":
+                fake_covid_publisher.location_z = param.value
+                fake_covid_publisher.get_logger().info(f"z set to {param.value}")
 
     return SetParametersResult(successful=True)
 

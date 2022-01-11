@@ -17,6 +17,11 @@ def generate_launch_description():
                 default_value="0.0",
                 description="y-location for fake covid topic",
             ),
+            DeclareLaunchArgument(
+                name="location_z",
+                default_value="0.0",
+                description="z-location for fake covid topic",
+            ),
             Node(
                 package="march_fake_covid",
                 executable="march_fake_covid",
@@ -26,6 +31,7 @@ def generate_launch_description():
                 parameters=[
                     {"location_x": LaunchConfiguration("location_x")},
                     {"location_y": LaunchConfiguration("location_y")},
+                    {"location_z": LaunchConfiguration("location_z")},
                 ],
                 on_exit=Shutdown(),
             ),
