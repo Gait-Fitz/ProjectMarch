@@ -10,16 +10,24 @@ from march_utility.utilities.utility_functions import (
     get_limits_robot_from_urdf_for_inverse_kinematics,
 )
 
-# Get leg lengths form urdf:
-(
-    LENGTH_UPPER_LEG,
-    LENGTH_LOWER_LEG,
-) = get_lengths_robot_from_urdf_for_inverse_kinematics()[0:2]
+# Get lengths from urdf:
+lengths = get_lengths_robot_from_urdf_for_inverse_kinematics()
+(LENGTH_UPPER_LEG, LENGTH_LOWER_LEG, LENGTH_HIP_AA, LENGTH_HIP_BASE,) = (
+    *lengths[0:3],
+    lengths[-1],
+)
 LENGTH_LEG = LENGTH_UPPER_LEG + LENGTH_LOWER_LEG
 
-# Get ankle limit from urdf:
-limits = get_limits_robot_from_urdf_for_inverse_kinematics("right_ankle")
-MAX_ANKLE_FLEXION = limits.upper
+# Get limits from urdf:
+MAX_ANKLE_FLEXION = get_limits_robot_from_urdf_for_inverse_kinematics(
+    "right_ankle"
+).upper
+MAX_HIP_ABDUCTION = get_limits_robot_from_urdf_for_inverse_kinematics(
+    "right_hip_aa"
+).upper
+MAX_HIP_ADDUCTION = get_limits_robot_from_urdf_for_inverse_kinematics(
+    "right_hip_aa"
+).lower
 
 # Constants:
 LENGTH_FOOT = 0.10  # m
@@ -61,7 +69,7 @@ class Pose:
         If a positive angle represents a clockwise rotation, the angle variable is positive in the rot function.
         If a positive angle represents a non-clockwise rotation, the angle variable is negative in the rot function.
         The vectors (all np.array's) do always describe the translation when no rotation is applied.
-        The rot_total matrix expands every step, since every joint location depends on all privious joint angles in the chain.
+        The rot_total matrix expands every step, since every joint location depends on all previous joint angles in the chain.
         """
         # create rotation matrix that we expand after every rotation:
         rot_total = self.rot(0)
@@ -317,6 +325,25 @@ class Pose:
             pos_knee1[0] - pos_hip[0]
         ) * qas.get_angle_between_points([pos_knee1, pos_hip, point_below_hip])
 
+    def perform_side_step(self, side_step: float):
+        # determine side step distance per leg (assuming flat ground for now):
+        dist_per_leg = side_step / 2 + LENGTH_HIP_AA
+
+        # determine vertical distance of leg pose:
+        dist_vertical = self.calculate_joint_positions("pos_hip")[1]
+
+        n = (dist_per_leg * LENGTH_HIP_AA) / (LENGTH_HIP_AA ** 2 + dist_vertical ** 2)
+        r_p1 = (dist_vertical ** 2 - dist_per_leg ** 2) / (
+            dist_vertical ** 2 + LENGTH_HIP_AA ** 2
+        )
+        r_p2 = (dist_per_leg ** 2 * LENGTH_HIP_AA ** 2) / (
+            (dist_vertical ** 2 + LENGTH_HIP_AA ** 2) ** 2
+        )
+
+        self.aa_hip1 = self.aa_hip2 = np.sign(side_step) * np.arccos(
+            n + np.sqrt(r_p1 + r_p2)
+        )
+
     def solve_mid_position(
         self,
         ankle_x: float,
@@ -329,7 +356,7 @@ class Pose:
         Solve inverse kinematics for the middle position. Assumes that the
         stance leg is straight. Takes the ankle_x and ankle_y position of the
         desired position and the midpoint_fraction at which a midpoint is desired.
-        First calculates the midpoint posituin using current pose and fraction.
+        First calculates the midpoint position using current pose and fraction.
         Next, calculates the required hip and knee angles of
         the swing leg by making a triangle between the swing leg ankle, swing leg
         knee and the hip. Returns the calculated pose.
