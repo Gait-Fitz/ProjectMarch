@@ -12,7 +12,7 @@ from march_utility.utilities.utility_functions import (
 
 # Get lengths from urdf:
 lengths = get_lengths_robot_from_urdf_for_inverse_kinematics()
-(LENGTH_UPPER_LEG, LENGTH_LOWER_LEG, LENGTH_HIP_AA, LENGTH_HIP_BASE,) = (
+(LENGTH_UPPER_LEG, LENGTH_LOWER_LEG, LENGTH_HIP_AA, LENGTH_HIP_BASE) = (
     *lengths[0:3],
     lengths[-1],
 )

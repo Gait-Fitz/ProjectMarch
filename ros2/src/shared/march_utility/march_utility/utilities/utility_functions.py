@@ -193,8 +193,7 @@ def get_lengths_robot_for_inverse_kinematics(side: Side = Side.both) -> List[flo
 
 
 def validate_and_get_joint_names_for_inverse_kinematics(
-    logger=None,
-    with_ankles: bool = False
+    logger=None, with_ankles: bool = False
 ) -> Optional[List[str]]:
     """Get a list of the joint names that can be used for the inverse kinematics.
 
