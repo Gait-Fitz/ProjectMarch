@@ -348,6 +348,7 @@ class Pose:
         self,
         ankle_x: float,
         ankle_y: float,
+        ankle_z: float,
         midpoint_fraction: float,
         subgait_id: str,
         plot: bool = False,
@@ -391,6 +392,14 @@ class Pose:
         # lift toes as much as possible:
         self.fe_ankle2 = MAX_ANKLE_FLEXION
 
+        # set hip_aa to average of current hip_aa and next hip_aa:
+        if ankle_z != 0.0:
+            next_pose = Pose()
+            next_pose.solve_end_position(ankle_x, ankle_y, subgait_id, ankle_z)
+            next_pose.perform_side_step(ankle_z)
+            next_hip_aa = next_pose.aa_hip1
+            self.aa_hip1 = self.aa_hip2 = (self.aa_hip1 + next_hip_aa) / 2
+
         if plot:
             self.make_plot()
 
@@ -407,6 +416,7 @@ class Pose:
         self,
         ankle_x: float,
         ankle_y: float,
+        ankle_z: float,
         subgait_id: str,
         max_ankle_flexion: float = MAX_ANKLE_FLEXION,
         plot: bool = False,
@@ -444,6 +454,10 @@ class Pose:
         # reduce dorsi flexion of stance leg if fe_ankle1 > MAX_ANKLE_FLEXION:
         if self.fe_ankle1 > MAX_ANKLE_FLEXION:
             self.reduce_stance_dorsi_flexion()
+
+        # add side step if ankle_z != 0:
+        if ankle_z != 0.0:
+            self.perform_side_step(ankle_z)
 
         if timer:
             end = time.time()
