@@ -1,0 +1,5 @@
+<library path="lib/libmarch_roscontrol_pid">
+    <class name="pid_trajectory_controller/JointTrajectoryController"
+           type="pid_trajectory_controller::JointTrajectoryController"
+           base_class_type="controller_interface::ControllerBase" />
+</library>
