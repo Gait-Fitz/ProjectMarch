@@ -33,17 +33,17 @@ class FakeCovidPublisher(Node):
             self.get_parameter("location_y").get_parameter_value().double_value
         )
 
-        self.left_foot_publisher = self.create_publisher(
-            msg_type=Point,
-            topic="/foot_position/left",
-            qos_profile=DEFAULT_HISTORY_DEPTH,
-        )
+        # self.left_foot_publisher = self.create_publisher(
+        #     msg_type=Point,
+        #     topic="/foot_position/left",
+        #     qos_profile=DEFAULT_HISTORY_DEPTH,
+        # )
 
-        self.right_foot_publisher = self.create_publisher(
-            msg_type=Point,
-            topic="/foot_position/right",
-            qos_profile=DEFAULT_HISTORY_DEPTH,
-        )
+        # self.right_foot_publisher = self.create_publisher(
+        #     msg_type=Point,
+        #     topic="/foot_position/right",
+        #     qos_profile=DEFAULT_HISTORY_DEPTH,
+        # )
 
         self.create_timer(0.1, self.publish_locations)
 
@@ -63,8 +63,8 @@ class FakeCovidPublisher(Node):
 
         point.z = 0.0
 
-        self.left_foot_publisher.publish(point)
-        self.right_foot_publisher.publish(point)
+        # self.left_foot_publisher.publish(point)
+        # self.right_foot_publisher.publish(point)
 
 
 def sys_exit(*_):
