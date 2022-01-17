@@ -91,9 +91,12 @@ To check how many CPU's you have available, run :code:`nproc --all`.
     alias set_uid_gid='export M_UID=$(id -u $USER) && export M_GID=$(id -g $USER)'
     alias march_clean_containers='docker rm ros1 ros2 bridge'
 
-    alias march_run='set_uid_gid && export ROS_DOCKER_START_TYPE=run && docker-compose -f "${MARCH_COMPOSE_FILE}" up'
+    alias march_run='set_uid_gid && export ROS_DOCKER_START_TYPE=run/sim && docker-compose -f "${MARCH_COMPOSE_FILE}" up'  # This starts the simulation.
     alias march_run_bash='set_uid_gid && export ROS_DOCKER_START_TYPE=bash && docker-compose -f "${MARCH_COMPOSE_FILE}" up'
     alias march_build='set_uid_gid && export ROS_DOCKER_START_TYPE=build && docker-compose -f "${MARCH_COMPOSE_FILE}" up'
+    alias march_run_airgait='set_uid_gid && export ROS_DOCKER_START_TYPE=run/airgait && docker-compose -f "${MARCH_COMPOSE_FILE}" up'
+    alias march_run_groundgait='set_uid_gid && export ROS_DOCKER_START_TYPE=run/groundgait && docker-compose -f "${MARCH_COMPOSE_FILE}" up'
+    alias march_run_training='set_uid_gid && export ROS_DOCKER_START_TYPE=run/training && docker-compose -f "${MARCH_COMPOSE_FILE}" up'
 
     alias march_docker_pull_ros1='ROS1_GIT="registry.gitlab.com/project-march/march/local:ros1" && cd ~/march/ && docker pull $ROS1_GIT && docker tag $ROS1_GIT ros1 && docker rmi $ROS1_GIT'
     alias march_docker_image_ros1='cd ~/march/ && docker build -f .docker_local/dockerfiles/noeticFull.Dockerfile -t ros1 .'
@@ -247,6 +250,11 @@ Now that everything is downloaded, you can run the ros code.
     march_run  # To run the entire march code. (ros1, ros2 and the bridge) (This also starts up the 3 containers / "environments")
     march_build  # To run build for all of march code (ros1, ros2 and the bridge)
     march_run_bash  # To start up all 3 ros containers / "environments".
+
+    # When using the exo: (note: ROS*_ARGS can overwrite the default args for the following modes, if they are the same).
+    march_run_airgait  # To run the entire march code with the exo in the stand.
+    march_run_groundgait  # To run the entire march code with groundgaiting.
+    march_run_training  # To run the entire march code with a pilot in the exo.
 
     # You can log into the ros environments with:
     march_ros1_bash
