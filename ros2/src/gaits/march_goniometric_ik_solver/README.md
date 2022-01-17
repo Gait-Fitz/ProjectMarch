@@ -125,11 +125,11 @@ Finally, we can define the other changed joint values as:
 
 <table><tr><td width=50%>
 
-[PLACEHOLDER TEXT]
+Reducing the dorsi-flexion of the swing leg in the previous step results in a bended knee of the rear leg. The higher the reduction was, the more knee1 is now bended. In this step we will straighten the rear leg again. After straightening we can define the triangle between the points $A_1, K_2, H$, with angles $\angle_{ankle1}, \angle_{knee2}, \angle_{hip}$. Since the locations of $A_1$ and $K_2$ do not change during this step, we know the lengths of all sides of the defined triangle, which means we can also calculate all angles. 
 
 </td><td width=50%>
 
-[PLACEHOLDER IMAGE]
+![straighten_leg](images/straighten_leg.svg "straighten_leg")
 
 </td></tr></table>
 
