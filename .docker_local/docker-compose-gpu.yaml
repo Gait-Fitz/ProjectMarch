@@ -60,6 +60,7 @@ services:
       - __GLX_VENDOR_LIBRARY_NAME=nvidia
       - ROS_MASTER_URI=http://ros1-service:11311
       - ROS_DOCKER_TYPE="ros1"
+      # All START_TYPE options are: "bash", "build", "run/sim", "run/airgait", "run/groundgait", and "run/training".
       - ROS_DOCKER_START_TYPE=${ROS_DOCKER_START_TYPE}
       - ROS_ARGS
       - ROS1_ARGS
@@ -81,6 +82,7 @@ services:
       - __GLX_VENDOR_LIBRARY_NAME=nvidia
       - ROS_MASTER_URI=http://ros1-service:11311
       - ROS_DOCKER_TYPE="ros2"
+      # All START_TYPE options are: "bash", "build", "run/sim", "run/airgait", "run/groundgait", and "run/training".
       - ROS_DOCKER_START_TYPE=${ROS_DOCKER_START_TYPE}
       - ROS_ARGS
       - ROS2_ARGS
@@ -101,6 +103,7 @@ services:
       - __GLX_VENDOR_LIBRARY_NAME=nvidia
       - ROS_MASTER_URI=http://ros1-service:11311
       - ROS_DOCKER_TYPE="bridge"
+      # All START_TYPE options are: "bash", "build", "run/sim", "run/airgait", "run/groundgait", and "run/training".
       - ROS_DOCKER_START_TYPE=${ROS_DOCKER_START_TYPE}
     working_dir: /home/${USER}/ros1_bridge
     ipc: host # The reason 'host' is chosen instead of the usual 'container:ros1' is so that the containers can run in isolation of each other.

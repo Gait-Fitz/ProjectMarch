@@ -8,7 +8,6 @@ source "${HOME}"/march/ros2/install/local_setup.bash
 source "${HOME}"/ros1_bridge/install/local_setup.bash
 
 
-
 while ! curl --silent --head "${ROS_MASTER_URI}"; do
   echo "Could not connect to roscore at ${ROS_MASTER_URI}, going to sleep for ${SLEEP_TIME}";
   sleep $SLEEP_TIME;
