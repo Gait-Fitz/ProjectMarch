@@ -81,11 +81,11 @@ Besides those three angles, we also need $`\angle O H A_2`$and $`\angle H A_2 T_
 
 After raising the foot to the desired location in the previous step, the dorsi-flexion limit of ankle2 might been exceeded. Therefore, we need to reduce the dorsi-flexion. We first calculate the required reduction as:
 
-$\text{reduction} = \text{fe}_{ankle2} - \text{MAX\_FLEXION}$
+$`\text{reduction} = \text{fe}_{ankle2} - \text{MAX\_FLEXION}`$
 
 Next, we can form the quadrilateral between $`H, K_2, A_2, K_1`$, with angles $`\angle_{hip}, \angle_{knee2}, \angle_{ankle2}, \angle_{knee2}`$. We can calculate the value of $`\angle_{ankle2}`$before reducing the dorsi-flexion. We also know the value we would like after reducing the dorsi_flexion:
 
-$\angle_{ankle2} = \angle_{ankle2,BEFORE} - \text{reduction}$
+$`\angle_{ankle2} = \angle_{ankle2,BEFORE} - \text{reduction}`$
 
 We know the lengths of all sides of the formed quadrilateral and now also the value of one angle $`(\angle_{ankle2})`$, which means that we can calculate the other three angles of the quadrilateral. There are two possible solutions, depending on whether the quadrilateral should be convex or concave. In this case, we want to have a convex quadrilateral. 
 
