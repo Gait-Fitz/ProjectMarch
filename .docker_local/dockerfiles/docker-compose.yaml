@@ -1,5 +1,0 @@
-services:
-  test:
-    stdin_open: true
-    image: docker/whalesay
-    command: ["cowsay", "hello"]
