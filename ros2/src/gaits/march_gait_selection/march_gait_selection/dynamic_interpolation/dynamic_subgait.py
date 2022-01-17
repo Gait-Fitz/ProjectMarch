@@ -63,8 +63,8 @@ class DynamicSubgait:
         :rtype: dict
         """
         middle_position = self.pose.solve_mid_position(
-            self.position.x,
-            self.position.y,
+            self.position.x * -1,
+            self.position.z + 0.05,
             self.middle_point_fraction,
             self.middle_point_height,
             self.subgait_id,
@@ -86,7 +86,7 @@ class DynamicSubgait:
             )
         else:
             self.desired_position = self.pose.solve_end_position(
-                self.position.x, self.position.y, self.subgait_id
+                self.position.x * -1, self.position.z + 0.05, self.subgait_id
             )
 
         self.desired_setpoint_dict = self._from_list_to_setpoint(
