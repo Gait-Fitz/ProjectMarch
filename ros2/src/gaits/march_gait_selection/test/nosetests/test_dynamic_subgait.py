@@ -1,3 +1,5 @@
+"""Author: Marten Haitjema, MVII"""
+
 import unittest
 
 from march_gait_selection.dynamic_interpolation.dynamic_subgait import DynamicSubgait

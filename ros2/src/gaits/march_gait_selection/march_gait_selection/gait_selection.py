@@ -55,6 +55,11 @@ class GaitSelection(Node):
         )
         self._balance_used = False
         self._dynamic_gait = False
+        self.dynamic_subgait_duration = None
+        self.middle_point_fraction = None
+        self.middle_point_height = None
+        self.minimum_stair_height = None
+
         try:
             # Initialize all parameters once, and set up a callback for dynamically
             # reconfiguring

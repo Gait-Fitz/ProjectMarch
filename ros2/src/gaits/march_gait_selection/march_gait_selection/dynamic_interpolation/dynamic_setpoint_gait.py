@@ -36,6 +36,8 @@ class DynamicSetpointGait(GaitInterface):
         self.gait_name = "dynamic_walk"
 
         # Create subscribers for CoViD topic
+        self.foot_position_right = None
+        self.foot_position_left = None
         if gait_selection_node is not None:
             self.gait_selection = gait_selection_node
             self.gait_selection.create_subscription(

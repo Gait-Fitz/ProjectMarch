@@ -1,5 +1,4 @@
 import unittest
-import rclpy
 from ament_index_python import get_package_share_directory, PackageNotFoundError
 from march_shared_msgs.srv import ContainsGait
 from urdf_parser_py import urdf
@@ -14,7 +13,6 @@ VALID_DIRECTORY = "test/resources"
 class TestGaitSelection(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        rclpy.init()
         cls.robot = urdf.Robot.from_xml_file(
             get_package_share_directory("march_description") + "/urdf/march6.urdf"
         )
