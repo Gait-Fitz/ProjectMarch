@@ -259,7 +259,7 @@ We are interested in the positive solution, resulting in:
 
 <table><tr><td width=50%> 
 
-To make a side step inwards, we again apply an equal amount of hip adduction on both sides, so that both feet contribute to the side step with a distance of $`z = S/2`$. We still define $`z`$ as the horizontal place we would like to place the foot, with $`z = 0`$ for $`\theta = 0`$. Notice that $`S`$ and $`z`$ will be negative value for an inwards step. This now results in $`z = -h + d1 - d2`$, which can be rewritten as $`d1 - d2 = z + h`$.
+To make a side step inwards, we again apply an equal amount of hip adduction on both sides, so that both feet contribute to the side step with a distance of $`z = S/2`$. We still define $`z`$ as the horizontal place we would like to place the foot, with $`z = 0`$ for $`\theta = 0`$. Notice that $`S`$ and $`z`$ will be negative value for an inwards step. This now results in $`z = -h + d_1 - d_2`$, which can be rewritten as $`d_1 - d_2 = z + h`$.
 
 We can again express $`d_1 = \cos(\theta)h`$ and $`d_2 = \sqrt{L^2 - \cos(\theta)^2L^2}`$, resulting in the equation:
 
