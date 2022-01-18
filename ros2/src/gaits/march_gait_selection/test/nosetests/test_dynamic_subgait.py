@@ -3,7 +3,9 @@
 import unittest
 
 from march_gait_selection.dynamic_interpolation.dynamic_subgait import DynamicSubgait
-from march_gait_selection.dynamic_interpolation.dynamic_setpoint_gait import DynamicSetpointGait
+from march_gait_selection.dynamic_interpolation.dynamic_setpoint_gait import (
+    DynamicSetpointGait,
+)
 
 from geometry_msgs.msg import Point
 

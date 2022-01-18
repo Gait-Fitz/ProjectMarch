@@ -78,7 +78,7 @@ class TestDynamicSetpointGait(unittest.TestCase):
 
     def test_start_method(self) -> None:
         """Assert that the start method returns a correct TrajectoryCommand"""
-        current_time = Time(seconds=0)
+        current_time = Time(nanoseconds=0)
         first_subgait_delay = Duration(0.2)
         self.gait.start(current_time, first_subgait_delay)
 
