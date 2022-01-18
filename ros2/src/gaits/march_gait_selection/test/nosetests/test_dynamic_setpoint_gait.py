@@ -15,7 +15,7 @@ VALID_PACKAGE = "march_gait_selection"
 VALID_DIRECTORY = "test/resources"
 
 
-class TestDynamicSetpoint(unittest.TestCase):
+class TestDynamicSetpointGait(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.robot = urdf.Robot.from_xml_file(
