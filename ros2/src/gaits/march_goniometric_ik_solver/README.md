@@ -285,7 +285,7 @@ Notice that this is equal to the result we had for an outwards step, before subs
 \begin{align*}
 \theta &= \text{sign}(z) \arccos \left( \frac{z+h^2}{h^2 + L^2} + \sqrt{\frac{L^2 - (z + h)^2}{h^2 + L^2} + \left(\frac{z+h^2}{h^2 + L^2}\right)^2} \right)
 \end{align*}
-```math
+```
 
 </td><td width=50%>
 
