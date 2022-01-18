@@ -21,7 +21,11 @@ class TestGaitSelection(unittest.TestCase):
 
     def setUp(self):
         self.gait_selection = GaitSelection(
-            gait_package=VALID_PACKAGE, directory=VALID_DIRECTORY, robot=self.robot
+            gait_package=VALID_PACKAGE,
+            directory=VALID_DIRECTORY,
+            robot=self.robot,
+            balance=False,
+            dynamic_gait=False,
         )
 
     # __init__ tests

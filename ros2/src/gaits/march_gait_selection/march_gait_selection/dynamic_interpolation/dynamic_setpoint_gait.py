@@ -23,7 +23,7 @@ class DynamicSetpointGait(GaitInterface):
     :type gait_selection_node: Node
     """
 
-    def __init__(self, gait_selection_node: Node):
+    def __init__(self, gait_selection_node: Node = None):
         super(DynamicSetpointGait, self).__init__()
         self._reset()
 
@@ -36,22 +36,23 @@ class DynamicSetpointGait(GaitInterface):
         self.gait_name = "dynamic_walk"
 
         # Create subscribers for CoViD topic
-        self.gait_selection = gait_selection_node
-        self.gait_selection.create_subscription(
-            Point,
-            "/foot_position/right",
-            self._callback_right,
-            DEFAULT_HISTORY_DEPTH,
-        )
-        self.gait_selection.create_subscription(
-            Point,
-            "/foot_position/left",
-            self._callback_left,
-            DEFAULT_HISTORY_DEPTH,
-        )
+        if gait_selection_node is not None:
+            self.gait_selection = gait_selection_node
+            self.gait_selection.create_subscription(
+                Point,
+                "/foot_position/right",
+                self._callback_right,
+                DEFAULT_HISTORY_DEPTH,
+            )
+            self.gait_selection.create_subscription(
+                Point,
+                "/foot_position/left",
+                self._callback_left,
+                DEFAULT_HISTORY_DEPTH,
+            )
 
-        # Assign reconfigurable parameters
-        self.update_parameters()
+            # Assign reconfigurable parameters
+            self.update_parameters()
 
     @property
     def name(self) -> str:
