@@ -57,15 +57,15 @@ Because of definition, this results in:
 
 <table><tr><td width=50%>
 
-The second step is applying the given y location. Currently, only a positive y-value is expected. The $`\text{fe}_{ankle1}`$, $`\text{fe}_{knee1}`$and $`\text{fe}_{hip1}`$do not change, which results in fixing the rear leg. We can calculate the distance between the hip $`(H)`$and the desired location of ankle2 $`(A_2)`$. Furthermore, the distances between the hip $`(H)`$and knee2 $`(K_2)`$and between knee2 $`(K_2)`$and ankle2 $`(A_2)`$are known as the lengths of the upper leg $`(L_{upper})`$and the lower leg $`(L_{lower})`$. This results in a triangle of which all side lengths are known, meaning that we can also calculate all three angles $`(\angle_{hip}, \angle_{knee2}, \angle_{ankle2})`$.
+The second step is applying the given y location. Currently, only a positive y-value is expected. The $`\text{fe}_{ankle1}`$, $`\text{fe}_{knee1}`$ and $`\text{fe}_{hip1}`$ do not change, which results in fixing the rear leg. We can calculate the distance between the hip $`(H)`$ and the desired location of ankle2 $`(A_2)`$. Furthermore, the distances between the hip $`(H)`$ and knee2 $`(K_2)`$ and between knee2 $`(K_2)`$ and ankle2 $`(A_2)`$ are known as the lengths of the upper leg $`(L_{upper})`$ and the lower leg $`(L_{lower})`$. This results in a triangle of which all side lengths are known, meaning that we can also calculate all three angles $`(\angle_{hip}, \angle_{knee2}, \angle_{ankle2})`$.
 
-Besides those three angles, we also need $`\angle O H A_2`$and $`\angle H A_2 T_2`$, in the picture defined as $`\alpha`$and $`\beta`$. Now we can define the new joint angles as:
+Besides those three angles, we also need $`\angle O H A_2`$ and $`\angle H A_2 T_2`$. Now we can define the new joint angles as:
 
 ```math
 \begin{align*}
-\text{fe}_{hip2} &= \alpha + \angle_{hip}\\
-\text{fe}_{knee2} &= 180 \degree - \angle_{knee2}\\
-\text{fe}_{ankle2} &= 90 \degree - (\beta - \angle_{ankle2})
+\text{fe}_{hip2} &= \angle O H A_2 + \angle_{hip}\\
+\text{fe}_{knee2} &= \text{KNEE\_ZERO\_ANGLE} - \angle_{knee2}\\
+\text{fe}_{ankle2} &= \text{ANKLE\_ZERO\_ANGLE} - (\angle H A_2 T_2 - \angle_{ankle2})
 \end{align*}
 ```
 
@@ -83,21 +83,21 @@ After raising the foot to the desired location in the previous step, the dorsi-f
 
 $`\text{reduction} = \text{fe}_{ankle2} - \text{MAX\_FLEXION}`$
 
-Next, we can form the quadrilateral between $`H, K_2, A_2, K_1`$, with angles $`\angle_{hip}, \angle_{knee2}, \angle_{ankle2}, \angle_{knee2}`$. We can calculate the value of $`\angle_{ankle2}`$before reducing the dorsi-flexion. We also know the value we would like after reducing the dorsi_flexion:
+Next, we can form the quadrilateral between $`H, K_2, A_2, K_1`$, with angles $`\angle_{hip}, \angle_{knee2}, \angle_{ankle2}, \angle_{knee2}`$. We can calculate the value of $`\angle_{ankle2}`$ before reducing the dorsi-flexion. We also know the value we would like after reducing the dorsi_flexion:
 
 $`\angle_{ankle2} = \angle_{ankle2,BEFORE} - \text{reduction}`$
 
 We know the lengths of all sides of the formed quadrilateral and now also the value of one angle $`(\angle_{ankle2})`$, which means that we can calculate the other three angles of the quadrilateral. There are two possible solutions, depending on whether the quadrilateral should be convex or concave. In this case, we want to have a convex quadrilateral. 
 
-After calculating the other three angles of the quadrilateral, we can first define the new joint value of knee1. Therefore we also need $`\angle A_1 K_1 A_2`$, defined as $`\alpha`$in the image, whereafter we can say:
+After calculating the other three angles of the quadrilateral, we can first define the new joint value of knee1. Therefore we also need $`\angle A_1 K_1 A_2`$, whereafter we can say:
 
 ```math
 \begin{align*}
-\text{fe}_{knee2} &= \angle_{knee1} + \angle A_1 K_1 A_2 - 180 \degree
+\text{fe}_{knee2} &= \angle_{knee1} + \angle A_1 K_1 A_2 - \text{KNEE\_ZERO\_ANGLE}
 \end{align*}
 ```
 
-Next, we can determine the new locations of knee1 $`(K_1)`$, hip $`(H)`$and a point below the hip $`(O)`$. The angle between these points $`(\angle K_1 H O)`$, in the image defined as $`\beta`$is the new fe-value of hip1. This value is negative for $`x_{K1} < x_H`$and positive for $`x_{K1} > x_H`$by definition, resulting in:
+Next, we can determine the new locations of knee1 $`(K_1)`$, hip $`(H)`$ and a point below the hip $`(O)`$. The angle between these points $`(\angle K_1 H O)`$ is the new fe-value of hip1. This value is negative for $`x_{K1} < x_H`$ and positive for $`x_{K1} > x_H`$ by definition, resulting in:
 
 ```math
 \begin{align*}
@@ -110,7 +110,7 @@ Finally, we can define the other changed joint values as:
 ```math
 \begin{align*}
 \text{fe}_{hip2} &= \angle_{hip} + \text{fe}_{hip1}\\
-\text{fe}_{knee2} &= 180 \degree - \angle_{knee2}\\
+\text{fe}_{knee2} &= \text{KNEE\_ZERO\_ANGLE} - \angle_{knee2}\\
 \text{fe}_{ankle2} &= \text{fe}_{ankle2,BEFORE} - \text{reduction}
 \end{align*}
 ```
@@ -125,7 +125,33 @@ Finally, we can define the other changed joint values as:
 
 <table><tr><td width=50%>
 
-Reducing the dorsi-flexion of the swing leg in the previous step results in a bended knee of the rear leg. The higher the reduction was, the more knee1 is now bended. In this step we will straighten the rear leg again. After straightening we can define the triangle between the points $`A_1, K_2, H`$, with angles $`\angle_{ankle1}, \angle_{knee2}, \angle_{hip}`$. Since the locations of $`A_1`$and $`K_2`$do not change during this step, we know the lengths of all sides of the defined triangle, which means we can also calculate all angles. 
+Reducing the dorsi-flexion of the swing leg in the previous step results in a bended knee of the rear leg. The higher the reduction was, the more knee1 is now bended. In this step we will straighten the rear leg again. After straightening we can define the triangle between the points $`A_1, K_2, H`$, with angles $`\angle_{ankle1}, \angle_{knee2}, \angle_{hip}`$. Since the locations of $`A_1`$ and $`K_2`$ do not change during this step, we know the lengths of all sides of the defined triangle, which means we can also calculate all angles.
+
+Next, we can define the new joint values of ankle1 and knee1. To do this, we also need $`\angle T_1 A_1 K_2`$. We can define:
+
+```math
+\begin{align*}
+\text{fe}_{ankle1} &= \text{ANKLE\_ZERO\_ANGLE} - (\angle_{ankle1} + \angle T_1 A_1 K_2)\\
+\text{fe}_{knee1} &= 0
+\end{align*}
+```
+
+Next, we can determine the new locations of knee1 $`(K_1)`$, hip $`(H)`$ and a point below the hip $`(O)`$. The angle between these points $`(\angle K_1 H O)`$, in the image defined as $`\beta`$ is the new fe-value of hip1. This value is negative for $`x_{K1} < x_H`$ and positive for $`x_{K1} > x_H`$ by definition, resulting in:
+
+```math
+\begin{align*}
+\text{fe}_{hip1} &= \text{sign}(x_{K1} - x_H) \angle K_1 H O
+\end{align*}
+```
+
+Finally, we can define the other changed joint values. To do this, we also need $`\angle A_1 K_2 A_2`$:
+
+```math
+\begin{align*}
+\text{fe}_{hip2} &= \angle_{hip} + \text{fe}_{hip1}\\
+\text{fe}_{knee2} &= \text{KNEE\_ZERO\_ANGLE} - (\angle_{knee2} + \angle A_1 K_2 A_2)\\
+\end{align*}
+```
 
 </td><td width=50%>
 
