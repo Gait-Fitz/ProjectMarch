@@ -1,0 +1,1 @@
+This folder contains GeoGebra files, used to create the images shown in the README.MD.
