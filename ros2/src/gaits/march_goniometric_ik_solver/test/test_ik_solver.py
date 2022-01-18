@@ -1,10 +1,14 @@
 """Author: Marten Haitjema, MVII"""
 
+from configparser import LegacyInterpolation
 import unittest
 import numpy as np
 
 from march_goniometric_ik_solver.ik_solver import (
+    LENGTH_FOOT,
     Pose,
+    LENGTH_LOWER_LEG,
+    LENGTH_UPPER_LEG,
     LENGTH_LEG,
 )
 
@@ -60,4 +64,15 @@ class TestIkSolver(unittest.TestCase):
             2 * LENGTH_LEG,
             4,
             "Distance between both ankles not equal to two times the leg length when fe_hip1 = pi",
+        )
+        self.pose.reset_to_zero_pose()
+        self.pose.fe_hip2 = np.pi / 2
+        ankle_distance = self.pose.get_ankle_distance()
+        ankle_distance_pythagoras = np.sqrt(
+            LENGTH_LEG ** 2 + LENGTH_LEG ** 2
+        )
+        self.assertEqual(
+            ankle_distance,
+            ankle_distance_pythagoras,
+            "adf",
         )
