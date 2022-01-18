@@ -443,3 +443,7 @@ def make_plot(pose: Pose):
     plt.plot(positions_x, positions_y)
     plt.gca().set_aspect("equal", adjustable="box")
     plt.show()
+
+pose = Pose()
+pose.solve_end_position(0.4, 0.2, "")
+make_plot(pose)

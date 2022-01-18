@@ -4,12 +4,29 @@
 
 <table><tr><td width=50%>
 
-This file provides the documentation of the Inverse Kinematic (IK) solver, used for dynamic gaits. For the use of the IK solver, a Pose class is made, containing the pose of the exo by specifying the joint angles of all joints. The Pose class contains two important methods, namely to find the end-pose  and the mid-pose to reach a given foot location. The mathematics used to find these end- and mid-pose are described step-wise, in the same order as used in [ik_solver.py](march_goniometric_ik_solver/ik_solver.py):
+This file provides the documentation of the Inverse Kinematic (IK) solver, used for dynamic gaits. For the use of the IK solver, a Pose class is made, containing the pose of the exo by specifying the joint angles of all joints.
 
-1. [Calculate ground pose flexion](#calculate-ground-pose-flexion)
-2. [Calculate lifted pose](#calculate-lifted-pose)
-3. [Reduce swing dorsi flexion](#reduce-swing-dorsi-flexion)
-4. [Straighten leg](#straighten-leg)
+We use the following definitions:
+
+| Variable:             | Positive:     | Negative:       |
+| --------------------- | ------------- | --------------- |
+| $`\text{fe}_{ankle}`$ | dorsi_flexion | plantar-flexion |
+| $`\text{fe}_{knee}`$  | flexion       | extension       |
+| $`\text{fe}_{hip}`$   | flexion       | extension       |
+| $`\text{aa}_{hip}`$   | abduction     | adduction       |
+
+Since it should not matter whether the leg in front is the left or right leg, we use the definition of 1 or 2 after the variables in the table, where 1 is a joint in the rear leg and 2 a joint in the front leg.
+
+Furthermore we define $`\text{ANKLE\_ZERO\_ANLE} = 90 \degree`$ and $`\text{KNEE\_ZERO\_ANGLE = 180 \degree}`$, since $`\text{fe}_{ankle} = 0`$ results in an angle between foot and lower leg of 90 degrees and $`\text{fe}_{knee} = 0`$ results in an angle between lower leg and upper leg of 180 degrees.
+
+The Pose class contains two important methods, namely to find the end-pose  and the mid-pose to reach a given foot location. The mathematics used to find these end- and mid-pose are described step-wise, in the same order as used in [ik_solver.py](march_goniometric_ik_solver/ik_solver.py):
+
+[Calculate ground pose flexion](#calculate-ground-pose-flexion)\
+[Calculate lifted pose](#calculate-lifted-pose)\
+[Reduce swing dorsi flexion](#reduce-swing-dorsi-flexion)\
+[Straighten leg](#straighten-leg)\
+[Reduce stance dorsi flexion](#reduce-stance-dorsi-flexion)\
+[Side step outwards](#side-step-outwards)
 
 </td><td width=50%>
 
@@ -26,7 +43,7 @@ The `solve_end_position()` method expects the x, y and z location of the desired
 
 x: step size distance between two feet\
 y: height of the foot, relative to the other\
-z: side step distance, where z = 0 with hip_AA = 0.
+z: side step distance, where z = 0 with $`\text{aa}_{hip}`$ = 0.
 
 For this first step of the IK solver, only the x position is used. A equilateral triangle is formed and the angles of the ankles and hip, required to reach this x position is determined using pythagoras theorem:
 
@@ -159,8 +176,38 @@ Finally, we can define the other changed joint values. To do this, we also need 
 
 </td></tr></table>
 
-## Side Step
-<!-- ![Semantic description of image](side_step_negative.svg "Image Title") -->
+## Reduce stance dorsi flexion
+
+<table><tr><td width=50%>
+
+Finally, we need to check the dorsi-flexion of ankle1, since the limit could be exceeded. If the limit is exceeded, we can form a quadrilateral between points $`T_1, A_1, K_1, H`$. We can rotate the rear foot and bend knee1 until the dorsi-flexion is within the limits again. Since we know the length of all sides of the quadrilateral and the required angle $`\angle_{ankle1}`$, we can calculate the other three angles. Note that in this case we want to have the concave solution. After calculating $`\angle_{toes1}, \angle_{knee1} \angle_{hip}`$, we can define the new joint values of ankle1 and knee1:
+
+```math
+\begin{align*}
+\text{fe}_{ankle1} &= \text{ANKLE\_ZERO\_ANGLE} - \angle_{ankle1}\\
+\text{fe}_{knee1} &= \text{KNEE\_ZERO\_ANGLE} - \angle_{knee1}\\
+\end{align*}
+```
+
+With these new values, we can determine the new location of knee2 $`(K_2)`$. The location of the hip $`(H)`$ and the point below the hip $`(O)`$ did not change. The angle between these points $`(\angle K_1 H O)`$ is the new fe-value of hip1. This value is negative for $`x_{K1} < x_H`$ and positive for $`x_{K1} > x_H`$ by definition, resulting in:
+
+```math
+\begin{align*}
+\text{fe}_{hip1} &= \text{sign}(x_{K1} - x_H) \angle K_1 H O
+\end{align*}
+```
+
+Although it is not required for the exoskeleton pose, we can also calculate the rotation of the rear foot relative to the ground as the difference of $`\angle_{toes1}`$ before and after reducing the dorsi-flexion: $`\angle_{foot} = \angle_{toes1,AFTER}-\angle_{toes1,BEFORE}`$. 
+
+</td><td width=50%>
+
+![reduced_stance_dorsi_flexion](images/reduce_stance_dorsi_flexion.svg "reduced_stance_dorsi_flexion")
+
+</td></tr></table>
+
+
+
+## Side step outwards
 
 <table><tr><td width=50%> 
 
