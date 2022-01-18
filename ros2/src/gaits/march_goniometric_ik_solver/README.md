@@ -30,8 +30,6 @@ The Pose class contains two important methods, namely to find the end-pose  and 
 
 </td><td width=50%>
 
-![walking](images/walking.gif "walking")
-
 </td></tr></table>
 
 
