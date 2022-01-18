@@ -30,7 +30,11 @@ The Pose class contains two important methods, namely to find the end-pose  and 
 
 </td><td width=50%>
 
-[PLACEHOLDER IMAGE]
+<figure class="video_container">
+  <video controls="true" allowfullscreen="true">
+    <source src="images/example.mp4" type="video/mp4">
+  </video>
+</figure>
 
 </td></tr></table>
 
@@ -207,16 +211,20 @@ Although it is not required for the exoskeleton pose, we can also calculate the 
 
 
 
-## Side step outwards
+## Side step
+
+### outwards
 
 <table><tr><td width=50%> 
 
-To make a side step of size $`S`$, we can apply an equal amount of hip adduction on both sides, so that both feet contribute to the side step with a distance of $`z = S/2`$. We define $`z`$ as the horizontal place we would like to place the foot, with $`z = 0`$ for $`\theta = 0`$. This results in a distance of $`d_1 + d_2 = z + h`$.
+So far, we ignored the z-value given to the solver, but know we will derive the equations for this dimension. To make a side step of size $`S`$, we can apply an equal amount of hip adduction on both sides, so that both feet contribute to the side step with a distance of $`z = S/2`$. We define $`z`$ as the horizontal place we would like to place the foot, with $`z = 0`$ for $`\theta = 0`$. This results in a distance of $`d_1 + d_2 = z + h`$.
 
 We can express $`d_1 = \cos(\theta)h`$ and $`d_2 = \sqrt{L^2 - \cos(\theta)^2L^2}`$, resulting in the equation:
 
 ```math
+\begin{align*}
 \cos(\theta)h + \sqrt{L^2 - \cos(\theta)^2L^2} = z + h
+\end{align*}
 ```
 
 This can be rewritten with the following steps:
@@ -250,5 +258,43 @@ We are interested in the positive solution, resulting in:
 </td><td width=50%>
 
 ![side_step](images/side_step.svg "side_step")
+
+</td></tr></table>
+
+### inwards
+
+<table><tr><td width=50%> 
+
+To make a side step inwards, we again apply an equal amount of hip adduction on both sides, so that both feet contribute to the side step with a distance of $`z = S/2`$. We still define $`z`$ as the horizontal place we would like to place the foot, with $`z = 0`$ for $`\theta = 0`$. Notice that $`S`$ and $`z`$ will be negative value for an inwards step. This now results in $`z = -h + d1 - d2`$, which can be rewritten as $`d1 - d2 = z + h`$.
+
+We can again express $`d_1 = \cos(\theta)h`$ and $`d_2 = \sqrt{L^2 - \cos(\theta)^2L^2}`$, resulting in the equation:
+
+```math
+\begin{align*}
+\cos(\theta)h - \sqrt{L^2 - \cos(\theta)^2L^2} = z + h
+\end{align*}
+```
+
+This can be rewritten with the following steps:
+
+```math
+\begin{align*}
+L^2 - \cos(\theta)^2 L^2 &= (-(z + h) - \cos(\theta)h)^2\\
+L^2 - \cos(\theta)^2 L^2 &= (z + h)^2 - \cos(\theta)(2z+2h^2) + \cos(\theta)^2 h^2\\
+\cos(\theta)^2 (h^2 + L^2) - \cos(\theta)(2z+2h^2) &= L^2 - (z + h)^2
+\end{align*}
+```
+
+Notice that this is equal to the result we had for an outwards step, before substituting. Therefore we know the solution for an inwards step will also be the same as for an outwards step. The only difference is that $\theta$ will be negative by our definition that hip abduction is positive and hip adduction is negative. Therefore we can give the general solution as:
+
+```math
+\begin{align*}
+\theta &= \text{sign}(z) \arccos \left( \frac{z+h^2}{h^2 + L^2} + \sqrt{\frac{L^2 - (z + h)^2}{h^2 + L^2} + \left(\frac{z+h^2}{h^2 + L^2}\right)^2} \right)
+\end{align*}
+```math
+
+</td><td width=50%>
+
+![side_step](images/side_step_negative.svg "side_step")
 
 </td></tr></table>
