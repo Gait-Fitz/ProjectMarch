@@ -30,11 +30,7 @@ The Pose class contains two important methods, namely to find the end-pose  and 
 
 </td><td width=50%>
 
-<figure class="video_container">
-  <video controls="true" allowfullscreen="true">
-    <source src="images/example.mp4" type="video/mp4">
-  </video>
-</figure>
+![walking](images/walking.gif "walking")
 
 </td></tr></table>
 
