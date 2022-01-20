@@ -52,7 +52,7 @@ class FakeCovidPublisher(Node):
         point = Point()
 
         if self.random_x:
-            point.x = random.uniform(0.2, 0.5)
+            point.x = random.uniform(0.2, 0.3)
         else:
             point.x = self.location_x
 
