@@ -23,6 +23,7 @@
   <depend>roscpp</depend>
   <depend>std_msgs</depend>
   <depend>urdf</depend>
+  <depend>ethercat_grand</depend>
 
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>xacro</exec_depend>
