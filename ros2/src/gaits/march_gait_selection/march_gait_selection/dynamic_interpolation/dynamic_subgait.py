@@ -3,6 +3,7 @@ import numpy as np
 from march_gait_selection.dynamic_interpolation.dynamic_joint_trajectory import (
     DynamicJointTrajectory,
 )
+from march_utility.gait.limits import Limits
 from march_utility.gait.setpoint import Setpoint
 from march_utility.utilities.duration import Duration
 from march_utility.utilities.utility_functions import get_position_from_yaml
@@ -12,6 +13,9 @@ from trajectory_msgs import msg as trajectory_msg
 from geometry_msgs.msg import Point
 
 from typing import List
+import rclpy.logging
+
+LOGGER_NODE_NAME = "gait_selection"
 
 
 class DynamicSubgait:
@@ -29,10 +33,12 @@ class DynamicSubgait:
     :type subgait_id: str
     :param joint_names: Names of the joints
     :type joint_names: list
-    :param position_x: x-coordinate of the desired foot location in meters.
-    :type position_x: float
-    :param position_y: y-coordinate of the desired foot location in meters. Default is zero.
-    :type position_y: float
+    :param position: Desired foot position
+    :type position: Point
+    :param joint_soft_limits: list containing soft limits in alphabetical order
+    :type joint_soft_limits: List[Limits]
+    :param stop: whether it is a close gait or not
+    :type stop: bool
     """
 
     def __init__(
@@ -44,6 +50,7 @@ class DynamicSubgait:
         subgait_id: str,
         joint_names: List[str],
         position: Point,
+        joint_soft_limits: List[Limits],
         stop: bool,
     ):
         self.middle_point_fraction = middle_point_fraction
@@ -53,6 +60,7 @@ class DynamicSubgait:
         self.position = position
         self.joint_names = joint_names
         self.subgait_id = subgait_id
+        self.joint_soft_limits = joint_soft_limits
         self.stop = stop
         self.pose = Pose()
 
@@ -70,6 +78,7 @@ class DynamicSubgait:
             self.subgait_id,
         )
 
+        self._check_joint_limits(middle_position)
         self.middle_setpoint_dict = self._from_list_to_setpoint(
             self.joint_names,
             middle_position,
@@ -89,6 +98,7 @@ class DynamicSubgait:
                 self.position.x, self.position.y, self.subgait_id
             )
 
+        self._check_joint_limits(self.desired_position)
         self.desired_setpoint_dict = self._from_list_to_setpoint(
             self.joint_names, self.desired_position, None, self.time[-1]
         )
@@ -190,4 +200,26 @@ class DynamicSubgait:
         return setpoint_dict
 
     def _from_joint_dict_to_list(self, joint_dict: dict) -> List[float]:
+        """Return the values in a joint_dict as a list."""
         return list(joint_dict.values())
+
+    def _check_joint_limits(self, position: List[float]) -> None:
+        """Check if values in 'position' are within the soft limits
+        defined in the urdf
+
+        :param position: joint positions in alphabetical order
+        :type position: list[float]
+        """
+        for i in range(len(self.joint_names)):
+            if (
+                position[i] > self.joint_soft_limits[i].upper
+                or position[i] < self.joint_soft_limits[i].lower
+            ):
+                rclpy.logging.get_logger(LOGGER_NODE_NAME).info(
+                    f"DynamicSubgait: {self.joint_names[i]} will be outside of soft limits, "
+                    f"position: {position[i]}, soft limits: "
+                    f"[{self.joint_soft_limits[i].lower}, {self.joint_soft_limits[i].upper}]."
+                )
+                raise Exception(
+                    f"{self.joint_names[i]} will be outside its soft limits."
+                )
