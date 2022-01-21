@@ -207,6 +207,67 @@ Although it is not required for the exoskeleton pose, we can also calculate the 
 
 ## Side step
 
+<div style="width: 50%; float:left">
+
+So far, we ignored the z-value given to the solver, but now we will derive the equations for this dimension. We want to know the required hip_aa of both hips to have a distance $`|z|`$ between the two feet. Note that it is important that the vertical distance between the two feet $`(y)`$ must remain the same.  This is quit a complex mathematical problem, therefore we use python's Sympy to solve it.
+
+To solve this problem, we calculate with the distance between the hip base and the ankles. We have $`L_S`$ as the distance of the 'short leg' (the leg that is most bended and thus has the highest foot) and we have $`L_L`$ as the distance of the 'long leg' (the leg that is bended least and thus has the lowest foot). We can define the two conditions we want to fulfill:
+
+```math
+\begin{align}
+z &= \sin(\theta_S)L_S + L_{base} + \sin(\theta_L)L_L\\
+y &= \cos(\theta_L)L_L - \cos(\theta_S)L_S
+\end{align}
+```
+
+We can isolate $`\theta_L`$ from (1), giving two possible solutions:
+
+```math
+\begin{align}
+\theta_L &= \operatorname{asin}{\left(\frac{L_{S} \sin{\left(\theta_{S} \right)} + L_{base} - z}{L_{L}} \right)} + \pi\\
+\theta_L &= - \operatorname{asin}{\left(\frac{L_{S} \sin{\left(\theta_{S} \right)} + L_{base} - z}{L_{L}} \right)}
+\end{align}
+```
+
+We can also isolate $`\theta_S`$ from (2), also giving two possible solutions:
+
+
+```math
+\begin{align}
+\theta_S &= - \operatorname{acos}{\left(\frac{L_{L} \cos{\left(\theta_{L} \right)} - y}{L_{S}} \right)} + 2 \pi\\
+\theta_S &= \operatorname{acos}{\left(\frac{L_{L} \cos{\left(\theta_{L} \right)} - y}{L_{S}} \right)}
+\end{align}
+```
+
+We can substitute a expression of $`\theta_S`$, (5) or (6), in one of the two expressions of $`\theta_L`$, (3) or (4). This gives 4 possible equations, depending on the combination we choose. If we rewrite one of those 4 possible equations to isolate $`z`$, we end up with two different possible expressions:
+
+```math
+\begin{align}
+z = L_{L} \sin{\left(\theta_{L} \right)} \pm L_{S} \sqrt{\frac{- L_{L}^{2} \cos^{2}{\left(\theta_{L} \right)} + 2 L_{L} y \cos{\left(\theta_{L} \right)} + L_{S}^{2} - y^{2}}{L_{S}^{2}}} + L_{base}
+\end{align}
+```
+
+Finally, we can isolate $`\theta_L`$ in one of the two equations of (7). This is a very complex operation, which took Sympy more than 5 minutes on a fast laptop. In the end it will find two solutions, independent of the used expression for $`z`$:
+
+<div style="overflow-y: scroll;">
+
+```math
+\begin{align*}
+\theta_L = 2 \operatorname{atan}{\left(\frac{- 2 L_{L} L_{base} + 2 L_{L} z \pm \sqrt{- L_{L}^{4} + 2 L_{L}^{2} L_{S}^{2} + 2 L_{L}^{2} L_{base}^{2} - 4 L_{L}^{2} L_{base} z + 2 L_{L}^{2} y^{2} + 2 L_{L}^{2} z^{2} - L_{S}^{4} + 2 L_{S}^{2} L_{base}^{2} - 4 L_{S}^{2} L_{base} z + 2 L_{S}^{2} y^{2} + 2 L_{S}^{2} z^{2} - L_{base}^{4} + 4 L_{base}^{3} z - 2 L_{base}^{2} y^{2} - 6 L_{base}^{2} z^{2} + 4 L_{base} y^{2} z + 4 L_{base} z^{3} - y^{4} - 2 y^{2} z^{2} - z^{4}}}{L_{L}^{2} + 2 L_{L} y - L_{S}^{2} + L_{base}^{2} - 2 L_{base} z + y^{2} + z^{2}} \right)}
+\end{align*}
+```
+
+</div>
+
+</div>
+<div style="width: 50%; float: left">
+
+![side_step_fixed_height](images/side_step_fixed_height.svg "side_step_fixed_height")
+
+</div>
+
+<!--
+
 ### outwards
 
 <table><tr><td width=50%> 
@@ -292,3 +353,8 @@ Notice that this is equal to the result we had for an outwards step, before subs
 ![side_step](images/side_step_negative.svg "side_step")
 
 </td></tr></table>
+
+ -->
+
+
+ </body>
