@@ -33,7 +33,12 @@ ODrive::ODrive(const Slave& slave, ODriveAxis axis,
 {
     torque_constant_ = KV_TO_TORQUE_CONSTANT / (float)motor_kv;
     this->is_incremental_encoder_more_precise_ = true;
-    name_ = "Slave: " + std::to_string(slave.getSlaveIndex()) + ", with index: " + ODriveAxisToString(axis);
+    name_ = "Slave: " + std::to_string(slave.getSlaveIndex()) + ", with index: ";
+    if (axis == ODriveAxis::Zero){
+        name_ += "0";
+    } else {
+        name_ += "1";
+    }
 }
 
 std::optional<ros::Duration> ODrive::reset()
