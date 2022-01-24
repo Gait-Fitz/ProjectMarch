@@ -54,7 +54,11 @@ std::optional<ros::Duration> ODrive::prepareActuation()
 
 void ODrive::enableActuation()
 {
-    if (getAxisState() != ODriveAxisState::CLOSED_LOOP_CONTROL) {
+    ODriveAxisState axisState = getAxisState();
+    ROS_DEBUG("Axis is currently %s, and should be %s",
+              axisState.toString().c_str(), "CLOSED_LOOP_CONTROL");
+//    ROS_INFO("Axis state of slave %s, on axis %s, is currently %s, and should be",  ,axisState.toString().c_str());
+    if (axisState != ODriveAxisState::CLOSED_LOOP_CONTROL) {
         setAxisState(ODriveAxisState::CLOSED_LOOP_CONTROL);
     }
 
@@ -146,6 +150,15 @@ std::unique_ptr<MotorControllerState> ODrive::getState()
     state->dieboslave_error_ = getDieBOSlaveError();
     state->encoder_error_ = getEncoderError();
     state->controller_error_ = getControllerError();
+    ROS_DEBUG("Axis state: %s, axis error: %i, motor_error: %i, dieboslave error: %i, encoder error %i, "
+              "controller error: %i",
+              state->axis_state_.toString().c_str(),
+              state->axis_error_,
+              state->motor_error_,
+              state->dieboslave_error_,
+              state->encoder_error_,
+              state->controller_error_
+              );
 
     return state;
 }
