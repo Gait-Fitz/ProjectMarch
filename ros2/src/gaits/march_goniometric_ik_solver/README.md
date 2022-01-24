@@ -207,7 +207,8 @@ Although it is not required for the exoskeleton pose, we can also calculate the 
 
 ## Side step
 
-<div style="width: 50%; float:left">
+<div style="display: flex; align-items: center; border: 1px solid;">
+<div style="width: 49%; float:left; padding: 0.5%; box-sizing: border-box">
 
 So far, we ignored the z-value given to the solver, but now we will derive the equations for this dimension. We want to know the required hip_aa of both hips to have a distance $`|z|`$ between the two feet. Note that it is important that the vertical distance between the two feet $`(y)`$ must remain the same.  This is quit a complex mathematical problem, therefore we use python's Sympy to solve it.
 
@@ -257,13 +258,16 @@ Finally, we can isolate $`\theta_L`$ in one of the two equations of (7). This is
 \end{align*}
 ```
 
-</div>
+</div><br>
+
+Test
 
 </div>
-<div style="width: 50%; float: left">
+<div style="width: 49%; float: left; padding:0.5%; box-sizing: border-box">
 
 ![side_step_fixed_height](images/side_step_fixed_height.svg "side_step_fixed_height")
 
+</div>
 </div>
 
 <!--
