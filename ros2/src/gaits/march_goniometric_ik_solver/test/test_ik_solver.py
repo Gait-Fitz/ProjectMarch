@@ -1,11 +1,9 @@
 """Author: Marten Haitjema, MVII"""
 
-from configparser import LegacyInterpolation
 import unittest
 import numpy as np
 
 from march_goniometric_ik_solver.ik_solver import (
-    LENGTH_FOOT,
     Pose,
     LENGTH_LOWER_LEG,
     LENGTH_UPPER_LEG,
@@ -68,11 +66,22 @@ class TestIkSolver(unittest.TestCase):
         self.pose.reset_to_zero_pose()
         self.pose.fe_hip2 = np.pi / 2
         ankle_distance = self.pose.get_ankle_distance()
-        ankle_distance_pythagoras = np.sqrt(
-            LENGTH_LEG ** 2 + LENGTH_LEG ** 2
-        )
+        ankle_distance_pythagoras = np.sqrt(LENGTH_LEG ** 2 + LENGTH_LEG ** 2)
         self.assertEqual(
             ankle_distance,
             ankle_distance_pythagoras,
-            "adf",
+            "Distance between ankles not equal to length gotten using Pythagoras for hip angle of 45 deg.",
         )
+
+    # def test_calculate_lifted_pose(self) -> None:
+    #     pos_ankle = np.array([LENGTH_UPPER_LEG, LENGTH_LOWER_LEG])
+    #     self.pose.reset_to_zero_pose()
+    #     self.pose.fe_hip2 = np.pi / 2
+    #     self.pose.fe_knee2 = np.pi / 2
+    #     # self.pose_lifted = Pose()
+    #     # self.pose_lifted.calculate_lifted_pose(pos_ankle)
+    #     # self.assertEqual(
+    #     #     self.pose,
+    #     #     self.pose_lifted,
+    #     #     "adsf"
+    #     # )
