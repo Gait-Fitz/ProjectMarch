@@ -247,7 +247,7 @@ z = L_{L} \sin{\left(\theta_{L} \right)} \pm L_{S} \sqrt{\frac{- L_{L}^{2} \cos^
 \end{align}
 ```
 
-Finally, we can isolate $`\theta_L`$ in one of the two equations of (7). This is a very complex operation, which took Sympy more than 5 minutes on a fast laptop. In the end it will find two solutions, independent of the used expression for $`z`$:
+Finally, we can isolate $`\theta_L`$ in one of the two equations of (7). This is a very complex operation, which took Sympy more than 5 minutes per result on a fast laptop. In the end it will find two unique solutions, independent of the used expression for $`z`$:
 
 <details>
 <summary>
@@ -261,6 +261,9 @@ Click to expand very long equation
 ```
 
 </details>
+<br>
+
+A simple try shows that we are interested in the equation with the FILL_IN_LATER sign. The found equations is valid for both outwards and inwards side steps.
 
 </td><td width=50%>
 
