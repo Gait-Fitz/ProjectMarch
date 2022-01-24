@@ -26,7 +26,7 @@ The Pose class contains two important methods, namely to find the end-pose  and 
 [Reduce swing dorsi flexion](#reduce-swing-dorsi-flexion)\
 [Straighten leg](#straighten-leg)\
 [Reduce stance dorsi flexion](#reduce-stance-dorsi-flexion)\
-[Side step outwards](#side-step-outwards)
+[Side step](#side-step)
 
 </td><td width=50%>
 
@@ -41,9 +41,11 @@ The `solve_end_position()` method expects the x, y and z location of the desired
 
 x: step size distance between two feet\
 y: height of the foot, relative to the other\
-z: side step distance, where z = 0 with $`\text{aa}_{hip}`$ = 0.
+z: the distance between the two feet
 
-For this first step of the IK solver, only the x position is used. A equilateral triangle is formed and the angles of the ankles and hip, required to reach this x position is determined using pythagoras theorem:
+For this first step of the IK solver, only the x position is used. Furthermore we use a desired knee bending, so that the exo never reaches complete straight legs. We first calculate the distance between ankle and hip with the desired knee bending $`(L_{leg})`$. 
+
+Next, a equilateral triangle is formed with two sides of the calculated length $`L_{leg}`$ and the angle $`\theta`$ formed at the ankles and hip, required to reach this x position is determined using pythagoras theorem:
 
 ```math
 \begin{align*}
@@ -52,18 +54,21 @@ x &= 2 \sin(\theta) \cdot L_{leg}\\
 \end{align*}
 ```
 
-Because of definition, this results in:
+With the angles $`\angle_{ankle}, \angle_{knee}, \angle_{hip}`$, we can define the joint values as:
 
 ```math
 \begin{align*}
-\text{fe}_{ankle1} &= \text{fe}_{hip2} = \theta\\
-\text{fe}_{ankle2} &= \text{fe}_{hip1} = -\theta\\
+\text{fe}_{knee11} &= \text{fe}_{knee2} = \text{DEFAULT\_KNEE\_BEND}\\
+\text{fe}_{ankle1} &= \theta + \angle_{ankle}\\
+\text{fe}_{hip1} &=  -\theta + \angle_{hip} \\
+\text{fe}_{hip2} &= \theta + \angle_{hip}\\
+\text{fe}_{ankle2} &= -\theta + \angle_{ankle}\\
 \end{align*}
 ```
 
 </td><td width=50%>
 
-![ground_pose_flexion](images/calculate_ground_pose_flexion.svg "ground_pose_flexion")
+![ground_pose_flexion](images/calculate_ground_pose_flexion_bended.svg "ground_pose_flexion")
 
 </td></tr></table>
 
@@ -86,7 +91,7 @@ Besides those three angles, we also need $`\angle O H A_2`$ and $`\angle H A_2 T
 
 </td><td width=50%>
 
-![lifted_pose](images/calculate_lifted_pose.svg "lifted_pose")
+![lifted_pose](images/calculate_lifted_pose_bended.svg "lifted_pose")
 
 </td></tr></table>
 
@@ -140,14 +145,14 @@ Finally, we can define the other changed joint values as:
 
 <table><tr><td width=50%>
 
-Reducing the dorsi-flexion of the swing leg in the previous step results in a bended knee of the rear leg. The higher the reduction was, the more knee1 is now bended. In this step we will straighten the rear leg again. After straightening we can define the triangle between the points $`A_1, K_2, H`$, with angles $`\angle_{ankle1}, \angle_{knee2}, \angle_{hip}`$. Since the locations of $`A_1`$ and $`K_2`$ do not change during this step, we know the lengths of all sides of the defined triangle, which means we can also calculate all angles.
+Reducing the dorsi-flexion of the swing leg in the previous step results in a bended knee of the rear leg. The higher the reduction was, the more knee1 is now bended. In this step we will straighten the rear leg again. We can define the quadrilateral between the points $`A_1, K_2, H, K_1`$, with angles $`\angle_{ankle1}, \angle_{knee2}, \angle_{hip}, \angle_{knee1}`$. We know the lengths of all sides of the defined quadrilateral and we know the desired angle of knee1, which means we can also calculate all angles.
 
 Next, we can define the new joint values of ankle1 and knee1. To do this, we also need $`\angle T_1 A_1 K_2`$. We can define:
 
 ```math
 \begin{align*}
 \text{fe}_{ankle1} &= \text{ANKLE\_ZERO\_ANGLE} - (\angle_{ankle1} + \angle T_1 A_1 K_2)\\
-\text{fe}_{knee1} &= 0
+\text{fe}_{knee1} &= \text{DEFAULT\_KNEE\_BEND}
 \end{align*}
 ```
 
@@ -170,7 +175,7 @@ Finally, we can define the other changed joint values. To do this, we also need 
 
 </td><td width=50%>
 
-![straighten_leg](images/straighten_leg.svg "straighten_leg")
+![straighten_leg](images/straighten_leg_bended.svg "straighten_leg")
 
 </td></tr></table>
 
@@ -263,7 +268,7 @@ Click to expand very long equation
 </details>
 <br>
 
-A simple try shows that we are interested in the equation with the FILL_IN_LATER sign. The found equations is valid for both outwards and inwards side steps.
+A simple try shows that we are interested in the equation with the minus sign. The found equations is valid for both outwards and inwards side steps. Another try shows that we need equation (6) to calculate $`\theta_S`$. Finally, we simply add $`\angle ABH`$ for the 'short' or 'long' side to get the required hip_aa's.
 
 </td><td width=50%>
 
