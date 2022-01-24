@@ -33,6 +33,7 @@ ODrive::ODrive(const Slave& slave, ODriveAxis axis,
 {
     torque_constant_ = KV_TO_TORQUE_CONSTANT / (float)motor_kv;
     this->is_incremental_encoder_more_precise_ = true;
+    name_ = "Slave: " + std::to_string(slave.getSlaveIndex()) + ", with index: " + ODriveAxisToString(axis);
 }
 
 std::optional<ros::Duration> ODrive::reset()
@@ -150,8 +151,9 @@ std::unique_ptr<MotorControllerState> ODrive::getState()
     state->dieboslave_error_ = getDieBOSlaveError();
     state->encoder_error_ = getEncoderError();
     state->controller_error_ = getControllerError();
-    ROS_DEBUG("Axis state: %s, axis error: %i, motor_error: %i, dieboslave error: %i, encoder error %i, "
+    ROS_DEBUG("States of %s:\nAxisState state: %s, axis error: %i, motor_error: %i, dieboslave error: %i, encoder error %i, "
               "controller error: %i",
+              name_.c_str(),
               state->axis_state_.toString().c_str(),
               state->axis_error_,
               state->motor_error_,

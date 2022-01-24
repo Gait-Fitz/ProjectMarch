@@ -103,6 +103,7 @@ private:
     ODriveAxis axis_;
     bool index_found_;
     float torque_constant_;
+    std::string name_;
 };
 
 } // namespace march

@@ -11,6 +11,15 @@ namespace march {
 
 enum class ODriveAxis { Zero = 0, One = 1 };
 
+const char* ODriveAxisToString(ODriveAxis e) noexcept
+{
+    switch (e)
+    {
+        case ODriveAxis::Zero: return "0";
+        case ODriveAxis::One: return "1";
+    }
+}
+
 class ODriveAxisState {
 public:
     enum Value : uint32_t {
