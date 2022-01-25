@@ -8,6 +8,7 @@ from march_goniometric_ik_solver.ik_solver import (
     LENGTH_LOWER_LEG,
     LENGTH_UPPER_LEG,
     LENGTH_LEG,
+    make_plot,
 )
 
 
@@ -73,15 +74,15 @@ class TestIkSolver(unittest.TestCase):
             "Distance between ankles not equal to length gotten using Pythagoras for hip angle of 45 deg.",
         )
 
-    # def test_calculate_lifted_pose(self) -> None:
-    #     pos_ankle = np.array([LENGTH_UPPER_LEG, LENGTH_LOWER_LEG])
+    # def test_solve_end_position(self) -> None:
     #     self.pose.reset_to_zero_pose()
     #     self.pose.fe_hip2 = np.pi / 2
     #     self.pose.fe_knee2 = np.pi / 2
-    #     # self.pose_lifted = Pose()
-    #     # self.pose_lifted.calculate_lifted_pose(pos_ankle)
-    #     # self.assertEqual(
-    #     #     self.pose,
-    #     #     self.pose_lifted,
-    #     #     "adsf"
-    #     # )
+    #     self.pose_lifted = Pose()
+    #     self.pose_lifted.solve_end_position(LENGTH_UPPER_LEG, LENGTH_LOWER_LEG, "right_swing")
+    #     make_plot(self.pose_lifted)
+    #     self.assertListEqual(
+    #         self.pose.pose_right,
+    #         self.pose_lifted.pose_right,
+    #         "adsf"
+    #     )
