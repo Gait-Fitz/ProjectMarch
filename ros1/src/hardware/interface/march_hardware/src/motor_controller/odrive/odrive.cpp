@@ -33,12 +33,14 @@ ODrive::ODrive(const Slave& slave, ODriveAxis axis,
 {
     torque_constant_ = KV_TO_TORQUE_CONSTANT / (float)motor_kv;
     this->is_incremental_encoder_more_precise_ = true;
-    name_ = "Slave: " + std::to_string(slave.getSlaveIndex()) + ", with index: ";
+    std::string name = "Slave." + std::to_string(slave.getSlaveIndex()) + ".";
     if (axis == ODriveAxis::Zero){
-        name_ += "0";
+        name += "0";
     } else {
-        name_ += "1";
+        name += "1)";
     }
+    slave_axis_name_ = name.c_str();
+    state_debug_counter_ = state_debug_counter_max_;
 }
 
 std::optional<ros::Duration> ODrive::reset()
@@ -152,22 +154,36 @@ std::unique_ptr<MotorControllerState> ODrive::getState()
     // Set ODrive specific attributes
     state->axis_state_ = getAxisState();
     state->axis_error_ = getAxisError();
+    warnIfError(/*error_name=*/(char *) "Axis error", state->axis_error_);
     state->motor_error_ = getMotorError();
+    warnIfError(/*error_name=*/(char *) "Motor error", state->motor_error_);
     state->dieboslave_error_ = getDieBOSlaveError();
+    warnIfError(/*error_name=*/(char *) "Dieboslave", state->dieboslave_error_);
     state->encoder_error_ = getEncoderError();
+    warnIfError(/*error_name=*/(char *) "Encoder", state->encoder_error_);
     state->controller_error_ = getControllerError();
-    ROS_DEBUG("States of %s:\nAxisState state: %s, axis error: %i, motor_error: %i, dieboslave error: %i, encoder error %i, "
-              "controller error: %i",
-              name_.c_str(),
-              state->axis_state_.toString().c_str(),
-              state->axis_error_,
-              state->motor_error_,
-              state->dieboslave_error_,
-              state->encoder_error_,
-              state->controller_error_
-              );
+    warnIfError(/*error_name=*/(char *) "Controller", state->controller_error_);
+
+    if (state_debug_counter_ == state_debug_counter_max_) {
+        ROS_DEBUG( "S%s:\nAxisState state: %s, axis error: %i, motor_error: %i, dieboslave error: %i, "
+                   "encoder error %i, controller error: %i",
+                slave_axis_name_,
+                state->axis_state_.toString().c_str(),
+                state->axis_error_,
+                state->motor_error_,
+                state->dieboslave_error_,
+                state->encoder_error_,
+                state->controller_error_
+        );
+        state_debug_counter_ = 0;
+    }
+    state_debug_counter_++;
 
     return state;
+}
+
+void ODrive::warnIfError(char* error_name, uint32_t error) {
+    ROS_WARN_COND(error != 0, "%s - %s has error value: %i", slave_axis_name_, error_name, error);
 }
 
 float ODrive::getTorque()

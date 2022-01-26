@@ -103,7 +103,11 @@ private:
     ODriveAxis axis_;
     bool index_found_;
     float torque_constant_;
-    std::string name_;
+    const char* slave_axis_name_;
+    int state_debug_counter_;
+    int state_debug_counter_max_ = 40;
+
+    void warnIfError(char* error_name, uint32_t error);
 };
 
 } // namespace march
