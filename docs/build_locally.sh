@@ -49,9 +49,10 @@ function readmes_to_sphinx ()
         STATIC_DIR=${OUTPUT[i]}/static
         mkdir -p $STATIC_DIR
         echo "Converting ${INPUT[i]} to ${OUTPUT[i]}/README.rst"
-        pandoc -f commonmark -t rst --fail-if-warning --extract-media "$STATIC_DIR" ${INPUT[i]} | #conversion to rst
+        pandoc -f commonmark+pipe_tables -t rst --fail-if-warning --extract-media "$STATIC_DIR" ${INPUT[i]} | #conversion to rst
         sed -s 's/\.\. code:: math/\.\. math::/g' | #fix math blocks
         sed -s -E 's/\$[\\| ]*`(`([^$]|\\\$)*`)`[ |\\]*\$/:math:\1/g' | #fix inline math
+        sed -s 's/\\_/_/g' | #change latex's \_ to _
         sed "s#${OUTPUT[i]}/##" > ${OUTPUT[i]}/README.rst
     done
     cd "$CURRENT_DIR"
