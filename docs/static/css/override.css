@@ -142,3 +142,14 @@ span.caption-text {
     margin-bottom: 0;
     text-align: right;
 }
+
+.ik_documentation {
+    width: 1400px;
+}
+
+.ik_doc_img{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 80%; 
+}

@@ -1,4 +1,6 @@
-# Documentation: March Goniometric Inverse Kinematic Solver
+<div class="ik_documentation">
+
+# March Goniometric Inverse Kinematic Solver
 
 ## Introduction
 
@@ -8,16 +10,16 @@ This file provides the documentation of the Inverse Kinematic (IK) solver, used 
 
 We use the following definitions:
 
-| Variable:             | Positive:     | Negative:       |
-| --------------------- | ------------- | --------------- |
-| $`\text{fe}_{ankle}`$ | dorsi_flexion | plantar-flexion |
-| $`\text{fe}_{knee}`$  | flexion       | extension       |
-| $`\text{fe}_{hip}`$   | flexion       | extension       |
-| $`\text{aa}_{hip}`$   | abduction     | adduction       |
+Variable:   |   Positive:       |   Negative:
+----------  |   --------------- |   ------------------
+fe ankle    |   dorsi_flexion   |   plantar-flexion
+fe knee     |   flexion         |   extension
+fe hip      |   flexion         |   extension
+aa hip      |   abduction       |   adduction
 
 Since it should not matter whether the leg in front is the left or right leg, we use the definition of 1 or 2 after the variables in the table, where 1 is a joint in the rear leg and 2 a joint in the front leg.
 
-Furthermore we define $`\text{ANKLE\_ZERO\_ANLE} = 90 \degree`$ and $`\text{KNEE\_ZERO\_ANGLE = 180 \degree}`$, since $`\text{fe}_{ankle} = 0`$ results in an angle between foot and lower leg of 90 degrees and $`\text{fe}_{knee} = 0`$ results in an angle between lower leg and upper leg of 180 degrees.
+Furthermore we define $`\text{ANKLE\_ZERO\_ANKLE} = 90°`$ and $`\text{KNEE\_ZERO\_ANGLE = 180°}`$, since $`\text{fe}_{ankle} = 0`$ results in an angle between foot and lower leg of 90 degrees and $`\text{fe}_{knee} = 0`$ results in an angle between lower leg and upper leg of 180 degrees.
 
 The Pose class contains two important methods, namely to find the end-pose  and the mid-pose to reach a given foot location. The mathematics used to find these end- and mid-pose are described step-wise, in the same order as used in [ik_solver.py](march_goniometric_ik_solver/ik_solver.py):
 
@@ -68,7 +70,11 @@ With the angles $`\angle_{ankle}, \angle_{knee}, \angle_{hip}`$, we can define t
 
 </td><td width=50%>
 
+<div class="ik_doc_img">
+
 ![ground_pose_flexion](images/calculate_ground_pose_flexion_bended.svg "ground_pose_flexion")
+
+</div>
 
 </td></tr></table>
 
@@ -91,7 +97,11 @@ Besides those three angles, we also need $`\angle O H A_2`$ and $`\angle H A_2 T
 
 </td><td width=50%>
 
+<div class="ik_doc_img">
+
 ![lifted_pose](images/calculate_lifted_pose_bended.svg "lifted_pose")
+
+</div>
 
 </td></tr></table>
 
@@ -137,7 +147,11 @@ Finally, we can define the other changed joint values as:
 
 </td><td width=50%>
 
+<div class="ik_doc_img">
+
 ![reduced_swing_dorsi_flexion](images/reduce_swing_dorsi_flexion.svg "reduced_swing_dorsi_flexion")
+
+</div>
 
 </td></tr></table>
 
@@ -175,7 +189,11 @@ Finally, we can define the other changed joint values. To do this, we also need 
 
 </td><td width=50%>
 
+<div class="ik_doc_img">
+
 ![straighten_leg](images/straighten_leg_bended.svg "straighten_leg")
+
+</div>
 
 </td></tr></table>
 
@@ -204,7 +222,11 @@ Although it is not required for the exoskeleton pose, we can also calculate the 
 
 </td><td width=50%>
 
+<div class="ik_doc_img">
+
 ![reduced_stance_dorsi_flexion](images/reduce_stance_dorsi_flexion.svg "reduced_stance_dorsi_flexion")
+
+</div>
 
 </td></tr></table>
 
@@ -272,7 +294,11 @@ A simple try shows that we are interested in the equation with the minus sign. T
 
 </td><td width=50%>
 
+<div class="ik_doc_img">
+
 ![side_step_fixed_height](images/side_step_fixed_height.svg "side_step_fixed_height")
+
+</div>
 
 </td></tr></table>
 
@@ -367,4 +393,4 @@ Notice that this is equal to the result we had for an outwards step, before subs
  -->
 
 
- </body>
+</div>
