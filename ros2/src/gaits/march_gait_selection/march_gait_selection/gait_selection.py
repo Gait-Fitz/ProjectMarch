@@ -24,6 +24,7 @@ from march_utility.utilities.node_utils import (
 from march_utility.utilities.utility_functions import (
     validate_and_get_joint_names_for_inverse_kinematics,
 )
+from march_utility.gait.gait_parameter_limit_setter import SetGaitParameterLimits
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.exceptions import ParameterNotDeclaredException
 from rclpy.node import Node
@@ -465,6 +466,7 @@ class GaitSelection(Node):
             self.dynamic_setpoint_gait = DynamicSetpointGait(gait_selection_node=self)
             gaits["dynamic_walk"] = self.dynamic_setpoint_gait
             self.logger.info("Added dynamic_walk to gaits")
+            SetGaitParameterLimits(self)
 
         return gaits
 

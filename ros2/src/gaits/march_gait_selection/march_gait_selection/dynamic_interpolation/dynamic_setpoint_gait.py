@@ -347,7 +347,7 @@ class DynamicSetpointGait(GaitInterface):
             self.foot_location = self._get_foot_location(self.subgait_id)
             stop = self._check_msg_time(self.foot_location)
             self._publish_foot_location(self.subgait_id, self.foot_location)
-            self.logger.info(
+            self.logger.debug(
                 f"Stepping to location ({self.foot_location.point.x}, {self.foot_location.point.y})"
             )
 
@@ -362,10 +362,11 @@ class DynamicSetpointGait(GaitInterface):
         )
 
         trajectory = self.dynamic_subgait.get_joint_trajectory_msg()
+        duration = Duration(self.dynamic_subgait.duration_scaled)
 
         return TrajectoryCommand(
             trajectory,
-            Duration(self.dynamic_subgait_duration),
+            duration,
             self.subgait_id,
             self._end_time,
         )
@@ -381,7 +382,6 @@ class DynamicSetpointGait(GaitInterface):
 
     def update_parameters(self) -> None:
         """Callback for gait_selection_node when the parameters have been updated."""
-        self.dynamic_subgait_duration = self.gait_selection.dynamic_subgait_duration
         self.minimum_stair_height = self.gait_selection.minimum_stair_height
 
     def _publish_foot_location(

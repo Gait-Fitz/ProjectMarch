@@ -61,14 +61,15 @@ class DynamicSubgait:
     ):
         self.logger = Logger(gait_selection_node, __class__.__name__)
         self._get_parameters(gait_selection_node)
-        self.time = [
-            0,
-            self.push_off_fraction * self.duration,
-            self.middle_point_fraction * self.duration,
-            self.duration,
-        ]
         self.starting_position = starting_position
         self.location = location
+        self.duration_scaled = self.location.x / 0.4 * self.duration
+        self.time = [
+            0,
+            self.push_off_fraction * self.duration_scaled,
+            self.middle_point_fraction * self.duration_scaled,
+            self.duration_scaled,
+        ]
         self.joint_names = joint_names
         self.subgait_id = subgait_id
         self.joint_soft_limits = joint_soft_limits
@@ -271,8 +272,8 @@ class DynamicSubgait:
             position > self.joint_soft_limits[joint_index].upper
             or position < self.joint_soft_limits[joint_index].lower
         ):
-            self.logger.info(
-                f"DynamicSubgait: {self.joint_names[joint_index]} will be outside of soft limits, "
+            self.logger.debug(
+                f"{self.joint_names[joint_index]} will be outside of soft limits, "
                 f"position: {position}, soft limits: "
                 f"[{self.joint_soft_limits[joint_index].lower}, {self.joint_soft_limits[joint_index].upper}]."
             )
@@ -281,8 +282,8 @@ class DynamicSubgait:
             )
 
         if abs(velocity) > self.joint_soft_limits[joint_index].velocity:
-            self.logger.info(
-                f"DynamicSubgait: {self.joint_names[joint_index]} will be outside of velocity limits, "
+            self.logger.debug(
+                f"{self.joint_names[joint_index]} will be outside of velocity limits, "
                 f"velocity: {velocity}, velocity limit: {self.joint_soft_limits[joint_index].velocity}."
             )
             raise Exception(
