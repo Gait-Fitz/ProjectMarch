@@ -45,7 +45,7 @@ Sphinx HTML proofer:
     #   - valid html tags (depending on $HTMLPROOFER_ARGS, so there will be no active link checks on an MR)
     #   - only https images and links
     #   - all links in the docs are still available/online
-    - "htmlproofer docs/build/ $HTMLPROOFER_ARGS --check-favicon --check-html --check-img-http --check-sri --enforce-https --only-4xx --file-ignore docs/build/search.html --hydra_config '{\"max_concurrency\": 1}' --url-ignore '#'"
+    - "htmlproofer docs/build/ $HTMLPROOFER_ARGS --check-favicon --check-html --check-img-http --check-sri --enforce-https --only-4xx --file-ignore docs/build/search.html --hydra_config '{\"max_concurrency\": 1}' --url-ignore '#','https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'"
   # This rule below should always evaluate to true.
   # DON'T REMOVE IS NEEDED see: https://coastgit.hzg.de/help/ci/parent_child_pipelines.md
   rules:
