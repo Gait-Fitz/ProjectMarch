@@ -47,6 +47,7 @@ class DynamicJointTrajectory:
             time, position, bc_type=boundary_condition
         )
         self.interpolated_velocity = self.interpolated_position.derivative()
+        self.interpolated_acceleration = self.interpolated_velocity.derivative()
 
     def get_interpolated_setpoint(self, time: float) -> Setpoint:
         """Computes a Setpoint instance with the given time and the interpolated
@@ -62,4 +63,5 @@ class DynamicJointTrajectory:
             Duration(time),
             float(self.interpolated_position(time)),
             float(self.interpolated_velocity(time)),
+            float(self.interpolated_acceleration(time)),
         )

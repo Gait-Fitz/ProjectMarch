@@ -6,6 +6,11 @@ from rclpy.node import Node
 from march_gait_selection.dynamic_interpolation.dynamic_joint_trajectory import (
     DynamicJointTrajectory,
 )
+from march_utility.exceptions.gait_exceptions import (
+    PositionSoftLimitError,
+    VelocitySoftLimitError,
+    AccelerationSoftLimitError,
+)
 from march_utility.gait.limits import Limits
 from march_utility.gait.setpoint import Setpoint
 from march_utility.utilities.duration import Duration
@@ -63,13 +68,6 @@ class DynamicSubgait:
         self._get_parameters(gait_selection_node)
         self.starting_position = starting_position
         self.location = location
-        self.duration_scaled = self.location.x / 0.4 * self.duration
-        self.time = [
-            0,
-            self.push_off_fraction * self.duration_scaled,
-            self.middle_point_fraction * self.duration_scaled,
-            self.duration_scaled,
-        ]
         self.joint_names = joint_names
         self.subgait_id = subgait_id
         self.joint_soft_limits = joint_soft_limits
@@ -156,6 +154,14 @@ class DynamicSubgait:
         :returns: A joint_trajectory_msg
         :rtype: joint_trajectory_msg
         """
+        self.duration_scaled = self.location.x / 0.4 * self.duration
+        self.time = [
+            0,
+            self.push_off_fraction * self.duration_scaled,
+            self.middle_point_fraction * self.duration_scaled,
+            self.duration_scaled,
+        ]
+
         # Update pose:
         pose_list = [joint.position for joint in self.starting_position.values()]
         self.pose = Pose(pose_list)
@@ -169,6 +175,7 @@ class DynamicSubgait:
         joint_trajectory_msg = trajectory_msg.JointTrajectory()
         joint_trajectory_msg.joint_names = self.joint_names
 
+        acceleration = []
         timestamps = np.linspace(self.time[0], self.time[-1], INTERPOLATION_POINTS)
         for timestamp in timestamps:
             joint_trajecory_point = trajectory_msg.JointTrajectoryPoint()
@@ -181,7 +188,10 @@ class DynamicSubgait:
 
                 joint_trajecory_point.positions.append(interpolated_setpoint.position)
                 joint_trajecory_point.velocities.append(interpolated_setpoint.velocity)
-                self._check_joint_limits(joint_index, joint_trajecory_point)
+                acceleration.append(interpolated_setpoint.acceleration)
+                self._check_joint_limits(
+                    joint_index, joint_trajecory_point, acceleration
+                )
 
             joint_trajectory_msg.points.append(joint_trajecory_point)
 
@@ -257,6 +267,7 @@ class DynamicSubgait:
         self,
         joint_index: int,
         joint_trajectory_point: trajectory_msg.JointTrajectoryPoint,
+        acceleration: List[float],
     ) -> None:
         """Check if values in the joint_trajectory_point are within the soft and
         velocity limits defined in the urdf
@@ -272,20 +283,23 @@ class DynamicSubgait:
             position > self.joint_soft_limits[joint_index].upper
             or position < self.joint_soft_limits[joint_index].lower
         ):
-            self.logger.debug(
-                f"{self.joint_names[joint_index]} will be outside of soft limits, "
-                f"position: {position}, soft limits: "
-                f"[{self.joint_soft_limits[joint_index].lower}, {self.joint_soft_limits[joint_index].upper}]."
-            )
-            raise Exception(
-                f"{self.joint_names[joint_index]} will be outside its soft limits."
+            raise PositionSoftLimitError(
+                self.joint_names[joint_index],
+                position,
+                self.joint_soft_limits[joint_index].lower,
+                self.joint_soft_limits[joint_index].upper,
             )
 
         if abs(velocity) > self.joint_soft_limits[joint_index].velocity:
-            self.logger.debug(
-                f"{self.joint_names[joint_index]} will be outside of velocity limits, "
-                f"velocity: {velocity}, velocity limit: {self.joint_soft_limits[joint_index].velocity}."
+            raise VelocitySoftLimitError(
+                self.joint_names[joint_index],
+                velocity,
+                self.joint_soft_limits[joint_index].velocity,
             )
-            raise Exception(
-                f"{self.joint_names[joint_index]} will be outside its velocity limits."
+
+        if abs(acceleration[joint_index]) > self.joint_soft_limits[joint_index].effort:
+            raise AccelerationSoftLimitError(
+                self.joint_names[joint_index],
+                acceleration[joint_index],
+                self.joint_soft_limits[joint_index].effort,
             )
