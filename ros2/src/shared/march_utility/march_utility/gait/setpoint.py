@@ -24,7 +24,6 @@ class Setpoint:
         time: Duration,
         position: float,
         velocity: Optional[float] = None,
-        acceleration: Optional[float] = None,
     ) -> None:
         """
         Initialize a setpoint.
@@ -32,7 +31,6 @@ class Setpoint:
         :param time: The time within the subgait, in nanoseconds.
         :param position: The position (angle) of the joint.
         :param velocity: The velocity of the joint.
-        :param acceleration: The acceleration of the joint.
         """
         self._time = round(
             time, self.digits
@@ -42,11 +40,6 @@ class Setpoint:
             self._velocity: Optional[float] = round(velocity, self.digits)
         else:
             self._velocity = None
-
-        if acceleration is not None:
-            self._acceleration: Optional[float] = round(acceleration, self.digits)
-        else:
-            self._acceleration = None
 
     @property
     def time(self):
@@ -68,38 +61,20 @@ class Setpoint:
     def velocity(self):
         return self._velocity
 
-    @property
-    def acceleration(self):
-        return self._acceleration
-
     @velocity.setter
     def velocity(self, velocity: float):
         self._velocity = round(velocity, self.digits)
 
-    @acceleration.setter
-    def acceleration(self, acceleration: float):
-        self._velocity = round(acceleration, self.digits)
-
     def __repr__(self):
-        if self.velocity is not None and self.acceleration is not None:
+        if self.velocity is not None:
             return (
                 f"Time: {self.time.nanoseconds!s}, Position: {self.position!s}, Velocity:"
-                f" {self.velocity!s}, Acceleration: {self.acceleration!s}"
-            )
-        elif self.velocity is not None and self.acceleration is None:
-            return (
-                f"Time: {self.time.nanoseconds!s}, Position: {self.position!s}, Velocity:"
-                f" {self.velocity!s}, Acceleration: Not specified"
-            )
-        elif self.velocity is None and self.acceleration is not None:
-            return (
-                f"Time: {self.time.nanoseconds!s}, Position: {self.position!s}, Velocity:"
-                f" Not specified, Acceleration: {self.acceleration!s}"
+                f" {self.velocity!s}"
             )
         else:
             return (
                 f"Time: {self.time!s}, Position: {self.position!s}, Velocity: Not "
-                f"specified, Acceleration: Not specified"
+                f"specified"
             )
 
     def __eq__(self, other):
@@ -108,7 +83,6 @@ class Setpoint:
                 self.time == other.time
                 and self.position == other.position
                 and self.velocity == other.velocity
-                and self.acceleration == other.acceleration
             )
         else:
             return False
