@@ -1,6 +1,11 @@
 import numpy as np
 from time import sleep
 from march_gait_selection.dynamic_interpolation.dynamic_subgait import DynamicSubgait
+from march_utility.exceptions.gait_exceptions import (
+    PositionSoftLimitError,
+    VelocitySoftLimitError,
+    AccelerationSoftLimitError,
+)
 from geometry_msgs.msg import Point
 
 
@@ -32,23 +37,45 @@ class SetGaitParameterLimits:
         self.gait.logger.info(f"{self.default_limits}")
 
     def loop_over_parameters(self):
-        values = np.linspace(0.05, 1.0, 20).tolist()
+        values = [round(value, 3) for value in np.linspace(0.05, 1.0, 20).tolist()]
         self.middle_point_height = []
         self.middle_point_fraction = []
         self.push_off_position = []
         self.push_off_fraction = []
 
         for value in values:
-            self.set_middle_point_height(value)
-            self.set_middle_point_fraction(value)
-            self.set_push_off_position(value)
-            self.set_push_off_fraction(value)
+            if value <= 0.3:
+                self.set_push_off_fraction(value)
+            if value <= 0.5:
+                self.set_push_off_position(value)
+            if value >= 0.1 and value <= 0.5:
+                self.set_middle_point_height(value)
+            if value >= 0.4 and value <= 0.7:
+                self.set_middle_point_fraction(value)
+
+        times = [round(value, 3) for value in np.linspace(0.5, 5.0, 50).tolist()]
+        self.duration = []
+        for time in times:
+            self.set_duration(time)
 
         self.default_limits = {
-            "middle_point_height": [min(self.middle_point_height), max(self.middle_point_height)],
-            "middle_point_fraction": [min(self.middle_point_fraction), max(self.middle_point_fraction)],
-            "limit_push_off_position": [min(self.push_off_position), max(self.push_off_position)],
-            "limit_push_off_fraction": [min(self.push_off_fraction), max(self.push_off_fraction)],
+            "middle_point_height": [
+                min(self.middle_point_height),
+                max(self.middle_point_height),
+            ],
+            "middle_point_fraction": [
+                min(self.middle_point_fraction),
+                max(self.middle_point_fraction),
+            ],
+            "limit_push_off_position": [
+                min(self.push_off_position),
+                max(self.push_off_position),
+            ],
+            "limit_push_off_fraction": [
+                min(self.push_off_fraction),
+                max(self.push_off_fraction),
+            ],
+            "limit_duration": [min(self.duration), max(self.duration)],
         }
 
     def set_middle_point_height(self, value):
@@ -75,10 +102,20 @@ class SetGaitParameterLimits:
             self.push_off_fraction.append(value)
         self.reset()
 
+    def set_duration(self, value):
+        self.dynamic_subgait.duration = value
+        if self.try_to_get_trajectory():
+            self.duration.append(value)
+        self.reset()
+
     def try_to_get_trajectory(self):
         try:
             self.dynamic_subgait.get_joint_trajectory_msg()
-        except Exception:
+        except (
+            PositionSoftLimitError,
+            VelocitySoftLimitError,
+            AccelerationSoftLimitError,
+        ):
             return False
         return True
 
