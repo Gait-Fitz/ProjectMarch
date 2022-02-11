@@ -13,7 +13,9 @@ from geometry_msgs.msg import Point
 class SetGaitParameterLimits:
     def __init__(self, gait_selection_node):
         sleep(2)
+        self.gait_selection = gait_selection_node
         self.gait = gait_selection_node.dynamic_setpoint_gait
+        # Fix: start position will now always be homestand
         self.start_position = self.gait.start_position
         self.joint_soft_limits = self.gait.joint_soft_limits
         self.joint_names = self.gait.joint_names
@@ -136,7 +138,11 @@ class SetGaitParameterLimits:
         return True
 
     def reset(self):
-        self.dynamic_subgait.middle_point_height = 0.15
-        self.dynamic_subgait.middle_point_fraction = 0.45
-        self.dynamic_subgait.push_off_position = -0.15
-        self.dynamic_subgait.push_off_fraction = 0.2
+        self.dynamic_subgait.middle_point_height = (
+            self.gait_selection.middle_point_height
+        )
+        self.dynamic_subgait.middle_point_fraction = (
+            self.gait_selection.middle_point_fraction
+        )
+        self.dynamic_subgait.push_off_position = self.gait_selection.push_off_position
+        self.dynamic_subgait.push_off_fraction = self.gait_selection.push_off_fraction

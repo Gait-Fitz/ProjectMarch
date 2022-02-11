@@ -3,6 +3,7 @@ import sys
 
 import rclpy
 from march_utility.utilities.duration import Duration
+from march_utility.gait.gait_parameter_limit_setter import SetGaitParameterLimits
 from rcl_interfaces.msg import SetParametersResult
 from rclpy import Parameter
 from rclpy.executors import MultiThreadedExecutor
@@ -51,7 +52,6 @@ def parameter_callback(gait_selection, gait_state_machine, parameters):
     :param parameters: the parameters to update
     :return: Whether the callback was successful
     """
-    gait_selection.get_logger().info("Parameters are updated")
     gaits_updated = False
     for param in parameters:
         if param.name == "balance" and param.type_ == Parameter.Type.BOOL:
@@ -104,6 +104,7 @@ def parameter_callback(gait_selection, gait_state_machine, parameters):
     # Seperate update function for dynamic gait to avoid time performance issues
     if dynamic_gait_updated:
         gait_selection.dynamic_setpoint_gait.update_parameters()
+        SetGaitParameterLimits(gait_selection)
         gait_selection.get_logger().info("Dynamic gait parameters updated.")
     elif gaits_updated:
         gait_selection.update_gaits()
