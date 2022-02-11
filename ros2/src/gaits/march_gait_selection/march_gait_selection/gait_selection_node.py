@@ -2,6 +2,7 @@ import signal
 import sys
 
 import rclpy
+from rclpy.node import Node
 from march_utility.utilities.duration import Duration
 from march_utility.gait.gait_parameter_limit_setter import SetGaitParameterLimits
 from rcl_interfaces.msg import SetParametersResult
@@ -28,9 +29,12 @@ def main():
     gait_state_machine = GaitStateMachine(gait_selection, scheduler)
     gait_state_machine.run()
     executor = MultiThreadedExecutor()
+    limits = SetGaitParameterLimits(gait_selection).limits
 
     gait_selection.add_on_set_parameters_callback(
-        lambda params: parameter_callback(gait_selection, gait_state_machine, params)
+        lambda params: parameter_callback(
+            gait_selection, gait_state_machine, params, limits
+        )
     )
 
     signal.signal(signal.SIGTERM, sys_exit)
@@ -41,7 +45,7 @@ def main():
     rclpy.shutdown()
 
 
-def parameter_callback(gait_selection, gait_state_machine, parameters):
+def parameter_callback(gait_selection, gait_state_machine, parameters, limits):
     """
     A callback function that is used to update the parameters that are a part of the
     gait selection node. Since some of these parameters are from the
@@ -71,24 +75,6 @@ def parameter_callback(gait_selection, gait_state_machine, parameters):
             if param.value < 0:
                 return SetParametersResult(successful=False)
             gait_selection._first_subgait_delay = Duration(seconds=param.value)
-        elif param.name == "dynamic_subgait_duration":
-            gait_selection.dynamic_subgait_duration = param.value
-            dynamic_gait_updated = True
-        elif param.name == "middle_point_fraction":
-            gait_selection.middle_point_fraction = param.value
-            dynamic_gait_updated = True
-        elif param.name == "middle_point_height":
-            gait_selection.middle_point_height = param.value
-            dynamic_gait_updated = True
-        elif param.name == "minimum_stair_height":
-            gait_selection.minimum_stair_height = param.value
-            dynamic_gait_updated = True
-        elif param.name == "push_off_fraction":
-            gait_selection.push_off_fraction = param.value
-            dynamic_gait_updated = True
-        elif param.name == "push_off_position":
-            gait_selection.push_off_position = param.value
-            dynamic_gait_updated = True
         elif param.name == "gait_package" and param.type_ == Parameter.Type.STRING:
             gait_selection._gait_package = param.value
             gaits_updated = True
@@ -100,6 +86,40 @@ def parameter_callback(gait_selection, gait_state_machine, parameters):
             if gait_state_machine.update_timer is not None:
                 gait_state_machine.update_timer.destroy()
             gait_state_machine.run()
+        # Dynamic gait parameters:
+        elif param.name == "dynamic_subgait_duration":
+            if inside_limit(param, limits):
+                gait_selection.dynamic_subgait_duration = param.value
+                dynamic_gait_updated = True
+            else:
+                outside_limit_logger(gait_selection, param, limits)
+        elif param.name == "middle_point_fraction":
+            if inside_limit(param, limits):
+                gait_selection.middle_point_fraction = param.value
+                dynamic_gait_updated = True
+            else:
+                outside_limit_logger(gait_selection, param, limits)
+        elif param.name == "middle_point_height":
+            if inside_limit(param, limits):
+                gait_selection.middle_point_height = param.value
+                dynamic_gait_updated = True
+            else:
+                outside_limit_logger(gait_selection, param, limits)
+        elif param.name == "push_off_fraction":
+            if inside_limit(param, limits):
+                gait_selection.push_off_fraction = param.value
+                dynamic_gait_updated = True
+            else:
+                outside_limit_logger(gait_selection, param, limits)
+        elif param.name == "push_off_position":
+            if inside_limit(param, limits):
+                gait_selection.push_off_position = param.value
+                dynamic_gait_updated = True
+            else:
+                outside_limit_logger(gait_selection, param, limits)
+        elif param.name == "minimum_stair_height":
+            gait_selection.minimum_stair_height = param.value
+            dynamic_gait_updated = True
 
     # Seperate update function for dynamic gait to avoid time performance issues
     if dynamic_gait_updated:
@@ -112,3 +132,13 @@ def parameter_callback(gait_selection, gait_state_machine, parameters):
         gait_selection.get_logger().info("Gaits were updated")
 
     return SetParametersResult(successful=True)
+
+
+def inside_limit(param, limits) -> bool:
+    return param.value >= limits[param.name][0] and param.value <= limits[param.name][1]
+
+
+def outside_limit_logger(node: Node, param, limits: dict) -> None:
+    node.get_logger().info(
+        f"{param.name} {param.value} outside of limit {limits[param.name]}"
+    )

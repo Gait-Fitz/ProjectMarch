@@ -38,7 +38,7 @@ class DynamicSetpointGait(GaitInterface):
         self.joint_names = get_joint_names_from_urdf()
         self._get_soft_limits()
 
-        self.start_position = self._joint_dict_to_setpoint_dict(
+        self.start_position = self.joint_dict_to_setpoint_dict(
             get_position_from_yaml("stand")
         )
         self.end_position = self.start_position
@@ -411,7 +411,7 @@ class DynamicSetpointGait(GaitInterface):
         return joint_dict
 
     @staticmethod
-    def _joint_dict_to_setpoint_dict(joint_dict: dict) -> dict:
+    def joint_dict_to_setpoint_dict(joint_dict: dict) -> dict:
         """Creates a setpoint_dict from a joint_dict.
 
         :param joint_dict: A dictionary containing joint names and positions.
