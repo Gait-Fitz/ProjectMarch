@@ -1,7 +1,9 @@
+"""Author: Marten Haitjema, MVII"""
+
 import yaml
 import numpy as np
 
-from time import sleep
+from rclpy.node import Node
 from march_gait_selection.dynamic_interpolation.dynamic_subgait import DynamicSubgait
 from march_utility.exceptions.gait_exceptions import (
     PositionSoftLimitError,
@@ -11,8 +13,13 @@ from geometry_msgs.msg import Point
 
 
 class SetGaitParameterLimits:
-    def __init__(self, gait_selection_node):
-        sleep(2)
+    """Class that checks what the limits are for each
+    dynamic gait parameter.
+
+    :param gait_selection_node: the gait_selection node
+    :type gait_selection_node: Node
+    """
+    def __init__(self, gait_selection_node: Node):
         self.gait_selection = gait_selection_node
         self.gait = gait_selection_node.dynamic_setpoint_gait
         # Fix: start position will now always be homestand
@@ -39,7 +46,9 @@ class SetGaitParameterLimits:
         self.loop_over_parameters()
         self.gait.logger.info(f"{self.default_limits}")
 
-    def loop_over_parameters(self):
+    def loop_over_parameters(self) -> None:
+        """Loops over each parameter for the range of values.
+        Sets the min and max limits and writes this to a yaml file."""
         self.reset()
         self.middle_point_height = []
         middle_point_height_values = [
@@ -102,32 +111,44 @@ class SetGaitParameterLimits:
         with open(path, "w") as yaml_file:
             yaml_file.write(yaml.dump(self.default_limits))
 
-    def set_middle_point_height(self, value):
+    def set_middle_point_height(self, value: float) -> None:
+        """Set the parameter to given value and try to get trajectory.
+        Append to list of possible values if successful."""
         self.dynamic_subgait.middle_point_height = value
         if self.try_to_get_trajectory():
             self.middle_point_height.append(value)
 
-    def set_middle_point_fraction(self, value):
+    def set_middle_point_fraction(self, value: float) -> None:
+        """Set the parameter to given value and try to get trajectory.
+        Append to list of possible values if successful."""
         self.dynamic_subgait.middle_point_fraction = value
         if self.try_to_get_trajectory():
             self.middle_point_fraction.append(value)
 
-    def set_push_off_position(self, value):
+    def set_push_off_position(self, value: float) -> None:
+        """Set the parameter to given value and try to get trajectory.
+        Append to list of possible values if successful."""
         self.dynamic_subgait.push_off_position = -value
         if self.try_to_get_trajectory():
             self.push_off_position.append(value)
 
-    def set_push_off_fraction(self, value):
+    def set_push_off_fraction(self, value: float) -> None:
+        """Set the parameter to given value and try to get trajectory.
+        Append to list of possible values if successful."""
         self.dynamic_subgait.push_off_fraction = value
         if self.try_to_get_trajectory():
             self.push_off_fraction.append(value)
 
-    def set_duration(self, value):
+    def set_duration(self, value: float) -> None:
+        """Set the parameter to given value and try to get trajectory.
+        Append to list of possible values if successful."""
         self.dynamic_subgait.duration = value
         if self.try_to_get_trajectory():
             self.duration.append(value)
 
-    def try_to_get_trajectory(self):
+    def try_to_get_trajectory(self) -> bool:
+        """Tries to create a trajectory with the set parameters. If
+        successful, it returns True, else False."""
         try:
             self.dynamic_subgait.get_joint_trajectory_msg()
         except (
@@ -137,7 +158,8 @@ class SetGaitParameterLimits:
             return False
         return True
 
-    def reset(self):
+    def reset(self) -> None:
+        """Reset parameters to values of the gait_selection_node"""
         self.dynamic_subgait.middle_point_height = (
             self.gait_selection.middle_point_height
         )
