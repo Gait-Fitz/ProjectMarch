@@ -1,10 +1,11 @@
+import yaml
 import numpy as np
+
 from time import sleep
 from march_gait_selection.dynamic_interpolation.dynamic_subgait import DynamicSubgait
 from march_utility.exceptions.gait_exceptions import (
     PositionSoftLimitError,
     VelocitySoftLimitError,
-    AccelerationSoftLimitError,
 )
 from geometry_msgs.msg import Point
 
@@ -37,24 +38,41 @@ class SetGaitParameterLimits:
         self.gait.logger.info(f"{self.default_limits}")
 
     def loop_over_parameters(self):
-        values = [round(value, 3) for value in np.linspace(0.05, 1.0, 20).tolist()]
+        self.reset()
         self.middle_point_height = []
+        middle_point_height_values = [
+            round(value, 3) for value in np.linspace(0.1, 0.5, 9).tolist()
+        ]
+        for value in middle_point_height_values:
+            self.set_middle_point_height(value)
+
+        self.reset()
         self.middle_point_fraction = []
+        middle_point_fraction_values = [
+            round(value, 3) for value in np.linspace(0.4, 0.7, 6).tolist()
+        ]
+        for value in middle_point_fraction_values:
+            self.set_middle_point_fraction(value)
+
+        self.reset()
         self.push_off_position = []
+        push_off_position_values = [
+            round(value, 3) for value in np.linspace(0.0, 0.5, 11).tolist()
+        ]
+        for value in push_off_position_values:
+            self.set_push_off_position(value)
+
+        self.reset()
         self.push_off_fraction = []
+        push_off_fraction_values = [
+            round(value, 3) for value in np.linspace(0.05, 0.3, 6).tolist()
+        ]
+        for value in push_off_fraction_values:
+            self.set_push_off_fraction(value)
 
-        for value in values:
-            if value <= 0.3:
-                self.set_push_off_fraction(value)
-            if value <= 0.5:
-                self.set_push_off_position(value)
-            if value >= 0.1 and value <= 0.5:
-                self.set_middle_point_height(value)
-            if value >= 0.4 and value <= 0.7:
-                self.set_middle_point_fraction(value)
-
-        times = [round(value, 3) for value in np.linspace(0.5, 5.0, 50).tolist()]
+        self.reset()
         self.duration = []
+        times = [round(value, 3) for value in np.linspace(0.5, 5.0, 91).tolist()]
         for time in times:
             self.set_duration(time)
 
@@ -78,35 +96,34 @@ class SetGaitParameterLimits:
             "limit_duration": [min(self.duration), max(self.duration)],
         }
 
+        path = "src/gaits/march_gait_selection/march_gait_selection/dynamic_interpolation/dynamic_gait_limits.yaml"
+        with open(path, "w") as yaml_file:
+            yaml_file.write(yaml.dump(self.default_limits))
+
     def set_middle_point_height(self, value):
         self.dynamic_subgait.middle_point_height = value
         if self.try_to_get_trajectory():
             self.middle_point_height.append(value)
-        self.reset()
 
     def set_middle_point_fraction(self, value):
         self.dynamic_subgait.middle_point_fraction = value
         if self.try_to_get_trajectory():
             self.middle_point_fraction.append(value)
-        self.reset()
 
     def set_push_off_position(self, value):
         self.dynamic_subgait.push_off_position = -value
         if self.try_to_get_trajectory():
             self.push_off_position.append(value)
-        self.reset()
 
     def set_push_off_fraction(self, value):
         self.dynamic_subgait.push_off_fraction = value
         if self.try_to_get_trajectory():
             self.push_off_fraction.append(value)
-        self.reset()
 
     def set_duration(self, value):
         self.dynamic_subgait.duration = value
         if self.try_to_get_trajectory():
             self.duration.append(value)
-        self.reset()
 
     def try_to_get_trajectory(self):
         try:
@@ -114,7 +131,6 @@ class SetGaitParameterLimits:
         except (
             PositionSoftLimitError,
             VelocitySoftLimitError,
-            AccelerationSoftLimitError,
         ):
             return False
         return True
