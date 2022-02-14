@@ -21,7 +21,7 @@ LENGTH_LEG = LENGTH_UPPER_LEG + LENGTH_LOWER_LEG
 
 # Get ankle limit from urdf:
 limits = get_limits_robot_from_urdf_for_inverse_kinematics("right_ankle")
-SOFT_LIMIT_BUFFER = np.deg2rad(5)
+SOFT_LIMIT_BUFFER = np.deg2rad(3)
 MAX_ANKLE_FLEXION = limits.upper - SOFT_LIMIT_BUFFER
 
 # Constants:
@@ -118,8 +118,8 @@ class Pose:
         # create rotation matrix that we expand after every rotation:
         rot_total = rot(0)
 
-        # toes1 is defined at [LENGTH_FOOT, 0]:
-        pos_toes1 = np.array([LENGTH_FOOT, 0])
+        # toes1 is defined at [0, 0]:
+        pos_toes1 = np.array([0, 0])
 
         # ankle1 = toes1 + translation_by_foot1:
         rot_foot = rot(-self.rot_foot1)

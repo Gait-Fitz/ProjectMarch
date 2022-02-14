@@ -26,77 +26,115 @@ class LiveWidget:
         self.default_knee_bend = np.deg2rad(8)
         self.reduce_df_rear = True
         self.reduce_df_front = True
-
-        # Get default pose:
-        pose = Pose()
-        pose.solve_end_position(
-            0.0,
-            0.0,
-            "",
-            self.default_hip_fraction,
-            self.default_knee_bend,
-            self.reduce_df_front,
-            self.reduce_df_rear,
-        )
-        positions = pose.calculate_joint_positions()
-        positions_x = [pos[0] for pos in positions]
-        positions_y = [pos[1] for pos in positions]
-
-        # Plot the default pose:
         self.fig, self.ax = plt.subplots()
-        (self.exo,) = plt.plot(positions_x, positions_y, ".-")
 
-        # Plot ankle and toes goal locations:
-        (self.goal,) = plt.plot(0.0, 0.0, "x")
-        (self.toes,) = plt.plot(LENGTH_FOOT, 0.0, "x")
+        # Create pose object for current pose, mid_pose and next pose:
+        self.current_pose = {"name": "current_pose", "pose": Pose(), "color": "red"}
+        self.mid_pose = {"name": "mid_pose", "pose": Pose(), "color": "orange"}
+        self.next_pose = {"name": "next_pose", "pose": Pose(), "color": "green"}
+        self.poses = [self.current_pose, self.mid_pose, self.next_pose]
 
-        # Plot a table of the joint angles in the current pose:
-        joints = [
-            "ankle1",
-            "hip1_aa",
-            "hip1_fe",
-            "knee1",
-            "ankle2",
-            "hip2_aa",
-            "hip2_fe",
-            "knee2",
-        ]
-        pose_rad = pose.pose_left
-        pose_deg = [np.rad2deg(angle) for angle in pose_rad]
-        celltext = np.column_stack(
-            (joints, np.round(pose_rad, 2), np.round(pose_deg, 2))
-        )
+        for pose in self.poses:
+            positions = pose["pose"].calculate_joint_positions()
+
+            # Translate current pose to have toes2 and in (0,0):
+            if pose["name"] == "current_pose":
+                positions = [pos - positions[-1] for pos in positions]
+
+            # Plot the pose:
+            positions_x = [pos[0] for pos in positions]
+            positions_y = [pos[1] for pos in positions]
+            (pose["plot"],) = plt.plot(
+                positions_x, positions_y, ".-", color=pose["color"]
+            )
+
+            # Plot ankle and toes goal locations for next_pose:
+            if pose["name"] == "next_pose":
+                (pose["goal_ankle"],) = plt.plot(-LENGTH_FOOT, 0.0, "x")
+                (pose["goal_toes"],) = plt.plot(0.0, 0.0, "x")
+
+            # Create table celltext for pose:
+            joints = [
+                "ankle1",
+                "hip1_aa",
+                "hip1_fe",
+                "knee1",
+                "ankle2",
+                "hip2_aa",
+                "hip2_fe",
+                "knee2",
+            ]
+            pose_rad = pose["pose"].pose_left
+            pose_deg = [np.rad2deg(angle) for angle in pose_rad]
+            pose["celltext"] = np.column_stack(
+                (joints, np.round(pose_rad, 2), np.round(pose_deg, 2))
+            )
+
+        # Create table:
         collabels = ("joint", "radians", "degrees")
+        celltext = np.concatenate(
+            [
+                self.current_pose["celltext"],
+                np.array([["", "", ""]]),
+                self.mid_pose["celltext"],
+                np.array([["", "", ""]]),
+                self.next_pose["celltext"],
+            ]
+        )
         self.table = plt.table(cellText=celltext, colLabels=collabels, loc="right")
         self.table.auto_set_column_width((0, 1, 2))
+        self.table.scale(1, 0.7)
 
         # Adjust the main plot to make room for the table, sliders and buttons:
         plt.subplots_adjust(left=0.1, bottom=0.2, right=2.5)
         plt.axis("equal")
-        plt.xlim(-0.3, 0.9)
+        plt.xlim(-0.6, 0.6)
         plt.ylim(-0.3, 0.9)
         plt.tight_layout()
         plt.grid()
 
         # Make a horizontal slider to control the x location of the ankle:
         ax_ankle_x = plt.axes([0.09, 0.01, 0.58, 0.02])
-        self.x_slider = Slider(
+        self.x_slider_current = Slider(
             ax=ax_ankle_x,
             label="",
             valmin=0.0,
             valmax=0.6,
             valinit=0.0,
+            color=self.current_pose["color"],
+        )
+
+        ax_ankle_x = plt.axes([0.09, 0.03, 0.58, 0.02])
+        self.x_slider_next = Slider(
+            ax=ax_ankle_x,
+            label="",
+            valmin=0.0,
+            valmax=0.6,
+            valinit=0.0,
+            color=self.next_pose["color"],
         )
 
         # Make a vertical slider to control the y location of the ankle:
         ax_ankle_y = plt.axes([0.01, 0.08, 0.02, 0.885])
-        self.y_slider = Slider(
+        self.y_slider_current = Slider(
             ax=ax_ankle_y,
             label="",
             valmin=-0.3,
             valmax=0.3,
             valinit=0.0,
             orientation="vertical",
+            color=self.current_pose["color"],
+        )
+
+        ax_ankle_y = plt.axes([0.03, 0.08, 0.02, 0.885])
+        self.y_slider_next = Slider(
+            ax=ax_ankle_y,
+            label="",
+            valmin=-0.3,
+            valmax=0.3,
+            valinit=0.0,
+            orientation="vertical",
+            color=self.next_pose["color"],
         )
 
         # Make a slider to control hip_fraction:
@@ -120,8 +158,10 @@ class LiveWidget:
         )
 
         # Create update callback for every slider's change:
-        self.x_slider.on_changed(self.update)
-        self.y_slider.on_changed(self.update)
+        self.x_slider_current.on_changed(self.update)
+        self.y_slider_current.on_changed(self.update)
+        self.x_slider_next.on_changed(self.update)
+        self.y_slider_next.on_changed(self.update)
         self.hip_slider.on_changed(self.update)
         self.knee_slider.on_changed(self.update)
 
@@ -149,50 +189,72 @@ class LiveWidget:
 
     # The function to be called anytime a slider's value changes:
     def update(self, update_value):
+        for pose in self.poses:
 
-        # Get new exo pose and update joint positions:
-        pose = Pose()
-        pose.solve_end_position(
-            self.x_slider.val,
-            self.y_slider.val,
-            "",
-            self.hip_slider.val,
-            np.deg2rad(self.knee_slider.val),
-            self.reduce_df_front,
-            self.reduce_df_rear,
-        )
-        positions = pose.calculate_joint_positions()
-        positions_x = [pos[0] for pos in positions]
-        positions_y = [pos[1] for pos in positions]
+            # Get new pose:
+            if pose["name"] == "current_pose":
+                x = self.x_slider_current.val
+                y = self.y_slider_current.val
+            else:
+                x = self.x_slider_next.val
+                y = self.y_slider_next.val
 
-        self.exo.set_xdata(positions_x)
-        self.exo.set_ydata(positions_y)
+            if pose["name"] == "mid_pose":
+                pose["pose"].solve_mid_position(
+                    x,
+                    y,
+                    0.5,
+                    0.1,
+                    "",
+                )
+            else:
+                pose["pose"].reset_to_zero_pose()
+                pose["pose"].solve_end_position(
+                    x,
+                    y,
+                    "",
+                    self.hip_slider.val,
+                    np.deg2rad(self.knee_slider.val),
+                    self.reduce_df_front,
+                    self.reduce_df_rear,
+                )
 
-        # Update ankle goal location:
-        self.goal.set_xdata(self.x_slider.val)
-        self.goal.set_ydata(self.y_slider.val)
+            # Update location data:
+            positions = pose["pose"].calculate_joint_positions()
+            if pose["name"] == "current_pose":
+                positions = [pos - positions[-1] for pos in positions]
+            positions_x = [pos[0] for pos in positions]
+            positions_y = [pos[1] for pos in positions]
 
-        # Update toes goal location:
-        self.toes.set_xdata(self.x_slider.val + LENGTH_FOOT)
-        self.toes.set_ydata(self.y_slider.val)
+            pose["plot"].set_xdata(positions_x)
+            pose["plot"].set_ydata(positions_y)
 
-        # Update table with joint angles:
-        pose_rad = pose.pose_right
-        for i in np.arange(len(pose_rad)):
-            self.table.get_celld()[(i + 1, 1)].get_text().set_text(
-                np.round(pose_rad[i], 2)
-            )
-            self.table.get_celld()[(i + 1, 2)].get_text().set_text(
-                np.round(np.rad2deg(pose_rad[i]), 2)
-            )
+            # Update goal locations:
+            if pose["name"] == "next_pose":
+                pose["goal_ankle"].set_xdata(x - LENGTH_FOOT)
+                pose["goal_ankle"].set_ydata(y)
+                pose["goal_toes"].set_xdata(x)
+                pose["goal_toes"].set_ydata(y)
+
+            # Update table with joint angles:
+            pose_rad = pose["pose"].pose_right
+            for i in np.arange(len(pose_rad)):
+                self.table.get_celld()[(i + 1, 1)].get_text().set_text(
+                    np.round(pose_rad[i], 2)
+                )
+                self.table.get_celld()[(i + 1, 2)].get_text().set_text(
+                    np.round(np.rad2deg(pose_rad[i]), 2)
+                )
 
         # Redraw plot:
         self.fig.canvas.draw_idle()
 
     # Reset function:
     def reset(self, event):
-        self.x_slider.reset()
-        self.y_slider.reset()
+        self.x_slider_current.reset()
+        self.y_slider_current.reset()
+        self.x_slider_next.reset()
+        self.y_slider_next.reset()
         self.hip_slider.reset()
         self.knee_slider.reset()
 
