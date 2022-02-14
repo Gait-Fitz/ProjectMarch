@@ -29,9 +29,9 @@ class LiveWidget:
         self.fig, self.ax = plt.subplots()
 
         # Create pose object for current pose, mid_pose and next pose:
-        self.current_pose = {"name": "current_pose", "pose": Pose(), "color": "red"}
-        self.mid_pose = {"name": "mid_pose", "pose": Pose(), "color": "orange"}
-        self.next_pose = {"name": "next_pose", "pose": Pose(), "color": "green"}
+        self.current_pose = {"name": "current_pose", "pose": Pose(), "color": "red", 'start_cell': 1}
+        self.mid_pose = {"name": "mid_pose", "pose": Pose(), "color": "orange", 'start_cell': 10}
+        self.next_pose = {"name": "next_pose", "pose": Pose(), "color": "green", 'start_cell': 19}
         self.poses = [self.current_pose, self.mid_pose, self.next_pose]
 
         for pose in self.poses:
@@ -40,6 +40,8 @@ class LiveWidget:
             # Translate current pose to have toes2 and in (0,0):
             if pose["name"] == "current_pose":
                 positions = [pos - positions[-1] for pos in positions]
+            else:
+                positions = [pos - np.array([LENGTH_FOOT, 0]) for pos in positions]
 
             # Plot the pose:
             positions_x = [pos[0] for pos in positions]
@@ -50,8 +52,8 @@ class LiveWidget:
 
             # Plot ankle and toes goal locations for next_pose:
             if pose["name"] == "next_pose":
-                (pose["goal_ankle"],) = plt.plot(-LENGTH_FOOT, 0.0, "x")
-                (pose["goal_toes"],) = plt.plot(0.0, 0.0, "x")
+                (pose["goal_ankle"],) = plt.plot(-LENGTH_FOOT, 0.0, "x", color='black')
+                (pose["goal_toes"],) = plt.plot(0.0, 0.0, "x", color='black')
 
             # Create table celltext for pose:
             joints = [
@@ -94,17 +96,21 @@ class LiveWidget:
         plt.grid()
 
         # Make a horizontal slider to control the x location of the ankle:
-        ax_ankle_x = plt.axes([0.09, 0.01, 0.58, 0.02])
+        slider_handle = {"size": "5"}
+        ax_ankle_x = plt.axes([0.09, 0.01, 0.29, 0.02])
         self.x_slider_current = Slider(
             ax=ax_ankle_x,
             label="",
-            valmin=0.0,
-            valmax=0.6,
+            valmin=-0.6,
+            valmax=0.0,
             valinit=0.0,
             color=self.current_pose["color"],
+            initcolor="black",
+            handle_style=slider_handle,
         )
+        self.x_slider_current.valtext.set_visible(False)
 
-        ax_ankle_x = plt.axes([0.09, 0.03, 0.58, 0.02])
+        ax_ankle_x = plt.axes([0.385, 0.01, 0.29, 0.02])
         self.x_slider_next = Slider(
             ax=ax_ankle_x,
             label="",
@@ -112,7 +118,10 @@ class LiveWidget:
             valmax=0.6,
             valinit=0.0,
             color=self.next_pose["color"],
+            initcolor="black",
+            handle_style=slider_handle,
         )
+        self.x_slider_next.valtext.set_visible(False)
 
         # Make a vertical slider to control the y location of the ankle:
         ax_ankle_y = plt.axes([0.01, 0.08, 0.02, 0.885])
@@ -138,7 +147,7 @@ class LiveWidget:
         )
 
         # Make a slider to control hip_fraction:
-        ax_horizontal = plt.axes([0.74, 0.85, 0.2, 0.02])
+        ax_horizontal = plt.axes([0.74, 0.93, 0.2, 0.02])
         self.hip_slider = Slider(
             ax=ax_horizontal,
             label="hip",
@@ -148,7 +157,7 @@ class LiveWidget:
         )
 
         # Make a slider to control knee_bend:
-        ax_horizontal = plt.axes([0.74, 0.9, 0.2, 0.02])
+        ax_horizontal = plt.axes([0.74, 0.96, 0.2, 0.02])
         self.knee_slider = Slider(
             ax=ax_horizontal,
             label="knee",
@@ -166,19 +175,19 @@ class LiveWidget:
         self.knee_slider.on_changed(self.update)
 
         # Create a reset button for all sliders:
-        ax_reset = plt.axes([0.7, 0.05, 0.25, 0.04])
+        ax_reset = plt.axes([0.7, 0.01, 0.25, 0.04])
         reset_button = Button(ax_reset, "Reset", hovercolor="0.975")
         reset_button.on_clicked(self.reset)
 
         # Create a toggle for rear ankle dorsi flexion reduction:
-        ax_toggle = plt.axes([0.7, 0.25, 0.1, 0.04])
+        ax_toggle = plt.axes([0.7, 0.07, 0.1, 0.04])
         self.toggle_df_rear = Button(
             ax_toggle, "df_rear", color="green", hovercolor="red"
         )
         self.toggle_df_rear.on_clicked(self.toggle_rear)
 
         # Create a toggle for front ankle dorsi flexion reduction:
-        ax_toggle = plt.axes([0.85, 0.25, 0.1, 0.04])
+        ax_toggle = plt.axes([0.85, 0.07, 0.1, 0.04])
         self.toggle_df_front = Button(
             ax_toggle, "df_front", color="green", hovercolor="red"
         )
@@ -189,12 +198,13 @@ class LiveWidget:
 
     # The function to be called anytime a slider's value changes:
     def update(self, update_value):
+        self.mid_pose["pose"] = self.current_pose["pose"]
         for pose in self.poses:
 
             # Get new pose:
             if pose["name"] == "current_pose":
-                x = self.x_slider_current.val
-                y = self.y_slider_current.val
+                x = abs(self.x_slider_current.val)
+                y = abs(self.y_slider_current.val)
             else:
                 x = self.x_slider_next.val
                 y = self.y_slider_next.val
@@ -221,8 +231,13 @@ class LiveWidget:
 
             # Update location data:
             positions = pose["pose"].calculate_joint_positions()
+
+            # Translate current pose to have toes2 and in (0,0):
             if pose["name"] == "current_pose":
                 positions = [pos - positions[-1] for pos in positions]
+            else:
+                positions = [pos - np.array([LENGTH_FOOT, 0]) for pos in positions]
+
             positions_x = [pos[0] for pos in positions]
             positions_y = [pos[1] for pos in positions]
 
@@ -239,10 +254,10 @@ class LiveWidget:
             # Update table with joint angles:
             pose_rad = pose["pose"].pose_right
             for i in np.arange(len(pose_rad)):
-                self.table.get_celld()[(i + 1, 1)].get_text().set_text(
+                self.table.get_celld()[(i + pose['start_cell'], 1)].get_text().set_text(
                     np.round(pose_rad[i], 2)
                 )
-                self.table.get_celld()[(i + 1, 2)].get_text().set_text(
+                self.table.get_celld()[(i + pose['start_cell'], 2)].get_text().set_text(
                     np.round(np.rad2deg(pose_rad[i]), 2)
                 )
 

@@ -118,8 +118,8 @@ class Pose:
         # create rotation matrix that we expand after every rotation:
         rot_total = rot(0)
 
-        # toes1 is defined at [0, 0]:
-        pos_toes1 = np.array([0, 0])
+        # toes1 is defined at [LENGTH_FOOT, 0]:
+        pos_toes1 = np.array([LENGTH_FOOT, 0])
 
         # ankle1 = toes1 + translation_by_foot1:
         rot_foot = rot(-self.rot_foot1)
@@ -248,10 +248,12 @@ class Pose:
         angle_ankle, angle_hip, angle_knee = self.leg_length_angles(dist_ankle_hip)
 
         base_angle = np.arcsin(abs(pos_ankle[0] - pos_hip[0]) / dist_ankle_hip)
-
         if leg == "rear":
-            self.fe_ankle1 = base_angle + angle_ankle
-            self.fe_hip1 = -base_angle + angle_hip
+            # Note: np.signs are there for when hip is behind ankle (can occur in mid position)
+            self.fe_ankle1 = (
+                np.sign(pos_hip[0] - pos_ankle[0]) * base_angle + angle_ankle
+            )
+            self.fe_hip1 = np.sign(pos_ankle[0] - pos_hip[0]) * base_angle + angle_hip
             self.fe_knee1 = KNEE_ZERO_ANGLE - angle_knee
 
         elif leg == "front":
@@ -389,29 +391,29 @@ class Pose:
         knee and the hip. Returns the calculated pose.
         """
 
-        # Get swing distance in current pose and calculate ankle2 midpoint location:
-        swing_distance = np.linalg.norm(self.pos_ankle1 - self.pos_ankle2)
-        midpoint_x = midpoint_fraction * (swing_distance + ankle_x) - swing_distance
-        midpoint_y = ankle_y + midpoint_height
-        pos_ankle2 = np.array([midpoint_x, midpoint_y])
+        # Save hip distance to next origin:
+        hip_current = self.pos_hip - self.pos_ankle2
 
-        # Reset pose to zero_pose and calculate distance between hip and ankle2 midpoint location:
+        # Calculate hip and ankle for next pose:
+        pose_next = Pose()
+        pose_next.solve_end_position(ankle_x, ankle_y, subgait_id)
+        hip_next = pose_next.pos_hip
+        ankle_next = pose_next.pos_ankle2
+
+        # ankle_mid: x is average, y is 0.1 above next:
+        ankle_mid = np.array([ankle_next[0] / 2, ankle_next[1] + 0.1])
+
+        # hip_mid: x is average, y is straighten leg location, unless walking down, than y is also average:
+        hip_mid = np.mean(np.array([hip_current, hip_next]), axis=0)
+        if ankle_next[1] >= 0:
+            hip_mid[1] = np.sqrt(self.max_leg_length ** 2 - hip_mid[0] ** 2)
+
+        # Solve mid_pose:
         self.reset_to_zero_pose()
-        dist_ankle2_hip = np.linalg.norm(pos_ankle2 - self.pos_hip)
-
-        # Calculate hip and knee2 angles in triangle with ankle2:
-        angle_hip, angle_knee2, angle_ankle2 = tas.get_angles_from_sides(
-            [LENGTH_LOWER_LEG, dist_ankle2_hip, LENGTH_UPPER_LEG]
-        )
-
-        # fe_hip2 = angle_hip +- hip angle between ankle2 and knee1:
-        hip_angle_ankle2_knee1 = qas.get_angle_between_points(
-            [pos_ankle2, self.pos_hip, self.pos_knee1]
-        )
-        self.fe_hip2 = angle_hip + np.sign(midpoint_x) * hip_angle_ankle2_knee1
-
-        # update fe_knee2:
-        self.fe_knee2 = KNEE_ZERO_ANGLE - angle_knee2
+        self.solve_leg(hip_mid, np.array([0, 0]), "rear")
+        self.solve_leg(hip_mid, ankle_mid, "front")
+        if self.fe_ankle1 > MAX_ANKLE_FLEXION:
+            self.reduce_stance_dorsi_flexion()
 
         # lift toes as much as possible:
         self.fe_ankle2 = MAX_ANKLE_FLEXION
