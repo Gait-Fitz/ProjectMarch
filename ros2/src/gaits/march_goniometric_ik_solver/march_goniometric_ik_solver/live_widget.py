@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.widgets import Slider, Button
 from march_goniometric_ik_solver.ik_solver import Pose, LENGTH_FOOT
+from copy import deepcopy
 
 # Layout problems occurred with older versions of matplotlib (for example 3.1.2).
 # Tested and working on 3.5.1 (latest version at the moment this tool was made).
@@ -27,6 +28,7 @@ class LiveWidget:
         self.reduce_df_rear = True
         self.reduce_df_front = True
         self.fig, self.ax = plt.subplots()
+        self.playing = False
 
         # Create pose object for current pose, mid_pose and next pose:
         self.current_pose = {
@@ -48,6 +50,7 @@ class LiveWidget:
             "start_cell": 19,
         }
         self.poses = [self.current_pose, self.mid_pose, self.next_pose]
+        (self.trajectory,) = plt.plot(0, 0, ".-", color="blue")
 
         for pose in self.poses:
             positions = pose["pose"].calculate_joint_positions()
@@ -195,25 +198,89 @@ class LiveWidget:
         reset_button.on_clicked(self.reset)
 
         # Create a toggle for rear ankle dorsi flexion reduction:
-        ax_toggle = plt.axes([0.7, 0.07, 0.1, 0.04])
-        self.toggle_df_rear = Button(
-            ax_toggle, "df_rear", color="green", hovercolor="red"
-        )
+        ax_toggle = plt.axes([0.7, 0.07, 0.07, 0.04])
+        self.toggle_df_rear = Button(ax_toggle, "df_r", color="green", hovercolor="red")
         self.toggle_df_rear.on_clicked(self.toggle_rear)
 
         # Create a toggle for front ankle dorsi flexion reduction:
-        ax_toggle = plt.axes([0.85, 0.07, 0.1, 0.04])
+        ax_toggle = plt.axes([0.79, 0.07, 0.07, 0.04])
         self.toggle_df_front = Button(
-            ax_toggle, "df_front", color="green", hovercolor="red"
+            ax_toggle, "df_f", color="green", hovercolor="red"
         )
         self.toggle_df_front.on_clicked(self.toggle_front)
+
+        # Create a button to play animation:
+        ax_play = plt.axes([0.88, 0.07, 0.07, 0.04])
+        self.play = Button(ax_play, "play", color="green", hovercolor="green")
+        self.play.on_clicked(self.interpolate_trajectory)
 
         # Show the widget:
         plt.show()
 
+    # Interpolation:
+    def interpolate_trajectory(self, event):
+        if not self.playing:
+            self.playing = True
+            self.play.color = "red"
+            self.play.hovercolor = "red"
+            # Get joint angles and foot rotation of three poses:
+            joint_angles = []
+            foot_rotations = []
+            for pose in self.poses:
+                if pose["name"] == "current_pose":
+                    joint_angles.append(pose["pose"].pose_left)
+                    foot_rotations.append(
+                        0
+                    )  # zero for now, since there is nof rot_foot2
+                else:
+                    joint_angles.append(pose["pose"].pose_right)
+                    foot_rotations.append(pose["pose"].rot_foot1)
+
+            # Get interpolated points (linear for now):
+            steps = np.linspace(0, 1, 21)
+            interpolated_pose_list = []
+            interpolated_foot_rotations = []
+
+            for part in range(2):
+                for step in steps:
+                    interpolated_pose_list.append(
+                        (1 - step) * np.array(joint_angles[part])
+                        + step * np.array(joint_angles[part + 1])
+                    )
+                    interpolated_foot_rotations.append(
+                        (1 - step) * foot_rotations[part]
+                        + step * foot_rotations[part + 1]
+                    )
+
+            for i in range(len(interpolated_pose_list)):
+                interpolated_pose = interpolated_pose_list[i]
+                interpolated_foot_rotation = interpolated_foot_rotations[i]
+                new_pose = Pose(interpolated_pose)
+                new_pose.rot_foot1 = interpolated_foot_rotation
+
+                positions = new_pose.calculate_joint_positions()
+                positions = [pos - np.array([LENGTH_FOOT, 0]) for pos in positions]
+
+                # Plot the pose:
+                positions_x = [pos[0] for pos in positions]
+                positions_y = [pos[1] for pos in positions]
+
+                self.trajectory.set_xdata(positions_x)
+                self.trajectory.set_ydata(positions_y)
+                self.update(0)
+                plt.pause(
+                    0.001
+                )  # Draw takes longer than pause, might consider to switch to pyqtgraph
+            self.playing = False
+            self.trajectory.set_xdata(0)
+            self.trajectory.set_ydata(0)
+            self.update(0)
+            self.play.color = "green"
+            self.play.hovercolor = "green"
+
     # The function to be called anytime a slider's value changes:
     def update(self, update_value):
-        self.mid_pose["pose"] = self.current_pose["pose"]
+        self.mid_pose["pose"] = deepcopy(self.current_pose["pose"])
         for pose in self.poses:
 
             # Get new pose:
