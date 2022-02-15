@@ -257,8 +257,10 @@ class Pose:
             self.fe_knee1 = KNEE_ZERO_ANGLE - angle_knee
 
         elif leg == "front":
-            self.fe_ankle2 = -base_angle + angle_ankle
-            self.fe_hip2 = base_angle + angle_hip
+            self.fe_ankle2 = (
+                np.sign(pos_hip[0] - pos_ankle[0]) * base_angle + angle_ankle
+            )
+            self.fe_hip2 = np.sign(pos_ankle[0] - pos_hip[0]) * base_angle + angle_hip
             self.fe_knee2 = KNEE_ZERO_ANGLE - angle_knee
 
         else:
@@ -393,6 +395,7 @@ class Pose:
 
         # Save hip distance to next origin:
         hip_current = self.pos_hip - self.pos_ankle2
+        ankle_current = self.pos_ankle1 - self.pos_ankle2
 
         # Calculate hip and ankle for next pose:
         pose_next = Pose()
@@ -400,13 +403,26 @@ class Pose:
         hip_next = pose_next.pos_hip
         ankle_next = pose_next.pos_ankle2
 
-        # ankle_mid: x is average, y is 0.1 above next:
-        ankle_mid = np.array([ankle_next[0] / 2, ankle_next[1] + 0.1])
+        hip_mid, ankle_mid = np.zeros(2), np.zeros(2)
+        midpoint_fraction = 0.5
+        if ankle_y < 0:
+            midpoint_fraction = 0.75
+            ankle_mid_x = midpoint_fraction * ankle_next[0]
+        else:
+            ankle_mid_x = np.mean([ankle_current[0], ankle_next[0]])
+        ankle_mid_y = ankle_next[1] + 0.1
 
-        # hip_mid: x is average, y is straighten leg location, unless walking down, than y is also average:
-        hip_mid = np.mean(np.array([hip_current, hip_next]), axis=0)
-        if ankle_next[1] >= 0:
-            hip_mid[1] = np.sqrt(self.max_leg_length ** 2 - hip_mid[0] ** 2)
+        hip_mid_x = (1 - midpoint_fraction) * hip_current[
+            0
+        ] + midpoint_fraction * hip_next[0]
+        hip_mid_y = min(
+            ankle_mid_y
+            + np.sqrt(self.max_leg_length ** 2 - (ankle_mid_x - hip_mid_x) ** 2),
+            np.sqrt(self.max_leg_length ** 2 - (hip_mid_x) ** 2),
+        )
+
+        hip_mid = np.array([hip_mid_x, hip_mid_y])
+        ankle_mid = np.array([ankle_mid_x, ankle_mid_y])
 
         # Solve mid_pose:
         self.reset_to_zero_pose()

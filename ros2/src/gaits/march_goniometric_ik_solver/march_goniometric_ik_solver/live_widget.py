@@ -29,9 +29,24 @@ class LiveWidget:
         self.fig, self.ax = plt.subplots()
 
         # Create pose object for current pose, mid_pose and next pose:
-        self.current_pose = {"name": "current_pose", "pose": Pose(), "color": "red", 'start_cell': 1}
-        self.mid_pose = {"name": "mid_pose", "pose": Pose(), "color": "orange", 'start_cell': 10}
-        self.next_pose = {"name": "next_pose", "pose": Pose(), "color": "green", 'start_cell': 19}
+        self.current_pose = {
+            "name": "current_pose",
+            "pose": Pose(),
+            "color": "red",
+            "start_cell": 1,
+        }
+        self.mid_pose = {
+            "name": "mid_pose",
+            "pose": Pose(),
+            "color": "orange",
+            "start_cell": 10,
+        }
+        self.next_pose = {
+            "name": "next_pose",
+            "pose": Pose(),
+            "color": "green",
+            "start_cell": 19,
+        }
         self.poses = [self.current_pose, self.mid_pose, self.next_pose]
 
         for pose in self.poses:
@@ -52,8 +67,8 @@ class LiveWidget:
 
             # Plot ankle and toes goal locations for next_pose:
             if pose["name"] == "next_pose":
-                (pose["goal_ankle"],) = plt.plot(-LENGTH_FOOT, 0.0, "x", color='black')
-                (pose["goal_toes"],) = plt.plot(0.0, 0.0, "x", color='black')
+                (pose["goal_ankle"],) = plt.plot(-LENGTH_FOOT, 0.0, "x", color="black")
+                (pose["goal_toes"],) = plt.plot(0.0, 0.0, "x", color="black")
 
             # Create table celltext for pose:
             joints = [
@@ -254,10 +269,10 @@ class LiveWidget:
             # Update table with joint angles:
             pose_rad = pose["pose"].pose_right
             for i in np.arange(len(pose_rad)):
-                self.table.get_celld()[(i + pose['start_cell'], 1)].get_text().set_text(
+                self.table.get_celld()[(i + pose["start_cell"], 1)].get_text().set_text(
                     np.round(pose_rad[i], 2)
                 )
-                self.table.get_celld()[(i + pose['start_cell'], 2)].get_text().set_text(
+                self.table.get_celld()[(i + pose["start_cell"], 2)].get_text().set_text(
                     np.round(np.rad2deg(pose_rad[i]), 2)
                 )
 
