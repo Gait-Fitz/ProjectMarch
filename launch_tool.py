@@ -57,6 +57,33 @@ class MarchLauncher:
 
             self.default_ros1_arguments.append([name, value, doc])
 
+    def read_ros2(self):
+        march_simulation_launch_package = SourceFileLoader(
+            self.launch_file_ros2, self.launch_path_ros2
+        ).load_module()
+
+        launch_description = (
+            march_simulation_launch_package.generate_launch_description()
+        )
+
+        for description in launch_description._LaunchDescription__entities[:-1]:
+            name = description._DeclareLaunchArgument__name
+            value_object = description._DeclareLaunchArgument__default_value[0]
+            if hasattr(value_object, "_TextSubstitution__text"):
+                value = value_object._TextSubstitution__text
+            elif hasattr(value_object, "_LaunchConfiguration__variable_name"):
+                value = (
+                    "$(arg "
+                    + value_object._LaunchConfiguration__variable_name[
+                        0
+                    ]._TextSubstitution__text
+                    + ")"
+                )
+            else:
+                print("Error")
+            doc = description._DeclareLaunchArgument__description
+            self.default_ros2_arguments.append([name, value, doc])
+
     def read_linked_values(self, arguments):
         updated_arguments = []
 
@@ -106,7 +133,11 @@ class MarchLauncher:
                 row = [
                     sg.Text(name, size=(20, 1)),
                     sg.Checkbox(
-                        "", default=True, key=name, size=(17, 1), enable_events=True
+                        "",
+                        default=True,
+                        key=ros + "_" + name,
+                        size=(17, 1),
+                        enable_events=True,
                     ),
                     sg.Text(doc),
                 ]
@@ -114,14 +145,20 @@ class MarchLauncher:
                 row = [
                     sg.Text(name, size=(20, 1)),
                     sg.Checkbox(
-                        "", default=False, key=name, size=(17, 1), enable_events=True
+                        "",
+                        default=False,
+                        key=ros + "_" + name,
+                        size=(17, 1),
+                        enable_events=True,
                     ),
                     sg.Text(doc),
                 ]
             else:
                 row = [
                     sg.Text(name, size=(20, 1)),
-                    sg.InputText(value, key=name, size=(20, 1), enable_events=True),
+                    sg.InputText(
+                        value, key=ros + "_" + name, size=(20, 1), enable_events=True
+                    ),
                     sg.Text(doc),
                 ]
 
@@ -130,35 +167,11 @@ class MarchLauncher:
             elif ros == "ros2":
                 self.layout_ros2.append(row)
 
-    def read_ros2(self):
-        march_simulation_launch_package = SourceFileLoader(
-            self.launch_file_ros2, self.launch_path_ros2
-        ).load_module()
-
-        launch_description = (
-            march_simulation_launch_package.generate_launch_description()
-        )
-
-        for description in launch_description._LaunchDescription__entities[:-1]:
-            name = description._DeclareLaunchArgument__name
-            value_object = description._DeclareLaunchArgument__default_value[0]
-            if hasattr(value_object, "_TextSubstitution__text"):
-                value = value_object._TextSubstitution__text
-            elif hasattr(value_object, "_LaunchConfiguration__variable_name"):
-                value = (
-                    "$(arg "
-                    + value_object._LaunchConfiguration__variable_name[
-                        0
-                    ]._TextSubstitution__text
-                    + ")"
-                )
-            else:
-                print("Error")
-            doc = description._DeclareLaunchArgument__description
-            self.default_ros2_arguments.append([name, value, doc])
-
     def show_window(self):
-        default_launch_command = "roslaunch march_launch march_simulation.launch"
+        default_launch_command_ros1 = "roslaunch march_launch march_simulation.launch"
+        default_launch_command_ros2 = (
+            "ros2 launch march_launch march_simulation.launch.py"
+        )
         frame_ros1 = sg.Frame(
             "ROS1", [[sg.Column(self.layout_ros1, size=(None, MAX), scrollable=True)]]
         )
@@ -171,7 +184,7 @@ class MarchLauncher:
                 [
                     sg.Button("RUN", key="run_ros1"),
                     sg.Button("RESET", key="reset_ros1"),
-                    sg.Text(default_launch_command, key="launch_argument_ros1"),
+                    sg.Text(default_launch_command_ros1, key="launch_argument_ros1"),
                 ]
             ],
             size=(MAX, 50),
@@ -182,7 +195,7 @@ class MarchLauncher:
                 [
                     sg.Button("RUN", key="run_ros2"),
                     sg.Button("RESET", key="reset_ros2"),
-                    sg.Text(default_launch_command, key="launch_argument_ros1"),
+                    sg.Text(default_launch_command_ros2, key="launch_argument_ros2"),
                 ]
             ],
             size=(MAX, 50),
@@ -210,17 +223,29 @@ class MarchLauncher:
             event, values = window.read()
 
             # Update launch argument:
-            launch_command = default_launch_command
+            launch_command = default_launch_command_ros1
             for i in range(len(self.default_ros1_arguments)):
                 name = self.default_ros1_arguments[i][0]
                 default_value = self.default_ros1_arguments[i][1]
-                value = values[name]
+                value = values["ros1" + "_" + name]
 
                 if isinstance(value, bool):
                     value = str(value).lower()
                 if default_value != value:
                     launch_command += " " + name + ":=" + value
             window["launch_argument_ros1"].update(launch_command)
+
+            launch_command = default_launch_command_ros2
+            for i in range(len(self.default_ros2_arguments)):
+                name = self.default_ros2_arguments[i][0]
+                default_value = self.default_ros2_arguments[i][1]
+                value = values["ros2" + "_" + name]
+
+                if isinstance(value, bool):
+                    value = str(value)
+                if default_value != value:
+                    launch_command += " " + name + ":=" + value
+            window["launch_argument_ros2"].update(launch_command)
 
             if event == "run_ros1":
                 print("needs to be implementd!")
@@ -232,8 +257,18 @@ class MarchLauncher:
                         value = True
                     if value in ["false", "False"]:
                         value = False
-                    window[name].update(value)
-                    window["launch_argument_ros1"].update(default_launch_command)
+                    window["ros1_" + name].update(value)
+                    window["launch_argument_ros1"].update(default_launch_command_ros1)
+
+            if event == "reset_ros2":
+                for arg in self.default_ros2_arguments:
+                    name, value, doc = arg
+                    if value in ["true", "True"]:
+                        value = True
+                    if value in ["false", "False"]:
+                        value = False
+                    window["ros2_" + name].update(value)
+                    window["launch_argument_ros2"].update(default_launch_command_ros2)
 
             if event == sg.WIN_CLOSED:
                 break
