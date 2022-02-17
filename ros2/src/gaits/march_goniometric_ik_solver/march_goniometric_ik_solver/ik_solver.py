@@ -410,7 +410,7 @@ class Pose:
             ankle_mid_x = midpoint_fraction * ankle_next[0]
         else:
             ankle_mid_x = np.mean([ankle_current[0], ankle_next[0]])
-        ankle_mid_y = ankle_next[1] + 0.1
+        ankle_mid_y = ankle_next[1] + 0.15
 
         hip_mid_x = (1 - midpoint_fraction) * hip_current[
             0

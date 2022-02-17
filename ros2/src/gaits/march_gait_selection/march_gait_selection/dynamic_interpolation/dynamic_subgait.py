@@ -156,9 +156,6 @@ class DynamicSubgait:
         :rtype: joint_trajectory_msg
         """
         # Update pose:
-        pose_list = [joint.position for joint in self.starting_position.values()]
-        self.pose = Pose(pose_list)
-
         self._solve_middle_setpoint()
         self._solve_desired_setpoint()
         self._get_extra_ankle_setpoint()
