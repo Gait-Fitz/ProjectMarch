@@ -296,7 +296,7 @@ class LiveWidget:
                     x,
                     y,
                     0.5,
-                    0.1,
+                    0.15,
                     "",
                 )
             else:

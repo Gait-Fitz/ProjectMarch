@@ -21,7 +21,7 @@ LENGTH_LEG = LENGTH_UPPER_LEG + LENGTH_LOWER_LEG
 
 # Get ankle limit from urdf:
 limits = get_limits_robot_from_urdf_for_inverse_kinematics("right_ankle")
-SOFT_LIMIT_BUFFER = np.deg2rad(3)
+SOFT_LIMIT_BUFFER = np.deg2rad(5)
 MAX_ANKLE_FLEXION = limits.upper - SOFT_LIMIT_BUFFER
 
 # Constants:
@@ -71,6 +71,12 @@ class Pose:
 
     def reset_to_zero_pose(self) -> None:
         self.__init__()
+
+    def swap_sides(self) -> None:
+        self.fe_ankle1, self.fe_ankle2 = self.fe_ankle2, self.fe_ankle1
+        self.aa_hip1, self.aa_hip2 = self.aa_hip2, self.aa_hip1
+        self.fe_hip1, self.fe_hip2 = self.fe_hip2, self.fe_hip1
+        self.fe_knee1, self.fe_knee2 = self.fe_knee2, self.fe_knee1
 
     @property
     def pose_right(self) -> List[float]:
@@ -393,7 +399,7 @@ class Pose:
         knee and the hip. Returns the calculated pose.
         """
 
-        # Save hip distance to next origin:
+        # Save hip and ankle distances compared to next origin:
         hip_current = self.pos_hip - self.pos_ankle2
         ankle_current = self.pos_ankle1 - self.pos_ankle2
 
@@ -404,13 +410,12 @@ class Pose:
         ankle_next = pose_next.pos_ankle2
 
         hip_mid, ankle_mid = np.zeros(2), np.zeros(2)
-        midpoint_fraction = 0.5
         if ankle_y < 0:
             midpoint_fraction = 0.75
             ankle_mid_x = midpoint_fraction * ankle_next[0]
         else:
             ankle_mid_x = np.mean([ankle_current[0], ankle_next[0]])
-        ankle_mid_y = ankle_next[1] + 0.15
+        ankle_mid_y = ankle_next[1] + midpoint_height
 
         hip_mid_x = (1 - midpoint_fraction) * hip_current[
             0

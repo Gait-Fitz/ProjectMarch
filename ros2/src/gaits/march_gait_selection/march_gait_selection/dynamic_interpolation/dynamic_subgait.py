@@ -73,7 +73,6 @@ class DynamicSubgait:
         self.subgait_id = subgait_id
         self.joint_soft_limits = joint_soft_limits
         self.stop = stop
-        self.pose = Pose()
 
     def _get_extra_ankle_setpoint(self) -> Setpoint:
         """Returns an extra setpoint for the swing leg ankle
@@ -155,7 +154,14 @@ class DynamicSubgait:
         :returns: A joint_trajectory_msg
         :rtype: joint_trajectory_msg
         """
-        # Update pose:
+        # Create a pose object of last gait:
+        self.pose = Pose([joint.position for joint in self.starting_position.values()])
+
+        # In case of a right_swing, we need to swap sides of the pose object from last gait:
+        if self.subgait_id == "right_swing":
+            self.pose.swap_sides()
+
+        # Calculate the mid and end position for current gait:
         self._solve_middle_setpoint()
         self._solve_desired_setpoint()
         self._get_extra_ankle_setpoint()
