@@ -148,6 +148,8 @@ class DynamicSubgait:
                 setpoint_list.insert(
                     EXTRA_ANKLE_SETPOINT_INDEX, self._get_extra_ankle_setpoint()
                 )
+            
+            if name in ["right_ankle", "left_ankle"]:
                 self.joint_trajectory_list.append(
                     DynamicJointTrajectory(setpoint_list, ankle=True)
                 )
