@@ -9,6 +9,10 @@ from march_utility.utilities.utility_functions import (
     get_joint_names_from_urdf,
     get_limits_robot_from_urdf_for_inverse_kinematics,
 )
+from march_utility.exceptions.gait_exceptions import (
+    PositionSoftLimitError,
+    VelocitySoftLimitError,
+)
 from march_utility.gait.setpoint import Setpoint
 from march_utility.utilities.utility_functions import get_position_from_yaml
 from march_utility.utilities.node_utils import DEFAULT_HISTORY_DEPTH
@@ -365,10 +369,8 @@ class DynamicSetpointGait(GaitInterface):
             stop,
         )
 
-        trajectory = self.dynamic_subgait.get_joint_trajectory_msg()
-        duration = self.dynamic_subgait.get_duration_scaled_to_height(
-            self.dynamic_subgait_duration, self.foot_location.point.y
-        )
+        trajectory = self._try_to_get_trajectory()
+        duration = self.dynamic_subgait.scaled_duration
 
         return TrajectoryCommand(
             trajectory,
@@ -376,6 +378,40 @@ class DynamicSetpointGait(GaitInterface):
             self.subgait_id,
             self._end_time,
         )
+
+    def _try_to_get_trajectory(self):
+        trajectory_succes = False
+        counter = 0
+        while not trajectory_succes and counter <= 8:
+            try:
+                self.logger.info("trying to get trajectory")
+                trajectory = self.dynamic_subgait.get_joint_trajectory_msg()
+            except PositionSoftLimitError:
+                self.logger.info("Position soft limit error")
+            except VelocitySoftLimitError:
+                self.logger.info("Velocity soft limit error")
+            else:
+                self.logger.info(
+                    "Found trajectory for duration of "
+                    f"{self.dynamic_subgait.scaled_duration + counter * 0.25}"
+                )
+                trajectory_succes = True
+            finally:
+                counter += 1
+                self.dynamic_subgait.duration += 0.25
+                if counter == 8:
+                    self.logger.error(
+                        f"Trajectory not feasible after {counter} iterations."
+                    )
+
+        if trajectory_succes:
+            return trajectory
+        else:
+            return self._try_to_get_stop_gait()
+
+    def _try_to_get_stop_gait(self):
+        self.dynamic_subgait.stop = True
+        return self.dynamic_subgait.get_joint_trajectory_msg()
 
     def _update_time_stamps(self, next_command_duration: Duration) -> None:
         """Update the starting and end time

@@ -6,6 +6,10 @@ from rclpy.node import Node
 from march_gait_selection.dynamic_interpolation.dynamic_joint_trajectory import (
     DynamicJointTrajectory,
 )
+from march_utility.exceptions.gait_exceptions import (
+    PositionSoftLimitError,
+    VelocitySoftLimitError,
+)
 from march_utility.gait.limits import Limits
 from march_utility.gait.setpoint import Setpoint
 from march_utility.utilities.duration import Duration
@@ -72,14 +76,6 @@ class DynamicSubgait:
         self.subgait_id = subgait_id
         self.joint_soft_limits = joint_soft_limits
 
-        duration = self.get_duration_scaled_to_height(self.duration, self.location.y)
-        self.time = [
-            0,
-            self.push_off_fraction * duration,
-            self.middle_point_fraction * duration,
-            duration,
-        ]
-
         self.start = start
         self.stop = stop
         self.pose = Pose()
@@ -91,6 +87,7 @@ class DynamicSubgait:
         :returns: A joint_trajectory_msg
         :rtype: joint_trajectory_msg
         """
+        self._update_duration()
         # Update pose:
         pose_list = [joint.position for joint in self.starting_position.values()]
         self.pose = Pose(pose_list)
@@ -204,6 +201,18 @@ class DynamicSubgait:
             else:
                 self.joint_trajectory_list.append(DynamicJointTrajectory(setpoint_list))
 
+    def _update_duration(self):
+        self.logger.info(f"duration in subgait: {self.duration}")
+        self.scaled_duration = self.get_duration_scaled_to_height(
+            self.duration, self.location.y
+        )
+        self.time = [
+            0,
+            self.push_off_fraction * self.scaled_duration,
+            self.middle_point_fraction * self.scaled_duration,
+            self.scaled_duration,
+        ]
+
     def get_final_position(self) -> dict:
         """Get setpoint_dictionary of the final setpoint.
 
@@ -300,20 +309,16 @@ class DynamicSubgait:
             position > self.joint_soft_limits[joint_index].upper
             or position < self.joint_soft_limits[joint_index].lower
         ):
-            self.logger.info(
-                f"DynamicSubgait: {self.joint_names[joint_index]} will be outside of soft limits, "
-                f"position: {position}, soft limits: "
-                f"[{self.joint_soft_limits[joint_index].lower}, {self.joint_soft_limits[joint_index].upper}]."
-            )
-            raise Exception(
-                f"{self.joint_names[joint_index]} will be outside its soft limits."
+            raise PositionSoftLimitError(
+                self.joint_names[joint_index],
+                position,
+                self.joint_soft_limits[joint_index].lower,
+                self.joint_soft_limits[joint_index].upper,
             )
 
         if abs(velocity) > self.joint_soft_limits[joint_index].velocity:
-            self.logger.info(
-                f"DynamicSubgait: {self.joint_names[joint_index]} will be outside of velocity limits, "
-                f"velocity: {velocity}, velocity limit: {self.joint_soft_limits[joint_index].velocity}."
-            )
-            raise Exception(
-                f"{self.joint_names[joint_index]} will be outside its velocity limits."
+            raise VelocitySoftLimitError(
+                self.joint_names[joint_index],
+                velocity,
+                self.joint_soft_limits[joint_index].velocity,
             )
