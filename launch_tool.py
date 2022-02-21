@@ -2,6 +2,30 @@ import PySimpleGUI as sg
 from defusedxml import minidom
 from importlib.machinery import SourceFileLoader
 
+# method to start ros1:
+
+# import roslaunch
+# uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+# launch = roslaunch.parent.ROSLaunchParent(uuid, ["ros1/src/march_launch/launch/march_simulation.launch"])
+# launch.start()
+
+# try:
+#   launch.spin()
+# finally:
+#   # After Ctrl+C, stop all nodes from running
+#   launch.shutdown()
+
+# method to start ros2:
+
+# import launch
+# import sys
+
+# march_simulation_launch_package = SourceFileLoader("march_simulation.launch", "ros2/src/march_launch/launch/march_simulation.launch.py").load_module()
+
+# ls = launch.LaunchService(argv=sys.argv[1:])
+# ls.include_launch_description(march_simulation_launch_package.generate_launch_description())
+# ls.run()
+
 MAX = 100000000
 
 
@@ -276,5 +300,5 @@ class MarchLauncher:
         window.close()
 
 
-if __name__ == "__main__":
-    march_launcher = MarchLauncher()
+# if __name__ == "__main__":
+#     march_launcher = MarchLauncher()
