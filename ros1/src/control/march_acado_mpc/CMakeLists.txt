@@ -49,7 +49,7 @@ file(REMOVE_RECURSE "${PROJECT_BINARY_DIR}/_deps")
 fetchcontent_declare(acado-solver
     GIT_REPOSITORY "https://gitlab.com/project-march/libraries/acado-solver.git"
     #    GIT_TAG "main"
-    GIT_TAG "20-make-model-for-rotational-testjoint"
+    GIT_TAG "22-mpc-mathematical-model-based-on-matlab-model"
     GIT_SHALLOW true
     )
 if(NOT acado-solver_POPULATED)
@@ -60,10 +60,11 @@ endif()
 # Models:
 #           haa_airgait
 #           haa_koengait
-#           march6_simulation_uncoupled
-#           test_joint_rotational,
+#           march6_simutlation_uncoupled
+#           test_joint_rotational
 #           test_joint_linear
-set(MODEL_NAME test_joint_rotational_MPC)
+#           rot_joint_frictionless_pendulum_model
+set(MODEL_NAME rot_joint_friction_model)
 
 
 # Define a variable that points to the location of the chosen ACADO model_export directory. This
