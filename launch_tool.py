@@ -1,32 +1,15 @@
+from time import sleep
+from turtle import color
 import PySimpleGUI as sg
 from defusedxml import minidom
 from importlib.machinery import SourceFileLoader
-
-# method to start ros1:
-
-# import roslaunch
-# uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
-# launch = roslaunch.parent.ROSLaunchParent(uuid, ["ros1/src/march_launch/launch/march_simulation.launch"])
-# launch.start()
-
-# try:
-#   launch.spin()
-# finally:
-#   # After Ctrl+C, stop all nodes from running
-#   launch.shutdown()
-
-# method to start ros2:
-
-# import launch
-# import sys
-
-# march_simulation_launch_package = SourceFileLoader("march_simulation.launch", "ros2/src/march_launch/launch/march_simulation.launch.py").load_module()
-
-# ls = launch.LaunchService(argv=sys.argv[1:])
-# ls.include_launch_description(march_simulation_launch_package.generate_launch_description())
-# ls.run()
+import subprocess
 
 MAX = 100000000
+snoe = "source /opt/ros/noetic/local_setup.bash"
+sros1 = "source ~/march/ros1/install/local_setup.bash"
+sfox = "source /opt/ros/foxy/local_setup.bash"
+sros2 = "source ~/march/ros2/install/local_setup.bash"
 
 
 class MarchLauncher:
@@ -196,38 +179,87 @@ class MarchLauncher:
         default_launch_command_ros2 = (
             "ros2 launch march_launch march_simulation.launch.py"
         )
+        buttons_tools = [
+            sg.Frame(
+                "BRIDGE",
+                [
+                    [
+                        sg.Button("RUN", key="run_bridge"),
+                        sg.Button("BUILD", key="build_bridge"),
+                        sg.Button("CLEAN", key="clean_bridge"),
+                    ]
+                ],
+            ),
+            sg.Frame(
+                "TOOLS",
+                [
+                    [
+                        sg.Button("RQT1", key="rqt1"),
+                        sg.Button("RQT2", key="rqt2"),
+                    ]
+                ],
+                size=(MAX, 50),
+            ),
+        ]
+        buttons_ros1 = [
+            sg.Frame(
+                "ROS1",
+                [
+                    [
+                        sg.Button("RUN", key="run_ros1"),
+                        sg.Button("BUILD", key="build_ros1"),
+                        sg.Button("CLEAN", key="clean_ros1"),
+                    ]
+                ],
+            ),
+            sg.Frame(
+                "Launch command",
+                [
+                    [
+                        sg.Button("RESET", key="reset_ros1"),
+                        sg.Text(
+                            default_launch_command_ros1, key="launch_argument_ros1"
+                        ),
+                    ]
+                ],
+                size=(MAX, 50),
+            ),
+        ]
+        buttons_ros2 = [
+            sg.Frame(
+                "ROS2",
+                [
+                    [
+                        sg.Button("RUN", key="run_ros2"),
+                        sg.Button("BUILD", key="build_ros2"),
+                        sg.Button("CLEAN", key="clean_ros2"),
+                    ]
+                ],
+            ),
+            sg.Frame(
+                "Launch command",
+                [
+                    [
+                        sg.Button("RESET", key="reset_ros2"),
+                        sg.Text(
+                            default_launch_command_ros2, key="launch_argument_ros2"
+                        ),
+                    ]
+                ],
+                size=(MAX, 50),
+            ),
+        ]
         frame_ros1 = sg.Frame(
             "ROS1", [[sg.Column(self.layout_ros1, size=(None, MAX), scrollable=True)]]
         )
         frame_ros2 = sg.Frame(
             "ROS2", [[sg.Column(self.layout_ros2, size=(None, MAX), scrollable=True)]]
         )
-        buttons_ros1 = sg.Frame(
-            "ROS1",
-            [
-                [
-                    sg.Button("RUN", key="run_ros1"),
-                    sg.Button("RESET", key="reset_ros1"),
-                    sg.Text(default_launch_command_ros1, key="launch_argument_ros1"),
-                ]
-            ],
-            size=(MAX, 50),
-        )
-        buttons_ros2 = sg.Frame(
-            "ROS2",
-            [
-                [
-                    sg.Button("RUN", key="run_ros2"),
-                    sg.Button("RESET", key="reset_ros2"),
-                    sg.Text(default_launch_command_ros2, key="launch_argument_ros2"),
-                ]
-            ],
-            size=(MAX, 50),
-        )
 
         window = sg.Window(
             "March Launcher",
             [
+                [buttons_tools],
                 [
                     buttons_ros1,
                 ],
@@ -245,6 +277,7 @@ class MarchLauncher:
         # Create an event loop:
         while True:
             event, values = window.read()
+            print(values)
 
             # Update launch argument:
             launch_command = default_launch_command_ros1
@@ -272,9 +305,33 @@ class MarchLauncher:
             window["launch_argument_ros2"].update(launch_command)
 
             if event == "run_ros1":
-                print("needs to be implementd!")
+                terminator_command = (
+                    'terminator -e "'
+                    + snoe
+                    + " && "
+                    + sros1
+                    + " && "
+                    + default_launch_command_ros1
+                    + '"'
+                )
+                print(terminator_command)
+                terminal1 = subprocess.Popen([terminator_command], shell=True)
+
+            if event == "run_ros2":
+                terminator_command = (
+                    'terminator -e "'
+                    + sfox
+                    + " && "
+                    + sros2
+                    + " && "
+                    + default_launch_command_ros2
+                    + '"'
+                )
+                print(terminator_command)
+                terminal2 = subprocess.Popen([terminator_command], shell=True)
 
             if event == "reset_ros1":
+                print("reset_ros1")
                 for arg in self.default_ros1_arguments:
                     name, value, doc = arg
                     if value in ["true", "True"]:
@@ -300,5 +357,5 @@ class MarchLauncher:
         window.close()
 
 
-# if __name__ == "__main__":
-#     march_launcher = MarchLauncher()
+if __name__ == "__main__":
+    march_launcher = MarchLauncher()
