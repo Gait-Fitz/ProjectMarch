@@ -78,7 +78,7 @@ class DynamicSubgait:
 
         self.start = start
         self.stop = stop
-        self.pose = Pose()
+        self.pose = Pose(self.joint_names, self.joint_soft_limits)
 
     def get_joint_trajectory_msg(self) -> trajectory_msg.JointTrajectory:
         """Return a joint_trajectory_msg containing the interpolated
@@ -90,7 +90,7 @@ class DynamicSubgait:
         self._update_duration()
         # Update pose:
         pose_list = [joint.position for joint in self.starting_position.values()]
-        self.pose = Pose(pose_list)
+        self.pose = Pose(self.joint_names, self.joint_soft_limits, pose_list)
 
         self._solve_middle_setpoint()
         self._solve_desired_setpoint()
@@ -145,6 +145,7 @@ class DynamicSubgait:
             self.middle_point_height,
             self.subgait_id,
         )
+
         middle_velocity = np.zeros_like(middle_position)
 
         self.middle_setpoint_dict = self._from_list_to_setpoint(

@@ -9,6 +9,9 @@ from march_utility.utilities.utility_functions import (
     get_lengths_robot_from_urdf_for_inverse_kinematics,
     get_limits_robot_from_urdf_for_inverse_kinematics,
 )
+from march_utility.exceptions.gait_exceptions import (
+    PositionSoftLimitError,
+)
 
 # Get leg lengths form urdf:
 (
@@ -46,7 +49,12 @@ class Pose:
     https://confluence.projectmarch.nl/x/vo6AFw
     """
 
-    def __init__(self, pose: List[float] = [0.0] * NUMBER_OF_JOINTS):
+    def __init__(
+        self,
+        joint_names,
+        joint_soft_limits,
+        pose: List[float] = [0.0] * NUMBER_OF_JOINTS,
+    ):
         (
             self.fe_ankle1,
             self.aa_hip1,
@@ -59,9 +67,11 @@ class Pose:
         ) = pose
         self.rot_foot1 = 0
         self.aa_hip1 = self.aa_hip2 = HIP_AA
+        self.joint_names = joint_names
+        self.joint_soft_limits = joint_soft_limits
 
     def reset_to_zero_pose(self):
-        self.__init__()
+        self.__init__(self.joint_names, self.joint_soft_limits)
 
     @property
     def pose_right(self) -> List[float]:
@@ -408,6 +418,7 @@ class Pose:
 
         # lift toes as much as possible:
         self.fe_ankle2 = MAX_ANKLE_FLEXION
+        self.check_joint_soft_limits()
         return self.pose_left if (subgait_id == "left_swing") else self.pose_right
 
     def solve_end_position(
@@ -447,8 +458,23 @@ class Pose:
         if self.fe_ankle1 > MAX_ANKLE_FLEXION:
             self.reduce_stance_dorsi_flexion()
 
+        self.check_joint_soft_limits()
+
         # return pose as list:
         return self.pose_left if (subgait_id == "left_swing") else self.pose_right
+
+    def check_joint_soft_limits(self):
+        for index, joint_angle in enumerate(self.pose_right):
+            if (
+                joint_angle > self.joint_soft_limits[index].upper
+                or joint_angle < self.joint_soft_limits[index].lower
+            ):
+                raise PositionSoftLimitError(
+                    self.joint_names[index],
+                    joint_angle,
+                    self.joint_soft_limits[index].lower,
+                    self.joint_soft_limits[index].upper,
+                )
 
 
 # Static methods:
