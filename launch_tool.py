@@ -1,50 +1,60 @@
-from time import sleep
-from turtle import color
 import PySimpleGUI as sg
 from defusedxml import minidom
 from importlib.machinery import SourceFileLoader
 import subprocess
 
 MAX = 100000000
-snoe = "source /opt/ros/noetic/local_setup.bash"
-sros1 = "source ~/march/ros1/install/local_setup.bash"
-sfox = "source /opt/ros/foxy/local_setup.bash"
-sros2 = "source ~/march/ros2/install/local_setup.bash"
+
+# bash commands:
+march_source = {
+    "ros1": "source ~/march/ros1/install/local_setup.bash",
+    "ros2": "source ~/march/ros2/install/local_setup.bash",
+}
+ros_source = {
+    "ros1": "source /opt/ros/noetic/local_setup.bash",
+    "ros2": "source /opt/ros/foxy/local_setup.bash",
+}
+default_launch_commands = {
+    "ros1": "roslaunch march_launch march_simulation.launch",
+    "ros2": "ros2 launch march_launch march_simulation.launch.py",
+}
+
+# file locations:
+path_ros1 = "ros1/src/march_launch/launch/march_simulation.launch"
+path_ros2 = "ros2/src/march_launch/launch/march_simulation.launch.py"
+name_ros2 = "march_simulation.launch"
 
 
 class MarchLauncher:
     def __init__(self) -> None:
-        self.launch_file_ros1 = minidom.parse(
-            "ros1/src/march_launch/launch/march_simulation.launch"
-        )
-        self.launch_file_ros2 = "march_simulation.launch"
-        self.launch_path_ros2 = (
-            "ros2/src/march_launch/launch/march_simulation.launch.py"
-        )
-        self.default_ros1_arguments = []
-        self.default_ros2_arguments = []
-        self.layout_ros1 = []
-        self.layout_ros2 = []
+        self.ros_versions = ["ros1", "ros2"]
+        self.default_arguments = {"ros1": [], "ros2": []}
+        self.layouts = {"ros1": [], "ros2": []}
+
+        self.load_ros1()
+        self.load_ros2()
 
         self.read_ros1()
-        self.default_ros1_arguments = self.read_linked_values(
-            self.default_ros1_arguments
-        )
-        self.default_ros1_arguments = self.read_opposite_values(
-            self.default_ros1_arguments
-        )
-
         self.read_ros2()
-        self.default_ros2_arguments = self.read_linked_values(
-            self.default_ros2_arguments
-        )
-        self.default_ros2_arguments = self.read_opposite_values(
-            self.default_ros2_arguments
-        )
 
-        self.create_layout("ros1")
-        self.create_layout("ros2")
+        self.fix_linked_values()
+        self.fix_opposite_values()
+
+        self.create_ros_layouts()
+        self.design_window()
         self.show_window()
+
+    def load_ros1(self):
+        self.launch_file_ros1 = minidom.parse(path_ros1)
+
+    def load_ros2(self):
+        march_simulation_launch_package = SourceFileLoader(
+            name_ros2, path_ros2
+        ).load_module()
+
+        self.launch_file_ros2 = (
+            march_simulation_launch_package.generate_launch_description()
+        )
 
     def read_ros1(self):
         args = self.launch_file_ros1.getElementsByTagName("arg")
@@ -62,18 +72,10 @@ class MarchLauncher:
             else:
                 value = arg.attributes["default"].value
 
-            self.default_ros1_arguments.append([name, value, doc])
+            self.default_arguments["ros1"].append([name, value, doc])
 
     def read_ros2(self):
-        march_simulation_launch_package = SourceFileLoader(
-            self.launch_file_ros2, self.launch_path_ros2
-        ).load_module()
-
-        launch_description = (
-            march_simulation_launch_package.generate_launch_description()
-        )
-
-        for description in launch_description._LaunchDescription__entities[:-1]:
+        for description in self.launch_file_ros2._LaunchDescription__entities[:-1]:
             name = description._DeclareLaunchArgument__name
             value_object = description._DeclareLaunchArgument__default_value[0]
             if hasattr(value_object, "_TextSubstitution__text"):
@@ -89,96 +91,94 @@ class MarchLauncher:
             else:
                 print("Error")
             doc = description._DeclareLaunchArgument__description
-            self.default_ros2_arguments.append([name, value, doc])
+            self.default_arguments["ros2"].append([name, value, doc])
 
-    def read_linked_values(self, arguments):
-        updated_arguments = []
+    def fix_linked_values(self):
 
-        for arg in arguments:
-            name = arg[0]
-            value = arg[1]
-            doc = arg[2]
-            while value.startswith("$(arg"):
-                for other_arg in arguments:
-                    other_name = other_arg[0]
-                    if other_name == value[6:-1]:
+        for ros in self.ros_versions:
+            updated_arguments = []
+
+            for arg in self.default_arguments[ros]:
+                name = arg[0]
+                value = arg[1]
+                doc = arg[2]
+                while value.startswith("$(arg"):
+                    for other_arg in self.default_arguments[ros]:
+                        other_name = other_arg[0]
+                        if other_name == value[6:-1]:
+                            other_value = other_arg[1]
+                            value = other_value
+                updated_arguments.append([name, value, doc])
+            self.default_arguments[ros] = updated_arguments
+
+    def fix_opposite_values(self):
+
+        for ros in self.ros_versions:
+            updated_arguments = []
+
+            for arg in self.default_arguments[ros]:
+                name = arg[0]
+                value = arg[1]
+                doc = arg[2]
+                if value.startswith("$(eval not"):
+                    for other_arg in self.default_arguments[ros]:
+                        other_name = other_arg[0]
                         other_value = other_arg[1]
-                        value = other_value
-            updated_arguments.append([name, value, doc])
-        return updated_arguments
+                        if other_name == value[11:-1]:
+                            if other_value == "false":
+                                value = "true"
+                            elif other_value == "true":
+                                value = "false"
+                updated_arguments.append([name, value, doc])
+            self.default_arguments[ros] = updated_arguments
 
-    def read_opposite_values(self, arguments):
-        updated_arguments = []
+    def create_ros_layouts(self):
+        for ros in self.ros_versions:
 
-        for arg in arguments:
-            name = arg[0]
-            value = arg[1]
-            doc = arg[2]
-            if value.startswith("$(eval not"):
-                for other_arg in arguments:
-                    other_name = other_arg[0]
-                    other_value = other_arg[1]
-                    if other_name == value[11:-1]:
-                        if other_value == "false":
-                            value = "true"
-                        elif other_value == "true":
-                            value = "false"
-            updated_arguments.append([name, value, doc])
+            arguments = self.default_arguments[ros]
 
-        return updated_arguments
+            for arg in arguments:
+                name, value, doc = arg
 
-    def create_layout(self, ros: str):
-        if ros == "ros1":
-            arguments = self.default_ros1_arguments
-        elif ros == "ros2":
-            arguments = self.default_ros2_arguments
+                if value in ["true", "True"]:
+                    row = [
+                        sg.Text(name, size=(20, 1)),
+                        sg.Checkbox(
+                            "",
+                            default=True,
+                            key=ros + "_" + name,
+                            size=(17, 1),
+                            enable_events=True,
+                        ),
+                        sg.Text(doc),
+                    ]
+                elif value in ["false", "False"]:
+                    row = [
+                        sg.Text(name, size=(20, 1)),
+                        sg.Checkbox(
+                            "",
+                            default=False,
+                            key=ros + "_" + name,
+                            size=(17, 1),
+                            enable_events=True,
+                        ),
+                        sg.Text(doc),
+                    ]
+                else:
+                    row = [
+                        sg.Text(name, size=(20, 1)),
+                        sg.InputText(
+                            value,
+                            key=ros + "_" + name,
+                            size=(20, 1),
+                            enable_events=True,
+                        ),
+                        sg.Text(doc),
+                    ]
 
-        for arg in arguments:
-            name, value, doc = arg
+                self.layouts[ros].append(row)
 
-            if value in ["true", "True"]:
-                row = [
-                    sg.Text(name, size=(20, 1)),
-                    sg.Checkbox(
-                        "",
-                        default=True,
-                        key=ros + "_" + name,
-                        size=(17, 1),
-                        enable_events=True,
-                    ),
-                    sg.Text(doc),
-                ]
-            elif value in ["false", "False"]:
-                row = [
-                    sg.Text(name, size=(20, 1)),
-                    sg.Checkbox(
-                        "",
-                        default=False,
-                        key=ros + "_" + name,
-                        size=(17, 1),
-                        enable_events=True,
-                    ),
-                    sg.Text(doc),
-                ]
-            else:
-                row = [
-                    sg.Text(name, size=(20, 1)),
-                    sg.InputText(
-                        value, key=ros + "_" + name, size=(20, 1), enable_events=True
-                    ),
-                    sg.Text(doc),
-                ]
-
-            if ros == "ros1":
-                self.layout_ros1.append(row)
-            elif ros == "ros2":
-                self.layout_ros2.append(row)
-
-    def show_window(self):
-        default_launch_command_ros1 = "roslaunch march_launch march_simulation.launch"
-        default_launch_command_ros2 = (
-            "ros2 launch march_launch march_simulation.launch.py"
-        )
+    def design_window(self):
         buttons_tools = [
             sg.Frame(
                 "BRIDGE",
@@ -218,7 +218,7 @@ class MarchLauncher:
                     [
                         sg.Button("RESET", key="reset_ros1"),
                         sg.Text(
-                            default_launch_command_ros1, key="launch_argument_ros1"
+                            default_launch_commands["ros1"], key="launch_argument_ros1"
                         ),
                     ]
                 ],
@@ -242,7 +242,7 @@ class MarchLauncher:
                     [
                         sg.Button("RESET", key="reset_ros2"),
                         sg.Text(
-                            default_launch_command_ros2, key="launch_argument_ros2"
+                            default_launch_commands["ros2"], key="launch_argument_ros2"
                         ),
                     ]
                 ],
@@ -250,13 +250,15 @@ class MarchLauncher:
             ),
         ]
         frame_ros1 = sg.Frame(
-            "ROS1", [[sg.Column(self.layout_ros1, size=(None, MAX), scrollable=True)]]
+            "ROS1",
+            [[sg.Column(self.layouts["ros1"], size=(None, MAX), scrollable=True)]],
         )
         frame_ros2 = sg.Frame(
-            "ROS2", [[sg.Column(self.layout_ros2, size=(None, MAX), scrollable=True)]]
+            "ROS2",
+            [[sg.Column(self.layouts["ros2"], size=(None, MAX), scrollable=True)]],
         )
 
-        window = sg.Window(
+        self.window = sg.Window(
             "March Launcher",
             [
                 [buttons_tools],
@@ -274,87 +276,79 @@ class MarchLauncher:
             resizable=True,
         )
 
-        # Create an event loop:
-        while True:
-            event, values = window.read()
-            print(values)
-
-            # Update launch argument:
-            launch_command = default_launch_command_ros1
-            for i in range(len(self.default_ros1_arguments)):
-                name = self.default_ros1_arguments[i][0]
-                default_value = self.default_ros1_arguments[i][1]
-                value = values["ros1" + "_" + name]
-
-                if isinstance(value, bool):
-                    value = str(value).lower()
-                if default_value != value:
-                    launch_command += " " + name + ":=" + value
-            window["launch_argument_ros1"].update(launch_command)
-
-            launch_command = default_launch_command_ros2
-            for i in range(len(self.default_ros2_arguments)):
-                name = self.default_ros2_arguments[i][0]
-                default_value = self.default_ros2_arguments[i][1]
-                value = values["ros2" + "_" + name]
+    def update_window(self, values):
+        for ros in self.ros_versions:
+            launch_command = default_launch_commands[ros]
+            for i in range(len(self.default_arguments[ros])):
+                name = self.default_arguments[ros][i][0]
+                default_value = self.default_arguments[ros][i][1]
+                value = values[ros + "_" + name]
 
                 if isinstance(value, bool):
                     value = str(value)
+                    if ros == "ros1":
+                        value = value.lower()
                 if default_value != value:
                     launch_command += " " + name + ":=" + value
-            window["launch_argument_ros2"].update(launch_command)
+            self.window["launch_argument_" + ros].update(launch_command)
+
+    def run(self, ros: str):
+        terminator_command = (
+            'terminator -e "'
+            + ros_source[ros]
+            + " && "
+            + march_source[ros]
+            + " && "
+            + default_launch_commands[ros]
+            + '"'
+        )
+        subprocess.Popen([terminator_command], shell=True)
+
+    def reset(self, ros: str):
+        for arg in self.default_arguments[ros]:
+            name, value, doc = arg
+            if value in ["true", "True"]:
+                value = True
+            if value in ["false", "False"]:
+                value = False
+            self.window[ros + "_" + name].update(value)
+            self.window["launch_argument_" + ros].update(default_launch_commands[ros])
+
+    def clean(self, ros: str):
+        sg.popup_yes_no(
+            "Are you sure that you want to clean " + ros + "?",
+            title="Clean " + ros,
+            keep_on_top=True,
+        )
+
+    def show_window(self):
+        while True:
+            event, values = self.window.read()
+
+            self.update_window(values)
 
             if event == "run_ros1":
-                terminator_command = (
-                    'terminator -e "'
-                    + snoe
-                    + " && "
-                    + sros1
-                    + " && "
-                    + default_launch_command_ros1
-                    + '"'
-                )
-                print(terminator_command)
-                terminal1 = subprocess.Popen([terminator_command], shell=True)
+                self.run("ros1")
 
             if event == "run_ros2":
-                terminator_command = (
-                    'terminator -e "'
-                    + sfox
-                    + " && "
-                    + sros2
-                    + " && "
-                    + default_launch_command_ros2
-                    + '"'
-                )
-                print(terminator_command)
-                terminal2 = subprocess.Popen([terminator_command], shell=True)
+                self.run("ros2")
 
             if event == "reset_ros1":
-                print("reset_ros1")
-                for arg in self.default_ros1_arguments:
-                    name, value, doc = arg
-                    if value in ["true", "True"]:
-                        value = True
-                    if value in ["false", "False"]:
-                        value = False
-                    window["ros1_" + name].update(value)
-                    window["launch_argument_ros1"].update(default_launch_command_ros1)
+                self.reset("ros1")
 
             if event == "reset_ros2":
-                for arg in self.default_ros2_arguments:
-                    name, value, doc = arg
-                    if value in ["true", "True"]:
-                        value = True
-                    if value in ["false", "False"]:
-                        value = False
-                    window["ros2_" + name].update(value)
-                    window["launch_argument_ros2"].update(default_launch_command_ros2)
+                self.reset("ros2")
+
+            if event == "clean_ros1":
+                self.clean("ros1")
+
+            if event == "clean_ros2":
+                self.clean("ros2")
 
             if event == sg.WIN_CLOSED:
                 break
 
-        window.close()
+        self.window.close()
 
 
 if __name__ == "__main__":
