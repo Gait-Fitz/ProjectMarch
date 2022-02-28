@@ -10,13 +10,24 @@ march_source = {
     "ros1": "source ~/march/ros1/install/local_setup.bash",
     "ros2": "source ~/march/ros2/install/local_setup.bash",
 }
+march_source["bridge"] = (
+    march_source["ros1"]
+    + " && "
+    + march_source["ros2"]
+    + " && "
+    + "source ~/ros1_bridge/install/local_setup.bash"
+)
+
 ros_source = {
     "ros1": "source /opt/ros/noetic/local_setup.bash",
     "ros2": "source /opt/ros/foxy/local_setup.bash",
 }
+ros_source["bridge"] = ros_source["ros1"] + " && " + ros_source["ros2"]
+
 default_launch_commands = {
     "ros1": "roslaunch march_launch march_simulation.launch",
     "ros2": "ros2 launch march_launch march_simulation.launch.py",
+    "bridge": "export ROS_MASTER_URI=http://localhost:11311 && ros2 run ros1_bridge parameter_bridge",
 }
 
 # file locations:
@@ -30,6 +41,11 @@ class MarchLauncher:
         self.ros_versions = ["ros1", "ros2"]
         self.default_arguments = {"ros1": [], "ros2": []}
         self.layouts = {"ros1": [], "ros2": []}
+        self.launch_commands = {
+            "ros1": "",
+            "ros2": "",
+            "bridge": default_launch_commands["bridge"],
+        }
 
         self.load_ros1()
         self.load_ros2()
@@ -278,7 +294,7 @@ class MarchLauncher:
 
     def update_window(self, values):
         for ros in self.ros_versions:
-            launch_command = default_launch_commands[ros]
+            self.launch_commands[ros] = default_launch_commands[ros]
             for i in range(len(self.default_arguments[ros])):
                 name = self.default_arguments[ros][i][0]
                 default_value = self.default_arguments[ros][i][1]
@@ -289,8 +305,8 @@ class MarchLauncher:
                     if ros == "ros1":
                         value = value.lower()
                 if default_value != value:
-                    launch_command += " " + name + ":=" + value
-            self.window["launch_argument_" + ros].update(launch_command)
+                    self.launch_commands[ros] += " " + name + ":=" + value
+            self.window["launch_argument_" + ros].update(self.launch_commands[ros])
 
     def run(self, ros: str):
         terminator_command = (
@@ -299,9 +315,10 @@ class MarchLauncher:
             + " && "
             + march_source[ros]
             + " && "
-            + default_launch_commands[ros]
+            + self.launch_commands[ros]
             + '"'
         )
+        print(terminator_command)
         subprocess.Popen([terminator_command], shell=True)
 
     def reset(self, ros: str):
@@ -332,6 +349,9 @@ class MarchLauncher:
 
             if event == "run_ros2":
                 self.run("ros2")
+
+            if event == "run_bridge":
+                self.run("bridge")
 
             if event == "reset_ros1":
                 self.reset("ros1")
