@@ -122,6 +122,11 @@ class GaitSelection(Node):
                 .get_parameter_value()
                 .double_value
             )
+            self.activate_one_joint = (
+                self.get_parameter("activate_one_joint")
+                .get_parameter_value()
+                .string_value
+            )
 
         except ParameterNotDeclaredException:
             self.logger.error(

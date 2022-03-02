@@ -11,7 +11,10 @@ from ament_index_python.packages import get_package_share_directory
 from urdf_parser_py import urdf
 from rclpy.node import Node
 
-from march_utility.exceptions.general_exceptions import SideSpecificationError
+from march_utility.exceptions.general_exceptions import (
+    SideSpecificationError,
+    UnknownJointNameError,
+)
 from march_utility.utilities.vector_3d import Vector3d
 from march_utility.gait.limits import Limits
 from .side import Side
@@ -230,7 +233,12 @@ def validate_and_get_joint_names_for_inverse_kinematics(
     return sorted(joint_name_list)
 
 
-def get_joint_names_from_urdf():
+def get_joint_names_from_urdf(joint: str = None) -> List[str]:
+    """
+    Returns the names of the joints in the urdf. Takes an optional
+    'joint' argument. This will return only that specific joint name.
+    This can be usefull for e.g. using the test setup.
+    """
     robot = urdf.Robot.from_xml_file(MARCH_URDF)
     robot_joint_names = robot.joint_map.keys()
     joint_names = []
@@ -239,7 +247,14 @@ def get_joint_names_from_urdf():
     for joint_name in robot_joint_names:
         if robot.joint_map[joint_name].type != "fixed":
             joint_names.append(joint_name)
-    return sorted(joint_names)
+
+    if joint == "all":
+        return sorted(joint_names)
+    elif joint != "all" and joint in joint_names:
+        return [joint]
+    elif joint != "all" and joint not in joint_names:
+        raise UnknownJointNameError(joint, joint_names)
+    return None
 
 
 def get_position_from_yaml(position: str):

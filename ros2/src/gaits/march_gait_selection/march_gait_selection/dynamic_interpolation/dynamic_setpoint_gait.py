@@ -35,9 +35,6 @@ class DynamicSetpointGait(GaitInterface):
         super(DynamicSetpointGait, self).__init__()
         self.gait_selection = gait_selection_node
         self._reset()
-        self.joint_names = get_joint_names_from_urdf()
-        self._get_soft_limits()
-
         self.gait_name = "dynamic_walk"
 
         # Create subscribers and publishers for CoViD
@@ -54,10 +51,9 @@ class DynamicSetpointGait(GaitInterface):
             DEFAULT_HISTORY_DEPTH,
         )
 
+        self.logger = Logger(self.gait_selection, __class__.__name__)
         # Assign reconfigurable parameters
         self.update_parameters()
-
-        self.logger = Logger(self.gait_selection, __class__.__name__)
 
     @property
     def name(self) -> str:
@@ -378,6 +374,10 @@ class DynamicSetpointGait(GaitInterface):
         """Callback for gait_selection_node when the parameters have been updated."""
         self.dynamic_subgait_duration = self.gait_selection.dynamic_subgait_duration
         self.minimum_stair_height = self.gait_selection.minimum_stair_height
+        self.activate_one_joint = self.gait_selection.activate_one_joint
+        self.joint_names = get_joint_names_from_urdf(self.activate_one_joint)
+        self.logger.info(f"updated joitn names: {self.joint_names}")
+        self._get_soft_limits()
 
     # UTILITY FUNCTIONS
     @staticmethod

@@ -54,6 +54,7 @@ def generate_launch_description():
     minimum_stair_height = LaunchConfiguration("minimum_stair_height")
     push_off_fraction = LaunchConfiguration("push_off_fraction")
     push_off_position = LaunchConfiguration("push_off_position")
+    activate_one_joint = LaunchConfiguration("activate_one_joint")
     first_subgait_delay = LaunchConfiguration("first_subgait_delay")
     early_schedule_duration = LaunchConfiguration("early_schedule_duration")
     timer_period = LaunchConfiguration("timer_period")
@@ -226,6 +227,12 @@ def generate_launch_description():
                 description="Maximum joint position of the ankle during push off.",
             ),
             DeclareLaunchArgument(
+                name="activate_one_joint",
+                default_value="all",
+                description="Will activate only one joint if that joint name "
+                "is specified. Usefull for the test setup.",
+            ),
+            DeclareLaunchArgument(
                 name="first_subgait_delay",
                 default_value="0.2",
                 description="Duration to wait before starting first subgait."
@@ -332,6 +339,7 @@ def generate_launch_description():
                     ("mininum_stair_height", minimum_stair_height),
                     ("push_off_fraction", push_off_fraction),
                     ("push_off_position", push_off_position),
+                    ("activate_one_joint", activate_one_joint),
                     ("early_schedule_duration", early_schedule_duration),
                     ("first_subgait_delay", first_subgait_delay),
                     ("timer_period", timer_period),

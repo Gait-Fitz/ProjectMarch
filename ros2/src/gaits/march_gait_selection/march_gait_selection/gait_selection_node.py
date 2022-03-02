@@ -89,6 +89,8 @@ def parameter_callback(gait_selection, gait_state_machine, parameters):
         elif param.name == "push_off_position":
             gait_selection.push_off_position = param.value
             dynamic_gait_updated = True
+        elif param.name == "activate_one_joint":
+            gait_selection.activate_one_joint = param.value
         elif param.name == "gait_package" and param.type_ == Parameter.Type.STRING:
             gait_selection._gait_package = param.value
             gaits_updated = True

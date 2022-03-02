@@ -105,3 +105,16 @@ class InconsistentDigitsError(Exception):
                 msg += f"The numbers are: {number1} and {number2}"
 
         super(InconsistentDigitsError, self).__init__(msg)
+
+
+class UnknownJointNameError(Exception):
+    def __init__(self, invalid_joint_name: str, all_joint_names: str) -> None:
+        """
+        Class to raise an error when an unkown joint is specified.
+
+        :param msg: name of the joint
+        :type msg: str
+        """
+        msg = f"Given joint name '{invalid_joint_name}' is invalid. Possible names are {sorted(all_joint_names)}."
+
+        super(UnknownJointNameError, self).__init__(msg)

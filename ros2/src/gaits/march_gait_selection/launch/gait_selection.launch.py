@@ -70,6 +70,12 @@ def generate_launch_description():
                 default_value="-0.15",
                 description="Maximum joint position of the ankle during push off.",
             ),
+            DeclareLaunchArgument(
+                name="activate_one_joint",
+                default_value="all",
+                description="Will activate only one joint if that joint name "
+                "is specified. Usefull for the test setup.",
+            ),
             # State machine parameters:
             DeclareLaunchArgument(
                 name="first_subgait_delay",
@@ -117,6 +123,7 @@ def generate_launch_description():
                     },
                     {"push_off_fraction": LaunchConfiguration("push_off_fraction")},
                     {"push_off_position": LaunchConfiguration("push_off_position")},
+                    {"activate_one_joint": LaunchConfiguration("activate_one_joint")},
                     {"first_subgait_delay": LaunchConfiguration("first_subgait_delay")},
                     {
                         "early_schedule_duration": LaunchConfiguration(
