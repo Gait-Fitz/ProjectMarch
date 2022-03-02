@@ -1,5 +1,5 @@
 testsetup:
-  if_name: enp0s31f6
+  if_name: enp2s0
   ecatCycleTime: 8
   ecatSlaveTimeout: 250
   joints:
@@ -8,7 +8,7 @@ testsetup:
           type: odrive
           actuationMode: torque
           slaveIndex: 1
-          axis: 1
+          axis: 0
           motorKV: 95
           absoluteEncoder:
             resolution: 20
