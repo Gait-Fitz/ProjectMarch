@@ -1,6 +1,8 @@
 import PySimpleGUI as sg
 from defusedxml import minidom
 from importlib.machinery import SourceFileLoader
+import os
+import signal
 import subprocess
 
 MAX = 100000000
@@ -28,6 +30,18 @@ default_launch_commands = {
     "ros1": "roslaunch march_launch march_simulation.launch",
     "ros2": "ros2 launch march_launch march_simulation.launch.py",
     "bridge": "export ROS_MASTER_URI=http://localhost:11311 && ros2 run ros1_bridge parameter_bridge",
+}
+
+build_commands = {
+    "ros1": "cd ~/march/ros1/ && colcon build",
+    "ros2": "cd ~/march/ros2/ && colcon build",
+    "bridge": "cd ~/ros1_bridge && colcon build --packages-select ros1_bridge --cmake-force-configure && source install/local_setup.bash && ros2 run ros1_bridge dynamic_bridge --print-pairs",
+}
+
+clean_commands = {
+    "ros1": "rm -rf ~/march/ros1/build ~/march/ros1/log ~/march/ros1/install",
+    "ros2": "rm -rf ~/march/ros2/build ~/march/ros2/log ~/march/ros2/install",
+    "bridge": "rm -rf ~/ros1_bridge/build ~/ros1_bridge/log ~/ros1_bridge/install",
 }
 
 # file locations:
@@ -210,8 +224,7 @@ class MarchLauncher:
                 "TOOLS",
                 [
                     [
-                        sg.Button("RQT1", key="rqt1"),
-                        sg.Button("RQT2", key="rqt2"),
+                        sg.Button("RUN ALL", key="run_all"),
                     ]
                 ],
                 size=(MAX, 50),
@@ -268,7 +281,7 @@ class MarchLauncher:
         frame_ros1 = sg.Frame(
             "ROS1",
             [[sg.Column(self.layouts["ros1"], size=(None, MAX), scrollable=True)]],
-        )
+        5)
         frame_ros2 = sg.Frame(
             "ROS2",
             [[sg.Column(self.layouts["ros2"], size=(None, MAX), scrollable=True)]],
@@ -304,22 +317,54 @@ class MarchLauncher:
                     value = str(value)
                     if ros == "ros1":
                         value = value.lower()
-                if default_value != value:
+                if default_value != value and value is not None:
                     self.launch_commands[ros] += " " + name + ":=" + value
             self.window["launch_argument_" + ros].update(self.launch_commands[ros])
 
+    def create_run_command(self, ros: str, bridge_delay: bool = False) -> str:
+        if bridge_delay:
+            return "' sleep 5 && {} && {} && {} '".format(  # noqa: P101
+                ros_source[ros], march_source[ros], self.launch_commands[ros]
+            )
+        else:
+            return "' {} && {} && {} '".format(  # noqa: P101
+                ros_source[ros], march_source[ros], self.launch_commands[ros]
+            )
+
     def run(self, ros: str):
-        terminator_command = (
-            'terminator -e "'
-            + ros_source[ros]
-            + " && "
-            + march_source[ros]
-            + " && "
-            + self.launch_commands[ros]
-            + '"'
+        command = "terminator -T {} -e {}".format(  # noqa: P101
+            ros, self.create_run_command(ros)
         )
-        print(terminator_command)
-        subprocess.Popen([terminator_command], shell=True)
+        subprocess.Popen([command], shell=True)
+
+    def run_all(self):
+        command = 'terminator -T "ros1, ros2, bridge" -e "tmux new-session \; source-file ~/march/.tmux.conf \; send-keys {} C-m \; split-window -v \; send-keys {} C-m \; split-window -v \; send-keys {} C-m \;"'.format(  # noqa: W605,P101
+            self.create_run_command("ros1"),
+            self.create_run_command("ros2"),
+            self.create_run_command("bridge", bridge_delay=True),
+        )
+        subprocess.Popen([command], shell=True)
+
+    def create_build_command(self, ros: str) -> str:
+        if ros == "bridge":
+
+            return "'{} && {} && {} && {} && {}'".format(  # noqa: P101
+                ros_source["ros1"],
+                ros_source["ros2"],
+                march_source["ros1"],
+                march_source["ros2"],
+                build_commands[ros],
+            )
+        else:
+            return "'{} && {}'".format(  # noqa: P101
+                ros_source[ros], build_commands[ros]
+            )
+
+    def build(self, ros: str):
+        command = "terminator -T {} -e {}".format(  # noqa: P101
+            ros, self.create_build_command(ros)
+        )
+        subprocess.Popen([command], shell=True)
 
     def reset(self, ros: str):
         for arg in self.default_arguments[ros]:
@@ -332,11 +377,16 @@ class MarchLauncher:
             self.window["launch_argument_" + ros].update(default_launch_commands[ros])
 
     def clean(self, ros: str):
-        sg.popup_yes_no(
+        answer = sg.popup_yes_no(
             "Are you sure that you want to clean " + ros + "?",
             title="Clean " + ros,
             keep_on_top=True,
         )
+        if answer == "Yes":
+            command = "terminator -T {} -e '{}'".format(  # noqa: P101
+                ros, clean_commands[ros]
+            )
+            subprocess.Popen([command], shell=True)
 
     def show_window(self):
         while True:
@@ -353,6 +403,18 @@ class MarchLauncher:
             if event == "run_bridge":
                 self.run("bridge")
 
+            if event == "run_all":
+                self.run_all()
+
+            if event == "build_ros1":
+                self.build("ros1")
+
+            if event == "build_ros2":
+                self.build("ros2")
+
+            if event == "build_bridge":
+                self.build("bridge")
+
             if event == "reset_ros1":
                 self.reset("ros1")
 
@@ -364,6 +426,9 @@ class MarchLauncher:
 
             if event == "clean_ros2":
                 self.clean("ros2")
+
+            if event == "clean_bridge":
+                self.clean("bridge")
 
             if event == sg.WIN_CLOSED:
                 break
