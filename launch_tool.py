@@ -1,10 +1,10 @@
-import PySimpleGUI as sg
+import PySimpleGUI as sg  # noqa N813
 from defusedxml import minidom
 from importlib.machinery import SourceFileLoader
-import os
-import signal
-import subprocess
+import subprocess  # noqa S404
+import apt
 
+# Ugly variable to make things use full window size:
 MAX = 100000000
 
 # bash commands:
@@ -51,6 +51,12 @@ name_ros2 = "march_simulation.launch"
 
 
 class MarchLauncher:
+    """
+    A tool to run, build and clean the Project March code in ros1, ros2 or the bridge.
+    This tool requires terminator and tmux to work.
+    Several flake8 checks are disabled, to make use of subprocesses with variable commands.
+    """
+
     def __init__(self) -> None:
         self.ros_versions = ["ros1", "ros2"]
         self.default_arguments = {"ros1": [], "ros2": []}
@@ -60,6 +66,8 @@ class MarchLauncher:
             "ros2": "",
             "bridge": default_launch_commands["bridge"],
         }
+
+        self.check_requirements()
 
         self.load_ros1()
         self.load_ros2()
@@ -74,6 +82,17 @@ class MarchLauncher:
         self.design_window()
         self.show_window()
 
+    def check_requirements(self):
+        cache = apt.Cache()
+        if cache["terminator"].is_installed:
+            pass
+        else:
+            raise ModuleNotFoundError("This tool requires terminator")
+        if cache["tmux"].is_installed:
+            pass
+        else:
+            raise ModuleNotFoundError("This tool requires tmux")
+
     def load_ros1(self):
         self.launch_file_ros1 = minidom.parse(path_ros1)
 
@@ -87,6 +106,9 @@ class MarchLauncher:
         )
 
     def read_ros1(self):
+        """
+        Read the ros1 launch file and parse the data.
+        """
         args = self.launch_file_ros1.getElementsByTagName("arg")
 
         for arg in args:
@@ -105,6 +127,9 @@ class MarchLauncher:
             self.default_arguments["ros1"].append([name, value, doc])
 
     def read_ros2(self):
+        """
+        Read the ros2 launch file and parse the data.
+        """
         for description in self.launch_file_ros2._LaunchDescription__entities[:-1]:
             name = description._DeclareLaunchArgument__name
             value_object = description._DeclareLaunchArgument__default_value[0]
@@ -119,12 +144,14 @@ class MarchLauncher:
                     + ")"
                 )
             else:
-                print("Error")
+                raise TypeError
             doc = description._DeclareLaunchArgument__description
             self.default_arguments["ros2"].append([name, value, doc])
 
     def fix_linked_values(self):
-
+        """
+        Fill in values that are linked to other arguments in the launch files.
+        """
         for ros in self.ros_versions:
             updated_arguments = []
 
@@ -142,7 +169,9 @@ class MarchLauncher:
             self.default_arguments[ros] = updated_arguments
 
     def fix_opposite_values(self):
-
+        """
+        Fill in values that are defined as opposites of values of other arguments in the launch files.
+        """
         for ros in self.ros_versions:
             updated_arguments = []
 
@@ -163,6 +192,9 @@ class MarchLauncher:
             self.default_arguments[ros] = updated_arguments
 
     def create_ros_layouts(self):
+        """
+        Create a GUI layout with variable names, input field and documentation of variable.
+        """
         for ros in self.ros_versions:
 
             arguments = self.default_arguments[ros]
@@ -209,6 +241,9 @@ class MarchLauncher:
                 self.layouts[ros].append(row)
 
     def design_window(self):
+        """
+        Design the complete window of this GUI.
+        """
         buttons_tools = [
             sg.Frame(
                 "BRIDGE",
@@ -281,7 +316,7 @@ class MarchLauncher:
         frame_ros1 = sg.Frame(
             "ROS1",
             [[sg.Column(self.layouts["ros1"], size=(None, MAX), scrollable=True)]],
-        5)
+        )
         frame_ros2 = sg.Frame(
             "ROS2",
             [[sg.Column(self.layouts["ros2"], size=(None, MAX), scrollable=True)]],
@@ -306,6 +341,9 @@ class MarchLauncher:
         )
 
     def update_window(self, values):
+        """
+        Update launch argument when a user changes one of the variables.
+        """
         for ros in self.ros_versions:
             self.launch_commands[ros] = default_launch_commands[ros]
             for i in range(len(self.default_arguments[ros])):
@@ -322,6 +360,10 @@ class MarchLauncher:
             self.window["launch_argument_" + ros].update(self.launch_commands[ros])
 
     def create_run_command(self, ros: str, bridge_delay: bool = False) -> str:
+        """
+        Create a run command for ros1, ros2 or bridge.
+        The optional bridge_delay is used when all three are launched at the same time.
+        """
         if bridge_delay:
             return "' sleep 5 && {} && {} && {} '".format(  # noqa: P101
                 ros_source[ros], march_source[ros], self.launch_commands[ros]
@@ -332,20 +374,29 @@ class MarchLauncher:
             )
 
     def run(self, ros: str):
+        """
+        Execute run command.
+        """
         command = "terminator -T {} -e {}".format(  # noqa: P101
             ros, self.create_run_command(ros)
         )
-        subprocess.Popen([command], shell=True)
+        subprocess.Popen([command], shell=True)  # noqa: S602
 
     def run_all(self):
+        """
+        Execute run commands of ros1, ros2 and bridge together in one terminal with 3 windows using tmux.
+        """
         command = 'terminator -T "ros1, ros2, bridge" -e "tmux new-session \; source-file ~/march/.tmux.conf \; send-keys {} C-m \; split-window -v \; send-keys {} C-m \; split-window -v \; send-keys {} C-m \;"'.format(  # noqa: W605,P101
             self.create_run_command("ros1"),
             self.create_run_command("ros2"),
             self.create_run_command("bridge", bridge_delay=True),
         )
-        subprocess.Popen([command], shell=True)
+        subprocess.Popen([command], shell=True)  # noqa: S602
 
     def create_build_command(self, ros: str) -> str:
+        """
+        Create a build command for ros1, ros2 or bridge.
+        """
         if ros == "bridge":
 
             return "'{} && {} && {} && {} && {}'".format(  # noqa: P101
@@ -361,12 +412,18 @@ class MarchLauncher:
             )
 
     def build(self, ros: str):
+        """
+        Execute build command.
+        """
         command = "terminator -T {} -e {}".format(  # noqa: P101
             ros, self.create_build_command(ros)
         )
-        subprocess.Popen([command], shell=True)
+        subprocess.Popen([command], shell=True)  # noqa: S602
 
     def reset(self, ros: str):
+        """
+        Reset the launch arguments to default values.
+        """
         for arg in self.default_arguments[ros]:
             name, value, doc = arg
             if value in ["true", "True"]:
@@ -377,6 +434,9 @@ class MarchLauncher:
             self.window["launch_argument_" + ros].update(default_launch_commands[ros])
 
     def clean(self, ros: str):
+        """
+        Clean the build, install and log folders for ros1, ros2 or bridge.
+        """
         answer = sg.popup_yes_no(
             "Are you sure that you want to clean " + ros + "?",
             title="Clean " + ros,
@@ -386,13 +446,17 @@ class MarchLauncher:
             command = "terminator -T {} -e '{}'".format(  # noqa: P101
                 ros, clean_commands[ros]
             )
-            subprocess.Popen([command], shell=True)
+            subprocess.Popen([command], shell=True)  # noqa: S602
 
     def show_window(self):
+        """
+        Start the GUI and handle intputs.
+        """
         while True:
             event, values = self.window.read()
 
-            self.update_window(values)
+            if values is not None:
+                self.update_window(values) 
 
             if event == "run_ros1":
                 self.run("ros1")
