@@ -23,6 +23,9 @@
          "name":"force unknown",
          "callback":"publish_sm_to_unknown",
          "always_enabled":true
+      },
+      {
+         "name":"dynamic_walk"
       }
    ]
 ]
