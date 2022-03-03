@@ -64,6 +64,7 @@ endif()
 #           test_joint_rotational
 #           test_joint_linear
 #           rot_joint_frictionless_pendulum_model
+#           rot_joint_friction_model
 set(MODEL_NAME rot_joint_friction_model)
 
 
