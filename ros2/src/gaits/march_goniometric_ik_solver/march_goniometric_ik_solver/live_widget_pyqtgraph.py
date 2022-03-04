@@ -1,9 +1,11 @@
 import pyqtgraph as pg
 import numpy as np
 import sys
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import QApplication, QSlider, QWidget, QGridLayout, QPushButton
 from march_goniometric_ik_solver.ik_solver import Pose, LENGTH_HIP
+import live_widget_node
+import rclpy
 
 DEFAULT_HIP_FRACTION = 0.5
 DEFAULT_KNEE_BEND = np.deg2rad(8)
@@ -30,6 +32,8 @@ JOINT_NAMES = [
 class LiveWidget:
     def __init__(self) -> None:
         self.sliders = {"last": {"x": 0, "y": 0}, "next": {"x": 0, "y": 0}}
+        self.live = False
+        self.joint_positions = None
 
         self.create_window()
         self.create_plot()
@@ -87,22 +91,58 @@ class LiveWidget:
         self.vertical_sliders.addWidget(self.slider_next_y, 0, 1)
 
     def create_buttons(self):
+        self.buttons = QGridLayout()
         self.reset_button = QPushButton("Reset")
         self.reset_button.clicked.connect(self.reset)
+        self.toggle_button = QPushButton("Start Live")
+        self.toggle_button.clicked.connect(self.toggle_live)
+        self.buttons.addWidget(self.reset_button, 0, 0)
+        self.buttons.addWidget(self.toggle_button, 0, 1)
+
+    def toggle_live(self):
+        self.slider_last_x.setHidden(not self.slider_last_x.isHidden())
+        self.slider_last_y.setHidden(not self.slider_last_y.isHidden())
+        self.slider_next_x.setHidden(not self.slider_next_x.isHidden())
+        self.slider_next_y.setHidden(not self.slider_next_y.isHidden())
+        self.reset()
+
+        rclpy.init(args=None)
+        self.subscriber = live_widget_node.LiveWidgetSubscriber(self.callback)
+        self.timer = QTimer()
+        self.timer.setInterval(100)
+        self.timer.timeout.connect(self.update_live)
+        self.timer.start()
+
+    def update_live(self):
+        rclpy.spin_once(self.subscriber)
+
+    def callback(self, msg):
+        self.joint_positions = msg.actual.positions
+        pose = Pose(self.joint_positions)
+        positions = pose.calculate_joint_positions()
+
+        # shift positions to have toes of stand legs at (0,0):
+        positions = [pos - positions[0] for pos in positions]
+
+        positions_x = [pos[0] for pos in positions]
+        positions_y = [pos[1] for pos in positions]
+        self.plots["next"].setData(x=positions_x, y=positions_y)
 
     def create_table(self):
         self.table = QGridLayout()
         self.tables = {"last": pg.TableWidget(), "next": pg.TableWidget()}
         self.update_tables()
         for pose in ["last", "next"]:
-            self.table.addWidget(self.tables[pose], list(self.tables.keys()).index(pose), 0)
+            self.table.addWidget(
+                self.tables[pose], list(self.tables.keys()).index(pose), 0
+            )
 
     def fill_layout(self):
         self.layout.addLayout(self.vertical_sliders, 0, 0)
         self.layout.addWidget(self.plot_window, 0, 1)
         self.layout.addLayout(self.horizontal_sliders, 1, 1)
         self.layout.addLayout(self.table, 0, 2)
-        self.layout.addWidget(self.reset_button, 1, 2)
+        self.layout.addLayout(self.buttons, 1, 2)
 
     def update_last_x(self, value):
         self.sliders["last"]["x"] = (1 - (value / 99)) * (X_MAX - X_MIN) + X_MIN
@@ -169,7 +209,9 @@ class LiveWidget:
 
             data = []
             for joint, angle_rad, angle_deg in zip(
-                JOINT_NAMES, np.round(joint_angles, 3), np.round(joint_angles_degrees, 3)
+                JOINT_NAMES,
+                np.round(joint_angles, 3),
+                np.round(joint_angles_degrees, 3),
             ):
                 data.append([joint, angle_rad, angle_deg])
 

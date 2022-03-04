@@ -18,6 +18,8 @@ setup(
     license="TODO: License declaration",
     tests_require=["pytest"],
     entry_points={
-        "console_scripts": [],
+        "console_scripts": [
+            "node_test = march_goniometric_ik_solver.live_widget_node:main"
+        ],
     },
 )
