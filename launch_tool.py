@@ -365,11 +365,11 @@ class MarchLauncher:
         The optional bridge_delay is used when all three are launched at the same time.
         """
         if bridge_delay:
-            return "' sleep 5 && {} && {} && {} '".format(  # noqa: P101
+            return "' sleep 5 && {} && {} && {};bash'".format(  # noqa: P101
                 ros_source[ros], march_source[ros], self.launch_commands[ros]
             )
         else:
-            return "' {} && {} && {} '".format(  # noqa: P101
+            return "' {} && {} && {};bash'".format(  # noqa: P101
                 ros_source[ros], march_source[ros], self.launch_commands[ros]
             )
 
@@ -399,7 +399,7 @@ class MarchLauncher:
         """
         if ros == "bridge":
 
-            return "'{} && {} && {} && {} && {}'".format(  # noqa: P101
+            return "'{} && {} && {} && {} && {};bash'".format(  # noqa: P101
                 ros_source["ros1"],
                 ros_source["ros2"],
                 march_source["ros1"],
@@ -407,7 +407,7 @@ class MarchLauncher:
                 build_commands[ros],
             )
         else:
-            return "'{} && {}'".format(  # noqa: P101
+            return "'{} && {};bash'".format(  # noqa: P101
                 ros_source[ros], build_commands[ros]
             )
 
@@ -443,7 +443,7 @@ class MarchLauncher:
             keep_on_top=True,
         )
         if answer == "Yes":
-            command = "terminator -T {} -e '{}'".format(  # noqa: P101
+            command = "terminator -T {} -e '{};bash'".format(  # noqa: P101
                 ros, clean_commands[ros]
             )
             subprocess.Popen([command], shell=True)  # noqa: S602
@@ -456,7 +456,7 @@ class MarchLauncher:
             event, values = self.window.read()
 
             if values is not None:
-                self.update_window(values) 
+                self.update_window(values)
 
             if event == "run_ros1":
                 self.run("ros1")
