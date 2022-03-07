@@ -32,8 +32,6 @@ JOINT_NAMES = [
 class LiveWidget:
     def __init__(self) -> None:
         self.sliders = {"last": {"x": 0, "y": 0}, "next": {"x": 0, "y": 0}}
-        self.live = False
-        self.joint_positions = None
 
         self.create_window()
         self.create_plot()
@@ -41,6 +39,12 @@ class LiveWidget:
         self.create_buttons()
         self.create_table()
         self.fill_layout()
+
+        # Create a timer object that is used to update the pose in live modus:
+        self.live = False
+        self.live_updater = QTimer()
+        self.live_updater.setInterval(100)
+        self.live_updater.timeout.connect(self.update_live)
 
     def create_window(self):
         self.window = QWidget()
@@ -106,17 +110,26 @@ class LiveWidget:
         self.slider_next_y.setHidden(not self.slider_next_y.isHidden())
         self.reset()
 
-        rclpy.init(args=None)
-        self.subscriber = live_widget_node.LiveWidgetSubscriber(self.callback)
-        self.timer = QTimer()
-        self.timer.setInterval(100)
-        self.timer.timeout.connect(self.update_live)
-        self.timer.start()
+        if self.live:
+            self.toggle_button.setText("Start Live")
+            self.live_updater.stop()
+            rclpy.shutdown()
+        else:
+            self.toggle_button.setText("Stop Live")
+            rclpy.init(args=None)
+            self.subscriber = live_widget_node.LiveWidgetSubscriber(self.callback_live)
+            self.live_updater.start()
+
+        self.live = not self.live
 
     def update_live(self):
-        rclpy.spin_once(self.subscriber)
+        self.message_recieved = False
+        rclpy.spin_once(self.subscriber, timeout_sec=1)
+        if not self.message_recieved:
+            print("no message recieved...")
 
-    def callback(self, msg):
+    def callback_live(self, msg):
+        self.message_recieved = True
         self.joint_positions = msg.actual.positions
         pose = Pose(self.joint_positions)
         positions = pose.calculate_joint_positions()
