@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>march_gain_scheduling</name>
+  <name>march_dynamic_reconfigure_parameters</name>
   <version>0.0.0</version>
   <description>A feature package that implements gain scheduling control.</description>
 
