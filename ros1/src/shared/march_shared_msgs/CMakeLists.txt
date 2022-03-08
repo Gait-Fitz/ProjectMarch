@@ -24,6 +24,7 @@ add_message_files(
     GaitParameters.msg
     HighVoltageState.msg
     MotorControllerState.msg
+    JointPIDs.msg
     JointValues.msg
     LowVoltageState.msg
     PowerDistributionBoardData.msg
@@ -36,6 +37,7 @@ add_message_files(
     MpcDiagnostics.msg
     MpcJoint.msg
     MpcMsg.msg
+    PID.msg
 )
 
 add_service_files(

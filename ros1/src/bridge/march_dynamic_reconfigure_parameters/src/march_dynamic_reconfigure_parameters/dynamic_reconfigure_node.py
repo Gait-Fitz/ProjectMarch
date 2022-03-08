@@ -1,7 +1,7 @@
 import rospy
 from dynamic_reconfigure.client import Client
-from march_shared_msgs.msg import JointPIDs, PID
 
+from march_shared_msgs.msg import JointPIDs
 
 
 class DynamicPIDReconfigure:

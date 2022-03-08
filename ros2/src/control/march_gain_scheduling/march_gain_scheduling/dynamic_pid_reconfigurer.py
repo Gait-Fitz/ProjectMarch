@@ -19,7 +19,8 @@ class GaitType(Enum):
     @classmethod
     def exists(cls, gait_type: str, node: Node):
         return gait_type is not None and gait_type != "" \
-               and bool(node.get_parameters_by_prefix("gait_types/{gait_type}".format(gait_type=gait_type)))
+               and bool(node.get_parameters_by_prefix("gait_types.{gait_type}".format(gait_type=gait_type)))
+
 
 DEFAULT_GAIT_TYPE = GaitType.WALK_LIKE
 
@@ -64,6 +65,7 @@ class DynamicPIDReconfigurer:
 
     def gait_selection_callback(self, msg):
         new_gait_type = msg.gait_type
+        self._node.get_logger().debug(f"Called with gait type: {new_gait_type}")
         if not GaitType.exists(new_gait_type, self._node):
             self._node.get_logger().warning(
                 "The gait has unknown gait type of `{gait_type}`, default is set to walk_like".format(
@@ -75,6 +77,8 @@ class DynamicPIDReconfigurer:
         if new_gait_type != self._gait_type:
             self._gait_type = new_gait_type
         else:
+            self._node.get_logger().debug(
+                f"The new gait type: {new_gait_type} equals this gait type: {self._gait_type}")
             return None
 
         needed_gains = self.get_needed_gains()
@@ -164,6 +168,3 @@ class DynamicPIDReconfigurer:
     @property
     def _linearize(self) -> bool:
         return self._node.get_parameter("linearize_gain_scheduling").get_parameter_value().bool_value
-
-
-

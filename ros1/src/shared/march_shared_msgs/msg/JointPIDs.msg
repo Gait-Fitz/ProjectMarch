@@ -1,3 +1,3 @@
 # JointPIDs.msg
-std_msgs/Header header
+Header header
 PID[] joints
