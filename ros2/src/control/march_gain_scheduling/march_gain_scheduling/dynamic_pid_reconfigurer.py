@@ -13,6 +13,7 @@ from .one_step_linear_interpolation import interpolate
 
 
 class GaitType(Enum):
+    DEFAULT = 'default'
     WALK_LIKE = 'walk_like'
     SIT_LIKE = 'sit_like'
     STAIRS_LIKE = 'stairs_like'
@@ -23,15 +24,12 @@ class GaitType(Enum):
                and bool(node.get_parameters_by_prefix("gait_types.{gait_type}".format(gait_type=gait_type)))
 
 
-DEFAULT_GAIT_TYPE = GaitType.WALK_LIKE
-
-
 class DynamicPIDReconfigurer:
     def __init__(self, joint_list: List[str], node: Node):
         node.get_logger().info("Started PID reconfigurer")
         self._joint_list = joint_list
         self._node = node
-        self._gait_type = DEFAULT_GAIT_TYPE
+        self._gait_type = GaitType.DEFAULT
         self._timer = None
 
         _configuration = self._node.get_parameter("configuration").get_parameter_value().string_value
@@ -65,7 +63,11 @@ class DynamicPIDReconfigurer:
         #     for joint in self._joint_list
         # ]
 
-    def gait_selection_callback(self, msg):
+    def gait_selection_callback(self, msg: CurrentGait):
+        """
+        Callback function for if a gait_type message is sent over the '/march/gait_selection/current_gait' topic.
+        This method checks if the new gait_type has its own PID values
+        """
         new_gait_type = msg.gait_type
         self._node.get_logger().debug(f"Called with gait type: {new_gait_type}")
         if not GaitType.exists(new_gait_type, self._node):
@@ -75,7 +77,7 @@ class DynamicPIDReconfigurer:
             self._node.get_logger().debug(
                 "The gait has unknown gait type of `{gait_type}`, default is set to walk_like".format(
                     gait_type=new_gait_type))
-            new_gait_type = DEFAULT_GAIT_TYPE
+            new_gait_type = GaitType.DEFAULT
         else:
             new_gait_type = GaitType(new_gait_type)
 
@@ -138,18 +140,42 @@ class DynamicPIDReconfigurer:
         else:
             self._node.get_logger().warning("The timer for dynamic pid reconfigure can't be destroyed")
 
-    def get_needed_gains(self, gait_type: GaitType = None):
-        return [self.get_needed_pid(i, gait_type) for i in range(len(self._joint_list))]
+    def get_needed_gains(self, gait_type: GaitType = None) -> List[List[int]]:
+        return [self.get_needed_pid(joint, gait_type) for joint in self._joint_list]
 
-    def get_needed_pid(self, joint_index, gait_type: GaitType = None):
+    def get_needed_pid(self, joint_name: str, gait_type: GaitType = None) -> List[int]:
         if gait_type is None:
             gait_type = self._gait_type
-        name_prefix = "gait_types." + gait_type.value + "." + self._joint_list[joint_index]
         return [
-            self._node.get_parameter(name_prefix + ".p").get_parameter_value().integer_value,
-            self._node.get_parameter(name_prefix + ".i").get_parameter_value().integer_value,
-            self._node.get_parameter(name_prefix + ".d").get_parameter_value().integer_value
+            self.get_joint_parameter_value(joint_name, 'p', gait_type),
+            self.get_joint_parameter_value(joint_name, 'i', gait_type),
+            self.get_joint_parameter_value(joint_name, 'd', gait_type),
         ]
+
+    def get_joint_parameter_value(self, joint_name: str, param: str, gait_type: GaitType = GaitType.DEFAULT) -> int:
+        """
+        This method returns a parameter INTEGER value of the specified joint.
+        If the parameter for the gait_type exists it returns that, otherwise it returns the default parameter values.
+        This method is meant to retrieve the 'p','i' or 'd' value of a specific joint of the gait type.
+        Example parameter that this method retrieves from this node is:
+            get_joint_parameter_value(self, 'left_ankle', 'p', GaitType.SIT_LIKE) ->
+                'gait_types.sit_like.left_ankle.p' and if that one doesn't exist: 'gait_types.default.left_ankle.p'
+
+        To see these values check out the files in `../config/{robot}/{configuration}.yaml`.
+
+        Args:
+            joint_name (str): This is the name of the joint, should be in `self._joint_list`.
+            param (str): This is the name of the parameter of the joint, e.g. 'p', 'i' or 'd'
+            gait_type (GaitType, optional): This is the type of GaitType, if it isn't specified or the parameter
+                for this gait_type doesn't exist it uses the GaitType.DEFAULT = 'default'.
+
+        Returns
+            int: The integer parameter value. (For pid parameters the return value is probably > 0)
+        """
+        param_name = "gait_types." + gait_type.value + "." + joint_name + '.' + param
+        default_param_name = "gait_types." + GaitType.DEFAULT.value + "." + joint_name + '.' + param
+        return self._node.get_parameter_or(param_name, self._node.get_parameter(default_param_name))\
+            .get_parameter_value().integer_value
 
     # TODO: Refactor this if we change to ros2 control: (This is obsolete as long as we sent pid values over the bridge)
     # def load_current_gains(self):

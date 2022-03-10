@@ -2,30 +2,25 @@
   march_gain_scheduling:
     ros__parameters:
       gait_types:
+        default:
+          left_ankle: { p: 600, i: 0, d: 20 }
+          left_hip_aa: { p: 330, i: 0, d: 10 }
+          left_hip_fe: { p: 200, i: 0, d: 15 }
+          left_knee: { p: 600, i: 0, d: 30 }
+          right_ankle: { p: 600, i: 0, d: 20 }
+          right_hip_aa: { p: 330, i: 0, d: 10 }
+          right_hip_fe: { p: 200, i: 0, d: 15 }
+          right_knee: { p: 600, i: 0, d: 30 }
         sit_like:
-          left_ankle: {p: 130, i: 0, d: 6}
-          left_hip_aa: {p: 220, i: 0, d: 10}
-          left_hip_fe: {p: 80, i: 0, d: 10}
-          left_knee: {p: 50, i: 0, d: 10}
-          right_ankle: {p: 130, i: 0, d: 5}
-          right_hip_aa: {p: 220, i: 0, d: 10}
-          right_hip_fe: {p: 80, i: 0, d: 10}
-          right_knee: {p: 50, i: 0, d: 10}
-        walk_like:
-          left_ankle: {p: 600, i: 0, d: 20}
-          left_hip_aa: {p: 330, i: 0, d: 10}
-          left_hip_fe: {p: 200, i: 0, d: 15}
-          left_knee: {p: 600, i: 0, d: 30}
-          right_ankle: {p: 600, i: 0, d: 20}
-          right_hip_aa: {p: 330, i: 0, d: 10}
-          right_hip_fe: {p: 200, i: 0, d: 15}
-          right_knee: {p: 600, i: 0, d: 30}
+          left_ankle: { p: 130, d: 6 }
+          left_hip_aa: { p: 220 }
+          left_hip_fe: { p: 80, d: 10 }
+          left_knee: { p: 50, d: 10 }
+          right_ankle: { p: 130, d: 5 }
+          right_hip_aa: { p: 220 }
+          right_hip_fe: { p: 80, d: 10 }
+          right_knee: { p: 50, d: 10 }
+#        walk_like:
         stairs_like:
-          left_ankle: {p: 600, i: 0, d: 20}
-          left_hip_aa: {p: 330, i: 0, d: 5}
-          left_hip_fe: {p: 200, i: 0, d: 15}
-          left_knee: {p: 600, i: 0, d: 30}
-          right_ankle: {p: 600, i: 0, d: 20}
-          right_hip_aa: {p: 330, i: 0, d: 5}
-          right_hip_fe: {p: 200, i: 0, d: 15}
-          right_knee: {p: 600, i: 0, d: 30}
+          left_hip_aa: { d: 5 }
+          right_hip_aa: { d: 5 }
