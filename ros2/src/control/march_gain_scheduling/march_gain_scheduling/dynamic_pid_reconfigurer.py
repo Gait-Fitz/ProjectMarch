@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List
 
 from rclpy import time
 from rclpy.node import Node
@@ -26,7 +27,7 @@ DEFAULT_GAIT_TYPE = GaitType.WALK_LIKE
 
 
 class DynamicPIDReconfigurer:
-    def __init__(self, joint_list, node: Node):
+    def __init__(self, joint_list: List[str], node: Node):
         node.get_logger().info("Started PID reconfigurer")
         self._joint_list = joint_list
         self._node = node
@@ -38,13 +39,7 @@ class DynamicPIDReconfigurer:
         # ]
         # self._node.set_parameters(self._params)  # Updates the params.
 
-        self.current_gains = [self.get_needed_pid(i) for i in range(len(self._joint_list))]
-
-        self._sub = self._node.create_subscription(
-            msg_type=CurrentGait,
-            topic="/march/gait_selection/current_gait",
-            callback=self.gait_selection_callback,
-            qos_profile=DEFAULT_HISTORY_DEPTH)
+        # [self.get_needed_pid(i) for i in range(len(self._joint_list))]
 
         _configuration = self._node.get_parameter("configuration").get_parameter_value().string_value
 
@@ -55,12 +50,20 @@ class DynamicPIDReconfigurer:
                                                     message=_configuration)
         )
 
+        self._sub = self._node.create_subscription(
+            msg_type=CurrentGait,
+            topic="/march/gait_selection/current_gait",
+            callback=self.gait_selection_callback,
+            qos_profile=DEFAULT_HISTORY_DEPTH)
+
         self._publisher = self._node.create_publisher(
             msg_type=JointPIDs,
             topic='/march/dynamic_reconfigure/PIDs',
             qos_profile=DEFAULT_HISTORY_DEPTH
         )
 
+        self.current_gains = [List[int]] * len(joint_list)
+        self.update_params(None, self.get_needed_gains(), False)
         self._node.get_logger().info(f"Exoskeleton was started with gain tuning for {_configuration}")
 
     def gait_selection_callback(self, msg):
@@ -70,6 +73,9 @@ class DynamicPIDReconfigurer:
             self._node.get_logger().warning(
                 "The gait has unknown gait type of `{gait_type}`, default is set to walk_like".format(
                     gait_type=new_gait_type), once=True)
+            self._node.get_logger().debug(
+                "The gait has unknown gait type of `{gait_type}`, default is set to walk_like".format(
+                    gait_type=new_gait_type))
             new_gait_type = DEFAULT_GAIT_TYPE
         else:
             new_gait_type = GaitType(new_gait_type)
@@ -88,18 +94,19 @@ class DynamicPIDReconfigurer:
             self._node.get_logger().info(
                 "Beginning PID interpolation for gait type: {0}".format(self._gait_type)
             )
-            begin_time = self._node.get_clock().now()  # Changed clock to a ros2 clock check if this still works.
+            begin_time = self._node.get_clock().now()
             # To ensure there are no two timers running
             self._node.destroy_timer(self._timer)
             # Updates the PID params every 0.3 seconds with a callback to 'update_params'
-            self._timer = self._node.create_timer(0.3, lambda: self.update_params(begin_time, needed_gains))
+            self._timer = self._node.create_timer(0.3, lambda: self.update_params(begin_time,
+                                                                                  needed_gains,
+                                                                                  not self._linearize))
 
-    def update_params(self, begin_time, needed_gains):
+    def update_params(self, begin_time, needed_gains, change_gradually):
         if self.current_gains != needed_gains:
             pid_messages = []
-            _change_gradually = not self._linearize
             for i in range(len(self._joint_list)):
-                if _change_gradually:
+                if change_gradually:
                     self.current_gains[i] = interpolate(
                         self.current_gains[i],
                         needed_gains[i],
@@ -114,8 +121,8 @@ class DynamicPIDReconfigurer:
                         i=self.current_gains[i][1],
                         d=self.current_gains[i][2])
                 )
-            self._node.get_logger().info(
-                f"{self.current_gains == needed_gains}, -> Needed gains: {needed_gains}, but got: {self.current_gains}"
+            self._node.get_logger().debug(
+                f"Publishing gains:\nNeeded gains: {needed_gains}\nPublished gains: {self.current_gains}"
             )
             self._publisher.publish(JointPIDs(joints=pid_messages))
         else:
@@ -132,6 +139,7 @@ class DynamicPIDReconfigurer:
         else:
             self._node.get_logger().warning("The timer for dynamic pid reconfigure can't be destroyed")
 
+    # TODO: Refactor this if we change to ros2 control: (This is obsolete as long as we sent pid values over the bridge)
     # def load_current_gains(self):
     #     self.current_gains = []
     #     for joint_name in self._joint_list:
@@ -143,7 +151,6 @@ class DynamicPIDReconfigurer:
     #                                    gains["d"].get_parameter_value().integer_value])
 
     # Method that pulls the PID values from the gains_per_gait_type.yaml config file
-    # Rethink this method, if the only use is in this class. Return result is always wrangled back in a for loop.
 
     def get_needed_gains(self, gait_type: GaitType = None):
         return [self.get_needed_pid(i, gait_type) for i in range(len(self._joint_list))]
@@ -152,9 +159,6 @@ class DynamicPIDReconfigurer:
         if gait_type is None:
             gait_type = self._gait_type
         name_prefix = "gait_types." + gait_type.value + "." + self._joint_list[joint_index]
-        self._node.get_logger().info(
-            "Started lookup table with prefix {0}".format(name_prefix)
-        )
         return [
             self._node.get_parameter(name_prefix + ".p").get_parameter_value().integer_value,
             self._node.get_parameter(name_prefix + ".i").get_parameter_value().integer_value,
