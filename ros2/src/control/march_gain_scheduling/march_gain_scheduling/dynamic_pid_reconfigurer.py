@@ -33,13 +33,6 @@ class DynamicPIDReconfigurer:
         self._node = node
         self._gait_type = DEFAULT_GAIT_TYPE
         self._timer = None
-        # self._params = [
-        #     self._node.declare_parameter("/march/controller/trajectory/gains/" + joint)
-        #     for joint in self._joint_list
-        # ]
-        # self._node.set_parameters(self._params)  # Updates the params.
-
-        # [self.get_needed_pid(i) for i in range(len(self._joint_list))]
 
         _configuration = self._node.get_parameter("configuration").get_parameter_value().string_value
 
@@ -66,6 +59,12 @@ class DynamicPIDReconfigurer:
         self.update_params(None, self.get_needed_gains(), False)
         self._node.get_logger().info(f"Exoskeleton was started with gain tuning for {_configuration}")
 
+        # TODO: Implement this code to work with ros2 control:
+        # self._params = [
+        #     self._node.declare_parameter("/march/controller/trajectory/gains/" + joint)
+        #     for joint in self._joint_list
+        # ]
+
     def gait_selection_callback(self, msg):
         new_gait_type = msg.gait_type
         self._node.get_logger().debug(f"Called with gait type: {new_gait_type}")
@@ -88,7 +87,7 @@ class DynamicPIDReconfigurer:
             return None
 
         needed_gains = self.get_needed_gains()
-        # self.load_current_gains()
+        # self.load_current_gains() # TODO: Implement this if we change to ros2 control
 
         if needed_gains != self.current_gains:
             self._node.get_logger().info(
@@ -139,19 +138,6 @@ class DynamicPIDReconfigurer:
         else:
             self._node.get_logger().warning("The timer for dynamic pid reconfigure can't be destroyed")
 
-    # TODO: Refactor this if we change to ros2 control: (This is obsolete as long as we sent pid values over the bridge)
-    # def load_current_gains(self):
-    #     self.current_gains = []
-    #     for joint_name in self._joint_list:
-    #         gains = self._node.get_parameters_by_prefix("/march/controller/trajectory/gains/" + joint_name)
-    #         gains[0].get_parameter_value().integer_value
-    #         # gains = rospy.get_param("/march/controller/trajectory/gains/" + joint_name)
-    #         self.current_gains.append([gains["p"].get_parameter_value().integer_value,
-    #                                    gains["i"].get_parameter_value().integer_value,
-    #                                    gains["d"].get_parameter_value().integer_value])
-
-    # Method that pulls the PID values from the gains_per_gait_type.yaml config file
-
     def get_needed_gains(self, gait_type: GaitType = None):
         return [self.get_needed_pid(i, gait_type) for i in range(len(self._joint_list))]
 
@@ -164,6 +150,17 @@ class DynamicPIDReconfigurer:
             self._node.get_parameter(name_prefix + ".i").get_parameter_value().integer_value,
             self._node.get_parameter(name_prefix + ".d").get_parameter_value().integer_value
         ]
+
+    # TODO: Refactor this if we change to ros2 control: (This is obsolete as long as we sent pid values over the bridge)
+    # def load_current_gains(self):
+    #     self.current_gains = []
+    #     for joint_name in self._joint_list:
+    #         gains = self._node.get_parameters_by_prefix("/march/controller/trajectory/gains/" + joint_name)
+    #         gains[0].get_parameter_value().integer_value
+    #         # gains = rospy.get_param("/march/controller/trajectory/gains/" + joint_name)
+    #         self.current_gains.append([gains["p"].get_parameter_value().integer_value,
+    #                                    gains["i"].get_parameter_value().integer_value,
+    #                                    gains["d"].get_parameter_value().integer_value])
 
     @property
     def _gradient(self) -> float:
