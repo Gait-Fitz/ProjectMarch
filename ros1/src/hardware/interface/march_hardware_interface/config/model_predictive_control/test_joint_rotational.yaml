@@ -21,7 +21,7 @@ march:
       # Both parameters are required for each joint
       weights:
         rotational_joint:
-          Q: [100.0, 1.0]
+          Q: [101.0, 1.0]
           R: [0.01]
 
       constraints:
@@ -30,7 +30,7 @@ march:
           stopped_velocity_tolerance: 0.1
           margin_soft_limit_error: 0.5
           goal: 0.5
-          trajectory: 0.5
+          trajectory: 0.6
 
       state_publish_rate:  25            # Override default
       action_monitor_rate: 30            # Override default
