@@ -73,8 +73,8 @@ march6:
           absoluteEncoder:
             direction: -1
             resolution: 20
-            minPositionIU: 617091
-            maxPositionIU: 966355
+            minPositionIU: 110830
+            maxPositionIU: 431485
           incrementalEncoder:
             direction: -1
             resolution: 12

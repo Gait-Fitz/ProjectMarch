@@ -74,9 +74,9 @@ joint_limits:
   # The upper and lower limits of the joints
   left_knee:
     unit: iu
-    lower_limit: 617091
-    upper_limit: 966355
-    zero_position: 632009
+    lower_limit: 110830
+    upper_limit: 431485
+    zero_position: 414184
     resolution: 20
   right_knee:
     unit: iu
