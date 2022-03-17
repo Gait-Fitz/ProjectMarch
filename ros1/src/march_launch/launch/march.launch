@@ -8,9 +8,6 @@
     <arg name="controller_type" default="effort_control" doc="Changes the controller used by simulation."/>
     <arg name="controller_name" default="$(arg robot)" doc="Name of the controller"/>
 
-    <arg name="gain_scheduling" default="true" doc="Whether to use gain scheduling, which changes PID values based on executed gait."/>
-    <arg name="gain_tuning" default="airgait" doc="The configuration to use for gain scheduling. Only used when 'gain_scheduling' is true."/>
-
 <!-- Simulation only            -->
     <arg name="rviz" default="false" doc="Launches RViz."/>
     <arg name="gazebo_ui" default="false" doc="Launches the Gazebo UI."/>
@@ -112,6 +109,12 @@
             args="-a -q -o $(arg bag_prefix) -x '(.*)camera_(front|back)(.*)'"
     />
 
+    <node name="march_dynamic_reconfigure_parameters_node"
+          pkg="march_dynamic_reconfigure_parameters"
+          type="march_dynamic_reconfigure_parameters_node"
+          output="screen"
+          ns="march"/>
+
     <rosparam file="$(find march_bridge_parameters)/config/topics_services_to_bridge.yaml"
               command="load"/>
 
@@ -139,11 +142,6 @@
         <include file="$(find march_launch)/launch/disable_camera_plugins.launch"
                  if="$(arg realsense)">
             <arg name="camera_name" value="camera_back"/>
-        </include>
-
-        <include file="$(find march_gain_scheduling)/launch/march_gain_scheduling.launch" if="$(arg gain_scheduling)">
-            <arg name="configuration" value="$(arg gain_tuning)"/>
-            <arg name="robot" value="$(arg robot)"/>
         </include>
 
         <include if="$(arg balance)" file="$(find march_moveit)/launch/march_moveit.launch" />

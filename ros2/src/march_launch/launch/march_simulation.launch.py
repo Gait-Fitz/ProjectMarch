@@ -65,6 +65,10 @@ def generate_launch_description():
     location_y = LaunchConfiguration("location_y")
     location_z = LaunchConfiguration("location_z")
 
+    # Gain scheduling arguments
+    gain_scheduling = LaunchConfiguration("gain_scheduling")
+    gain_tuning = LaunchConfiguration("gain_tuning")
+
     return launch.LaunchDescription(
         [
             # GENERAL ARGUMENTS
@@ -253,6 +257,20 @@ def generate_launch_description():
                 default_value=str(DEFAULT_FEET_DISTANCE),
                 description="z-location for fake covid topic, takes double or 'random'",
             ),
+            # GAIN SCHEDULING ARGUMENTS
+            DeclareLaunchArgument(
+                name="gain_scheduling",
+                default_value="False",
+                description="Whether to use gain scheduling, which changes PID values based on executed gait.",
+            ),
+            DeclareLaunchArgument(
+                name="gain_tuning",
+                default_value="airgait",
+                description="The configuration file to use for gain scheduling. "
+                            "Only used when 'gain_scheduling' is true. "
+                            "The possible files can be found in:"
+                            "`ros2/src/control/march_gain_scheduling/config/{robot}/{gain_tuning}.yaml`",
+            ),
             # Use normal launch file with different launch_arguments
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
@@ -298,6 +316,8 @@ def generate_launch_description():
                     ("location_x", location_x),
                     ("location_y", location_y),
                     ("location_z", location_z),
+                    ("gain_scheduling", gain_scheduling),
+                    ("configuration", gain_tuning)
                 ],
             ),
         ]

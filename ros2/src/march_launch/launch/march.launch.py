@@ -68,6 +68,11 @@ def generate_launch_description():
     location_y = LaunchConfiguration("location_y")
     location_z = LaunchConfiguration("location_z")
 
+    # Gain scheduling arguments
+    gain_scheduling = LaunchConfiguration("gain_scheduling")
+    gain_tuning = LaunchConfiguration("gain_tuning")
+
+
     return launch.LaunchDescription(
         [
             # GENERAL ARGUMENTS
@@ -260,6 +265,35 @@ def generate_launch_description():
                 name="location_z",
                 default_value=str(DEFAULT_FEET_DISTANCE),
                 description="z-location for fake covid topic, takes double or 'random'",
+            ),
+            # GAIN SCHEDULING ARGUMENTS
+            DeclareLaunchArgument(
+                name="gain_scheduling",
+                default_value="True",
+                description="Whether to use gain scheduling, which changes PID values based on executed gait.",
+            ),
+            DeclareLaunchArgument(
+                name="gain_tuning",
+                default_value="airgait",
+                description="The configuration file to use for gain scheduling. "
+                            "Only used when 'gain_scheduling' is true. "
+                            "The possible files can be found in:"
+                            "`ros2/src/control/march_gain_scheduling/config/{robot}/{gain_tuning}.yaml`",
+            ),
+            # Launch march gain scheduling if not gain_scheduling:=false
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    os.path.join(
+                        get_package_share_directory("march_gain_scheduling"),
+                        "launch",
+                        "march_gain_scheduling.launch.py",
+                    )
+                ),
+                launch_arguments=[
+                    ("robot", robot),
+                    ("configuration", gain_tuning),
+                ],
+                condition=IfCondition(gain_scheduling),
             ),
             # Launch rqt input device if not rqt_input:=false
             IncludeLaunchDescription(
