@@ -76,7 +76,7 @@ class DynamicPIDReconfigurer:
             for every joint with certain gait types. Mainly used by the rqt notetaker.
         _sub (rclpy.Subscription): To listen if the current_gait type is changed.
         _publisher (rclpy.Publisher): To set the PID parameter values over the bridge.
-        _current_gains (List[List[int]]): A list of `int` lists of the 'p', 'i', and 'd' values for all joints,
+        _current_gains (List[List[float]]): A list of `int` lists of the 'p', 'i', and 'd' values for all joints,
                 what the current PID values are.
     """
     TIME_BETWEEN_GRADUAL_UPDATES: final = 0.3
@@ -110,7 +110,7 @@ class DynamicPIDReconfigurer:
             qos_profile=DEFAULT_HISTORY_DEPTH
         )
 
-        self._current_gains: List[List[int]] = [[]] * len(joint_list)
+        self._current_gains: List[List[float]] = [[0.0]] * len(joint_list)
         self.update_params(self.get_needed_gains())
         self._node.get_logger().info(f"Exoskeleton was started with gain tuning for {_configuration}")
 
@@ -168,7 +168,7 @@ class DynamicPIDReconfigurer:
                                                                              begin_time,
                                                                              self._linearize))
 
-    def update_params(self, needed_gains: List[List[int]],
+    def update_params(self, needed_gains: List[List[float]],
                       begin_time: Time = None,
                       change_gradually: bool = False) -> None:
         """Function to update the pid parameters.
@@ -185,7 +185,7 @@ class DynamicPIDReconfigurer:
                 {self.TIME_BETWEEN_GRADUAL_UPDATES} * {self._gradiant}.
 
         Args:
-            needed_gains (List[List[int]]): A list of `int` lists of the 'p', 'i', and 'd' values for all joints,
+            needed_gains (List[List[float]]): A list of `int` lists of the 'p', 'i', and 'd' values for all joints,
                 where the actual PID values should be updated to.
             begin_time (rclpy.Time, optional): Gives the start time of when the callback is started.
                 This is only used for printing the interpolation time when it is finished.
@@ -234,7 +234,7 @@ class DynamicPIDReconfigurer:
         else:
             self._node.get_logger().warning("The timer for dynamic pid reconfigure can't be destroyed")
 
-    def get_needed_gains(self, gait_type: GaitType = None) -> List[List[int]]:
+    def get_needed_gains(self, gait_type: GaitType = None) -> List[List[float]]:
         """This method returns all the pid integer values of the gait type.
 
         If the gait type is not specified it uses the current set object gait_type.
@@ -245,12 +245,12 @@ class DynamicPIDReconfigurer:
                 if the gait type doesn't exist it uses the GaitType.DEFAULT = 'default'.
 
         Returns
-            List[List[int]]: A list of `int` lists of size 3,
+            List[List[float]]: A list of `float` lists of size 3,
                 where the first value is the p, second the i, and third the d.
         """
         return [self.get_needed_pid(joint, gait_type) for joint in self._joint_list]
 
-    def get_needed_pid(self, joint_name: str, gait_type: GaitType = None) -> List[int]:
+    def get_needed_pid(self, joint_name: str, gait_type: GaitType = None) -> List[float]:
         """This method returns a list of the yaml specified 3 pid values for the selected joint name and gait type.
 
         Args:
@@ -260,7 +260,7 @@ class DynamicPIDReconfigurer:
                 if the gait type doesn't exist it uses the GaitType.DEFAULT = 'default'.
 
         Returns
-            List[int]: A `int` list of size 3, where the first value is the p, second the i, and third the d.
+            List[float]: A `float` list of size 3, where the first value is the p, second the i, and third the d.
         """
         if gait_type is None:
             gait_type = self._gait_type
@@ -270,7 +270,7 @@ class DynamicPIDReconfigurer:
             self.get_joint_parameter_value(joint_name, 'd', gait_type),
         ]
 
-    def get_joint_parameter_value(self, joint_name: str, param: str, gait_type: GaitType = GaitType.DEFAULT) -> int:
+    def get_joint_parameter_value(self, joint_name: str, param: str, gait_type: GaitType = GaitType.DEFAULT) -> float:
         """This method returns a parameter INTEGER value of the specified joint.
 
         If the parameter for the gait_type exists it returns that, otherwise it returns the default parameter values.
@@ -291,12 +291,11 @@ class DynamicPIDReconfigurer:
                 for this gait_type doesn't exist it uses the GaitType.DEFAULT = 'default'.
 
         Returns
-            int: The integer parameter value. (For pid parameters the return value is probably > 0)
+            float: The integer parameter value. (For pid parameters the return value is probably > 0)
         """
         param_name = "gait_types." + gait_type.value + "." + joint_name + '.' + param
         default_param_name = "gait_types." + GaitType.DEFAULT.value + "." + joint_name + '.' + param
-        return self._node.get_parameter_or(param_name, self._node.get_parameter(default_param_name)) \
-            .get_parameter_value().integer_value
+        return float(self._node.get_parameter_or(param_name, self._node.get_parameter(default_param_name)).value)
 
     # TODO: Refactor this if we change to ros2 control: (This is obsolete as long as we sent pid values over the bridge)
     # def load_current_gains(self):

@@ -50,7 +50,7 @@ setup(
     maintainer_email="software@projectmarch.nl",
     description='TODO: Package description',
     license='TODO: License declaration',
-    tests_require=['pytest'],
+    tests_require=['pytest', 'unittest'],
     entry_points={
         'console_scripts': [
             "march_gain_scheduling_node = march_gain_scheduling.gain_scheduling_node:main"

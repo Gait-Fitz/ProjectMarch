@@ -1,4 +1,4 @@
 # PID.msg
-int16 p
-int16 i
-int16 d
+float32 p
+float32 i
+float32 d
