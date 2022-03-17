@@ -237,6 +237,33 @@ class Pose:
         pose.fe_ankle1 = MAX_ANKLE_FLEXION
         return np.linalg.norm(pose.pos_toes1 - pose.pos_knee1)
 
+    @property
+    def max_swing_dorsi_flexion_reduction(self) -> float:
+        """
+        Returns the maximum possible dorsiflexion reduction for the swing ankle in the current pose.
+        """
+        angle_ankle2, angle_knee2, angle_hip, angle_knee1 = qas.get_angles(
+            [self.pos_ankle2, self.pos_knee2, self.pos_hip, self.pos_knee1]
+        )
+
+        hip_above_rear_ankle_pose = Pose()
+        pos_hip = np.array([0, self.max_leg_length])
+        pos_ankle1 = np.array([0, 0])
+        pos_ankle2 = self.pos_ankle2
+        hip_above_rear_ankle_pose.solve_leg(pos_hip, pos_ankle1, "rear")
+        hip_above_rear_ankle_pose.solve_leg(pos_hip, pos_ankle2, "front")
+
+        max_reduction = self.fe_ankle2 - hip_above_rear_ankle_pose.fe_ankle2
+        print("max_reduction = ", max_reduction)
+
+        return min(
+            angle_ankle2,
+            KNEE_ZERO_ANGLE - angle_knee2 - DEFAULT_KNEE_BEND,
+            angle_hip,
+            KNEE_ZERO_ANGLE - angle_knee1 - DEFAULT_KNEE_BEND,
+            max_reduction,
+        )
+
     def leg_length_angles(self, leg_length: float) -> Tuple[float]:
         """
         Returns the required angles in the triangle between ankle, hip and knee
@@ -278,6 +305,22 @@ class Pose:
 
         else:
             raise ValueError("Expected leg to be 'rear' or 'front'.")
+
+    def solve_foot_orientation(self, foot_rotation):
+        desired_fe_ankle2 = self.fe_ankle2 - foot_rotation
+        desired_exceeding = desired_fe_ankle2 - MAX_ANKLE_FLEXION
+
+        if desired_exceeding < self.max_swing_dorsi_flexion_reduction:
+            self.fe_ankle2 -= foot_rotation
+        else:
+            self.fe_ankle2 = MAX_ANKLE_FLEXION + self.max_swing_dorsi_flexion_reduction
+
+        print("desired_exceeding =                 ", desired_exceeding)
+        print(
+            "max_swing_dorsi_flexion_reduction = ",
+            self.max_swing_dorsi_flexion_reduction,
+        )
+        print("\n")
 
     def reduce_swing_dorsi_flexion(self) -> None:
         """
@@ -552,6 +595,7 @@ class Pose:
         ankle_y: float,
         ankle_z: float,
         subgait_id: str,
+        foot_rotation: float = 0.0,
         hip_x_fraction: float = DEFAULT_HIP_X_FRACTION,
         default_knee_bend: float = DEFAULT_KNEE_BEND,
         reduce_df_front: bool = True,
@@ -591,6 +635,9 @@ class Pose:
         # Solve legs without constraints:
         self.solve_leg(pos_hip, pos_ankle1, "rear")
         self.solve_leg(pos_hip, pos_ankle2, "front")
+
+        # Apply foot rotation if possible:
+        # self.solve_foot_orientation(foot_rotation)
 
         # Reduce dorsi flexion to meet constraints:
         if reduce_df_front and self.fe_ankle2 > MAX_ANKLE_FLEXION:

@@ -3,7 +3,14 @@ import numpy as np
 import copy
 import sys
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QSlider, QWidget, QGridLayout, QPushButton
+from PyQt5.QtWidgets import (
+    QApplication,
+    QSlider,
+    QWidget,
+    QGridLayout,
+    QPushButton,
+    QDial,
+)
 from march_goniometric_ik_solver.ik_solver import Pose, LENGTH_HIP
 
 DEFAULT_HIP_FRACTION = 0.5
@@ -15,6 +22,8 @@ X_MIN = 0.0
 X_MAX = 0.6
 Y_MIN = -0.3
 Y_MAX = 0.3
+R_MIN = -0.5
+R_MAX = 0.5
 
 JOINT_NAMES = [
     "ankle1",
@@ -38,10 +47,12 @@ class LiveWidget:
 
     def __init__(self) -> None:
         self.sliders = {"last": {"x": 0, "y": 0}, "next": {"x": 0, "y": 0}, "mid": 0}
+        self.dials = {"last": 0, "next": 0}
 
         self.create_window()
         self.create_plot()
         self.create_sliders()
+        self.create_dials()
         self.create_buttons()
         self.create_table()
         self.fill_layout()
@@ -106,6 +117,24 @@ class LiveWidget:
         self.vertical_sliders.addWidget(self.slider_last_y, 0, 0)
         self.vertical_sliders.addWidget(self.slider_next_y, 0, 1)
 
+    def create_dials(self):
+        self.dial_last = QDial()
+        self.dial_next = QDial()
+
+        dials = [self.dial_last, self.dial_next]
+        for dial in dials:
+            dial.setNotchesVisible(True)
+            dial.setNotchTarget(5)
+            dial.setValue(75)
+            dial.setWrapping(True)
+
+        self.dial_next.valueChanged.connect(self.update_next_rot)
+
+        self.box_bottom = QGridLayout()
+        self.box_bottom.addWidget(self.dial_last, 0, 0)
+        self.box_bottom.addLayout(self.horizontal_sliders, 0, 1)
+        self.box_bottom.addWidget(self.dial_next, 0, 2)
+
     def create_buttons(self):
         self.reset_button = QPushButton("Reset")
         self.reset_button.clicked.connect(self.reset)
@@ -122,7 +151,7 @@ class LiveWidget:
     def fill_layout(self):
         self.layout.addLayout(self.vertical_sliders, 0, 0)
         self.layout.addWidget(self.plot_window, 0, 1)
-        self.layout.addLayout(self.horizontal_sliders, 1, 1)
+        self.layout.addLayout(self.box_bottom, 1, 1)
         self.layout.addLayout(self.table, 0, 2)
         self.layout.addWidget(self.reset_button, 1, 2)
 
@@ -151,14 +180,22 @@ class LiveWidget:
         self.update_trajectory()
         self.update_pose("mid")
 
+    def update_next_rot(self, value):
+        if 50 <= value <= 99:
+            self.dials["next"] = ((value - 50) / 50) * (R_MAX - R_MIN) + R_MIN
+            self.update_pose("next")
+
     def reset(self):
         self.slider_last_x.setValue(99)
         self.slider_next_x.setValue(0)
         self.slider_last_y.setValue(50)
         self.slider_next_y.setValue(50)
+        self.dial_last.setValue(75)
+        self.dial_next.setValue(75)
         for pose in ["last", "next"]:
             for axis in ["x", "y"]:
                 self.sliders[pose][axis] = 0
+            self.dials[pose] = 0
         self.update_poses()
         self.update_tables()
 
@@ -176,6 +213,7 @@ class LiveWidget:
                 self.sliders[pose]["y"],
                 LENGTH_HIP,
                 "",
+                self.dials[pose],
                 DEFAULT_HIP_FRACTION,
                 DEFAULT_KNEE_BEND,
                 REDUCE_DF_FRONT,
