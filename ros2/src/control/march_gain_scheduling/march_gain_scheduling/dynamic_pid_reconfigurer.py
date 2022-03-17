@@ -57,9 +57,9 @@ class DynamicPIDReconfigurer:
             if they are different between gait types. The higher the value the faster it goes.
         linearize_gain_scheduling (bool):  Boolean for if we want to slowly converge between PID values
             or set them instantly. `True` for converging, and `False` for instant.
-        gait_types.default.{joint_name}.{[p, i, d]} (int):
+        gait_types.default.{joint_name}.{[p, i, d]} (float, int):
             The PID value of the joint for the default gait type.
-        gait_types.{GaitType}.{joint_name}.{[p, i, d]} (int, Optional):
+        gait_types.{GaitType}.{joint_name}.{[p, i, d]} (float, int, Optional):
             The PID value of the joint for a certain gait type.
 
     Args:
@@ -76,7 +76,7 @@ class DynamicPIDReconfigurer:
             for every joint with certain gait types. Mainly used by the rqt notetaker.
         _sub (rclpy.Subscription): To listen if the current_gait type is changed.
         _publisher (rclpy.Publisher): To set the PID parameter values over the bridge.
-        _current_gains (List[List[float]]): A list of `int` lists of the 'p', 'i', and 'd' values for all joints,
+        _current_gains (List[List[float]]): A list of `float` lists of the 'p', 'i', and 'd' values for all joints,
                 what the current PID values are.
     """
     TIME_BETWEEN_GRADUAL_UPDATES: final = 0.3
@@ -185,7 +185,7 @@ class DynamicPIDReconfigurer:
                 {self.TIME_BETWEEN_GRADUAL_UPDATES} * {self._gradiant}.
 
         Args:
-            needed_gains (List[List[float]]): A list of `int` lists of the 'p', 'i', and 'd' values for all joints,
+            needed_gains (List[List[float]]): A list of `float` lists of the 'p', 'i', and 'd' values for all joints,
                 where the actual PID values should be updated to.
             begin_time (rclpy.Time, optional): Gives the start time of when the callback is started.
                 This is only used for printing the interpolation time when it is finished.
@@ -271,7 +271,7 @@ class DynamicPIDReconfigurer:
         ]
 
     def get_joint_parameter_value(self, joint_name: str, param: str, gait_type: GaitType = GaitType.DEFAULT) -> float:
-        """This method returns a parameter INTEGER value of the specified joint.
+        """This method returns a parameter FLOAT value of the specified joint.
 
         If the parameter for the gait_type exists it returns that, otherwise it returns the default parameter values.
         This method is meant to retrieve the 'p','i' or 'd' value of a specific joint of the gait type.
@@ -291,7 +291,7 @@ class DynamicPIDReconfigurer:
                 for this gait_type doesn't exist it uses the GaitType.DEFAULT = 'default'.
 
         Returns
-            float: The integer parameter value. (For pid parameters the return value is probably > 0)
+            float: The float parameter value. (For pid parameters the return value is probably > 0)
         """
         param_name = "gait_types." + gait_type.value + "." + joint_name + '.' + param
         default_param_name = "gait_types." + GaitType.DEFAULT.value + "." + joint_name + '.' + param

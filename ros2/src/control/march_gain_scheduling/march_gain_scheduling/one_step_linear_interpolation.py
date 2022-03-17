@@ -7,14 +7,14 @@ def interpolate(current_gains: List[float], needed_gains: List[float], gradient:
     The multiplication of gradiant * delta_t is how fast current_gains reaches needed_gains.
 
     Args:
-        current_gains (List[int]): The current gain values from where it should start the interpolation.
-        needed_gains (List[int]): The needed gain values where we wish to interpolate to.
+        current_gains (List[float]): The current gain values from where it should start the interpolation.
+        needed_gains (List[float]): The needed gain values where we wish to interpolate to.
         gradient (float): The gradiant for how fast it reaches the needed_gains.
         delta_t (float): The time since last interpolation.
 
 
     Returns:
-        List[int]: A list with al the new gain values. All values in this list should be either,
+        List[float]: A list with al the new gain values. All values in this list should be either,
         between the values of current_gains and needed_gains, or equal to the values of needed_gains.
 
     Raises:
