@@ -32,4 +32,6 @@ ignore =
     RST201,
     RST206,
     SIM106,     # Gives a lot of false positives
+    T002,       # Ignores need for author tag in "TODO:"
+    T003,       # Ignores need for link to issue in tag "TODO:"
     VNE001,     # Not really necessary
