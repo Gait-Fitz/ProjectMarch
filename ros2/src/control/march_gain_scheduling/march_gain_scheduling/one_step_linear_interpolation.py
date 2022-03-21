@@ -1,3 +1,4 @@
+"""Author: Control, MIV; George Vegelien, MVII."""
 from typing import List
 
 
@@ -24,13 +25,16 @@ def interpolate(current_gains: List[float], needed_gains: List[float], gradient:
     if len(current_gains) != len(needed_gains):
         raise UnequalLengthError(
             "current_gains and needed_gains do not have the same length, "
-            "\ncurrent_gains = {current_gains}\nneeded_gains = {needed_gains}".format(current_gains=current_gains,
-                                                                                      needed_gains=needed_gains)
+            "\ncurrent_gains = {current_gains}\nneeded_gains = {needed_gains}".format(
+                current_gains=current_gains, needed_gains=needed_gains
+            )
         )
-    if gradient <= 0 or delta_t < 0:
+    if gradient <= 0 or delta_t <= 0:
         raise NegativeValueError(
-            "gradient or delta_t are below zero, gradiant: {gradient}, delta_t: {delta_t}".format(gradient=gradient,
-                                                                                                  delta_t=delta_t))
+            "gradient or delta_t are below zero, gradiant: {gradient}, delta_t: {delta_t}".format(
+                gradient=gradient, delta_t=delta_t
+            )
+        )
     next_gains = [0.0] * len(current_gains)
     for i in range(len(current_gains)):
         if current_gains[i] > needed_gains[i]:
@@ -41,8 +45,8 @@ def interpolate(current_gains: List[float], needed_gains: List[float], gradient:
 
 
 class UnequalLengthError(Exception):
-    pass
+    """Unequal length error, for if the gains aren't of the same size."""
 
 
 class NegativeValueError(Exception):
-    pass
+    """Negative value error, for if a positive value is expected."""

@@ -1,3 +1,4 @@
+"""Author: Control, MIV; George Vegelien, MVII."""
 import sys
 
 import rclpy
@@ -7,6 +8,7 @@ from .dynamic_pid_reconfigurer import DynamicPIDReconfigurer
 
 
 def main():
+    """Starts the "march_gain_scheduling_node" and node and passes it to DynamicPIDReconfigurer."""
     rclpy.init(args=sys.argv)
     node = rclpy.create_node("march_gain_scheduling_node", automatically_declare_parameters_from_overrides=True)
     node.get_logger().info("Created node")

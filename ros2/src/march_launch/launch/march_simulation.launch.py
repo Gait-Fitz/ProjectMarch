@@ -267,9 +267,8 @@ def generate_launch_description():
                 name="gain_tuning",
                 default_value="airgait",
                 description="The configuration file to use for gain scheduling. "
-                            "Only used when 'gain_scheduling' is true. "
-                            "The possible files can be found in:"
-                            "`ros2/src/control/march_gain_scheduling/config/{robot}/{gain_tuning}.yaml`",
+                "Only used when 'gain_scheduling' is true. The possible files can be found in:"
+                "`ros2/src/control/march_gain_scheduling/config/{robot}/{gain_tuning}.yaml`",
             ),
             # Use normal launch file with different launch_arguments
             IncludeLaunchDescription(
@@ -317,7 +316,7 @@ def generate_launch_description():
                     ("location_y", location_y),
                     ("location_z", location_z),
                     ("gain_scheduling", gain_scheduling),
-                    ("configuration", gain_tuning)
+                    ("configuration", gain_tuning),
                 ],
             ),
         ]
