@@ -83,25 +83,31 @@ protected:
     int sample_size_;
 
     std::string base_frame_;
-    std::string reference_frame_id_;
+    std::string other_frame_id_;
     std::string current_frame_id_;
     std::string current_aligned_frame_id_;
     std::string other_aligned_frame_id_;
 
     std::vector<Point> found_points_;
-    Point last_chosen_point_;
-    Point last_chosen_point_world_;
-    Point last_displacement_;
-    Point expected_other_point_;
+    
     double last_height_;
 
-    Point start_point_world_;
-    Point world_frame_avg_;
 
-    Point start_displacement_world_;
-    Point displacement_world_;
-    Point start_point_;
-    Point desired_point_;
+    // Point last_chosen_point_;
+    // Point last_chosen_point_world_;
+    Point last_displacement_;
+    // Point expected_other_point_;
+    Point start_point_hip_;
+    Point previous_covid_point_hip_;
+    // Point start_displacement_world_;
+    // Point displacement_world_;
+    // Point start_point_;
+    // Point desired_point_;
+
+    Point visualize_relative_search_point_;
+
+    Point covid_2;
+    Point start_2;
 };
 
 #endif // MARCH_FOOT_POSITION_FINDER_H
