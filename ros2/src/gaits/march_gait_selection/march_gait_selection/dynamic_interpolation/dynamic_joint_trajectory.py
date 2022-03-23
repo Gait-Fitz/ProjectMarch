@@ -41,18 +41,7 @@ class DynamicJointTrajectory:
         duration, position, velocity = self._get_setpoints_unzipped()
         time = [d.nanoseconds / NANOSECONDS_TO_SECONDS for d in duration]
 
-        if self.ankle:
-            yi = [[position[i], velocity[i]] for i in range(len(duration))]
-
-            self.interpolated_position = BPoly.from_derivatives(time, yi)
-        else:
-            boundary_condition = (
-                (CLAMPED_BOUNDARY_CONDITION, velocity[0]),
-                (CLAMPED_BOUNDARY_CONDITION, velocity[-1]),
-            )
-            self.interpolated_position = CubicSpline(
-                time, position, bc_type=boundary_condition
-            )
+        self.interpolated_position = CubicSpline(time, position, bc_type=boundary_condition)
         self.interpolated_velocity = self.interpolated_position.derivative()
 
     def get_interpolated_setpoint(self, time: float) -> Setpoint:

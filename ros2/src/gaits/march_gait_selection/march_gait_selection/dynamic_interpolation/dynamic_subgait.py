@@ -160,9 +160,7 @@ class DynamicSubgait:
         """Calls IK solver to compute the joint angles needed for the
         desired x and y coordinate"""
         if self.stop:
-            self.desired_position = self._from_joint_dict_to_list(
-                get_position_from_yaml("stand")
-            )
+            self.desired_position = self._from_joint_dict_to_list(get_position_from_yaml("stand"))
         else:
             self.desired_position = self.pose.solve_end_position(
                 self.location.x, self.location.y, self.location.z, self.subgait_id
@@ -188,20 +186,49 @@ class DynamicSubgait:
 
             # Add an extra setpoint to the ankle to create a push off, except for
             # a start gait:
-            # if not self.start and (
-            #     (name == "right_ankle" and self.subgait_id == "right_swing")
-            #     or (name == "left_ankle" and self.subgait_id == "left_swing")
-            # ):
-            #     setpoint_list.insert(
-            #         EXTRA_ANKLE_SETPOINT_INDEX, self._get_extra_ankle_setpoint()
-            #     )
+            if not self.start and (
+                (name == "right_ankle" and self.subgait_id == "right_swing")
+                or (name == "left_ankle" and self.subgait_id == "left_swing")
+            ):
+                setpoint_list.insert(EXTRA_ANKLE_SETPOINT_INDEX, self._get_extra_ankle_setpoint())
 
-            if name in ["right_ankle", "left_ankle"]:
-                self.joint_trajectory_list.append(
-                    DynamicJointTrajectory(setpoint_list, interpolate_ankle=True)
-                )
-            else:
-                self.joint_trajectory_list.append(DynamicJointTrajectory(setpoint_list))
+            self.joint_trajectory_list.append(DynamicJointTrajectory(setpoint_list))
+
+    def get_joint_trajectory_msg(self) -> trajectory_msg.JointTrajectory:
+        """Return a joint_trajectory_msg containing the interpolated
+        trajectories for each joint
+
+        :returns: A joint_trajectory_msg
+        :rtype: joint_trajectory_msg
+        """
+        # Update pose:
+        pose_list = [joint.position for joint in self.starting_position.values()]
+        self.pose = Pose(pose_list)
+
+        self._solve_middle_setpoint()
+        self._solve_desired_setpoint()
+        self._get_extra_ankle_setpoint()
+
+        # Create joint_trajectory_msg
+        self._to_joint_trajectory_class()
+        joint_trajectory_msg = trajectory_msg.JointTrajectory()
+        joint_trajectory_msg.joint_names = self.joint_names
+
+        timestamps = np.linspace(self.time[0], self.time[-1], INTERPOLATION_POINTS)
+        for timestamp in timestamps:
+            joint_trajecory_point = trajectory_msg.JointTrajectoryPoint()
+            joint_trajecory_point.time_from_start = Duration(timestamp).to_msg()
+
+            for joint_index, joint_trajectory in enumerate(self.joint_trajectory_list):
+                interpolated_setpoint = joint_trajectory.get_interpolated_setpoint(timestamp)
+
+                joint_trajecory_point.positions.append(interpolated_setpoint.position)
+                joint_trajecory_point.velocities.append(interpolated_setpoint.velocity)
+                self._check_joint_limits(joint_index, joint_trajecory_point)
+
+            joint_trajectory_msg.points.append(joint_trajecory_point)
+
+        return joint_trajectory_msg
 
     def get_final_position(self) -> dict:
         """Get setpoint_dictionary of the final setpoint.
@@ -288,24 +315,17 @@ class DynamicSubgait:
         """
         position = joint_trajectory_point.positions[joint_index]
         velocity = joint_trajectory_point.velocities[joint_index]
-        if (
-            position > self.joint_soft_limits[joint_index].upper
-            or position < self.joint_soft_limits[joint_index].lower
-        ):
+        if position > self.joint_soft_limits[joint_index].upper or position < self.joint_soft_limits[joint_index].lower:
             self.logger.info(
                 f"DynamicSubgait: {self.joint_names[joint_index]} will be outside of soft limits, "
                 f"position: {position}, soft limits: "
                 f"[{self.joint_soft_limits[joint_index].lower}, {self.joint_soft_limits[joint_index].upper}]."
             )
-            raise Exception(
-                f"{self.joint_names[joint_index]} will be outside its soft limits."
-            )
+            raise Exception(f"{self.joint_names[joint_index]} will be outside its soft limits.")
 
         if abs(velocity) > self.joint_soft_limits[joint_index].velocity:
             self.logger.info(
                 f"DynamicSubgait: {self.joint_names[joint_index]} will be outside of velocity limits, "
                 f"velocity: {velocity}, velocity limit: {self.joint_soft_limits[joint_index].velocity}."
             )
-            raise Exception(
-                f"{self.joint_names[joint_index]} will be outside its velocity limits."
-            )
+            raise Exception(f"{self.joint_names[joint_index]} will be outside its velocity limits.")
