@@ -102,7 +102,7 @@ void FootPositionFinder::readParameters(
             RS2_FORMAT_Z16, /*framerate=*/30);
 
         if (left_or_right_ == "left") {
-            config_.enable_device("944622074337");
+            config_.enable_device("036522072540");
         } else {
             config_.enable_device("944622071535");
         }
