@@ -39,7 +39,7 @@ class GaitType(Enum):
 
         Returns:
             bool: True if:
-                * the gait_type is either one of the enums.
+                * the gait_type is one of the enums.
                 * if the node has a parameter value for the gait_type.
         """
         return (gait_type is not None and gait_type != "") and (
@@ -53,10 +53,10 @@ class DynamicPIDReconfigurer:
 
     This object is connected with a node from where it logs and retrieves the parameters.
     The node parameters are:
-        configuration (str): Which yaml file used in loading the different PID values.
+        configuration (str): Which yaml file is used in loading the different PID values.
             The yaml files used can be found at 'config/{robot}/{configuration}.yaml'
         linear_slope (float): The value for how fast the old PID converges to the new PID value
-            if they are different between gait types. The higher the value the faster it goes.
+            if they are different between gait types. The higher the value, the faster it goes.
         linearize_gain_scheduling (bool):  Boolean for if we want to slowly converge between PID values
             or set them instantly. `True` for converging, and `False` for instant.
         gait_types.default.{joint_name}.{[p, i, d]} (float, int):
@@ -66,7 +66,7 @@ class DynamicPIDReconfigurer:
 
     Args:
         joint_list (List[str]): String list of al joint names in alphabetical order.
-        node (Node): The node from where it logs, publishes, retrieves parameters from and creates services from.
+        node (Node): The node from where it logs, publishes, retrieves parameters and creates services.
 
     Attributes:
         _joint_list (List[str]): String list of al joint names in alphabetical order.
@@ -120,7 +120,7 @@ class DynamicPIDReconfigurer:
 
         This method checks if the new PID values for the new gait_type are different from the current PID values.
         If the PID values are different they are updated with the `update_params(...)` method.
-        This can be done either gradually or instant depending on the value for the node parameter
+        This can be done either gradually or instantly depending on the value for the node parameter
         `linearize_gain_scheduling` (which can be changed at runtime).
 
         If the new gait_type doesn't exist it uses GaitType.DEFAULT.
@@ -186,7 +186,7 @@ class DynamicPIDReconfigurer:
 
         Note:
             The PID updates happens every {self.TIME_BETWEEN_GRADUAL_UPDATES} and updates it with
-                {self.TIME_BETWEEN_GRADUAL_UPDATES} * {self._gradiant}.
+                {self.TIME_BETWEEN_GRADUAL_UPDATES} * {self._gradient}.
 
         Args:
             needed_gains (List[List[float]]): A list of `float` lists of the 'p', 'i', and 'd' values for all joints,
@@ -254,7 +254,7 @@ class DynamicPIDReconfigurer:
         return [self.get_needed_pid(joint, gait_type) for joint in self._joint_list]
 
     def get_needed_pid(self, joint_name: str, gait_type: GaitType = None) -> List[float]:
-        """Returns a list of the yaml specified 3 pid values for the selected joint name and gait type.
+        """Returns a list of the PID values for the selected joint name and gait type as specified in the yaml.
 
         Args:
             joint_name (str): This is the name of the joint, should be in `self._joint_list`.
