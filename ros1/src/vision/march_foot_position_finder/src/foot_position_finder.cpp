@@ -131,7 +131,7 @@ void FootPositionFinder::readParameters(
     // The last height is used to remember how high the previous step was of the
     // other foot (relative to the hip base). Here is it initialized to the zero
     // point in the base frame
-    Point height_init = transformPoint(ORIGIN, base_frame_, "hip_base_aligned");
+    Point height_init = transformPoint(ORIGIN, other_frame_id_, "hip_base_aligned");
     last_height_ = height_init.z;
 
     // Current start point in world frame (for visualization)

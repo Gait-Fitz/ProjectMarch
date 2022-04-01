@@ -147,9 +147,9 @@ class DynamicSetpointGaitHalfStep(DynamicSetpointGait):
                 self.foot_location = self._get_foot_location(self.subgait_id)
                 stop = self._check_msg_time(self.foot_location)
 
-            self.logger.debug(
-                f"Stepping to location ({self.foot_location.point.x}, {self.foot_location.point.y}, "
-                f"{self.foot_location.point.z})"
+            self.logger.warn(
+                f"Stepping to location ({self.foot_location.processed_point.x}, {self.foot_location.processed_point.y}, "
+                f"{self.foot_location.processed_point.z})"
             )
 
         return self._get_first_feasible_trajectory(start, stop)
@@ -174,7 +174,7 @@ class DynamicSetpointGaitHalfStep(DynamicSetpointGait):
         self.queue_index += 1
 
         return FootPosition(
-            header=header, point=point, duration=self.duration_from_yaml
+            header=header, processed_point=point, duration=self.duration_from_yaml
         )
 
     def _add_point_to_queue(self, point: Point) -> None:

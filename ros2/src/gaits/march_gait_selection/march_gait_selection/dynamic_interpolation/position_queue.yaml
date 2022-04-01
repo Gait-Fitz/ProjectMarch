@@ -1,4 +1,4 @@
-use_position_queue: True
+use_position_queue: False
 duration: 2.0
 # Points should be in gait-coordinates:
 # x: forward
