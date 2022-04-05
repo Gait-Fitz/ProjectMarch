@@ -72,6 +72,9 @@ FootPositionFinder::FootPositionFinder(ros::NodeHandle* n,
             /*queue_size=*/1, &FootPositionFinder::chosenCurrentPointCallback,
             this);
 
+    point_reset_timer_ = n_->createTimer(ros::Duration(/*t=*/0.015),
+        &FootPositionFinder::resetDesiredPoint, this);
+
     running_ = false;
 }
 
@@ -234,6 +237,26 @@ void FootPositionFinder::resetHeight(const ros::TimerEvent&)
     Point reset_zero
         = transformPoint(ORIGIN, other_frame_id_, "hip_base_aligned");
     last_height_ = reset_zero.z;
+}
+
+void FootPositionFinder::resetDesiredPoint(const ros::TimerEvent&)
+{
+    // Current start point in world frame (for visualization)
+    start_point_world_
+        = transformPoint(start_point_current_, current_frame_id_, base_frame_);
+
+    // The previous point of the current foot (for visualization)
+    previous_start_point_world_
+        = transformPoint(ORIGIN, current_frame_id_, base_frame_);
+
+    // Desired point = (current start point) + (usual displacement)
+    // The displacement is the vector (-step_distance_, +-foot_gap_, 0)
+    desired_point_world_ = addPoints(start_point_current_,
+        Point(-(float)step_distance_, (float)(switch_factor_ * foot_gap_),
+            /*_z=*/0));
+    // Rotation necessary for base_frame computation
+    desired_point_world_ = rotateRight(
+        transformPoint(desired_point_world_, current_frame_id_, base_frame_));
 }
 
 /**

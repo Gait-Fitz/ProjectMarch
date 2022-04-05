@@ -40,6 +40,8 @@ protected:
 
     void resetHeight(const ros::TimerEvent&);
 
+    void resetDesiredPoint(const ros::TimerEvent&);
+
     void processSimulatedDepthFrames(
         const sensor_msgs::PointCloud2 input_cloud);
 
@@ -65,6 +67,7 @@ protected:
 
     ros::Timer realsense_timer_;
     ros::Timer height_reset_timer_;
+    ros::Timer point_reset_timer_;
     rs2::pipeline pipe_;
     rs2::config config_;
 
