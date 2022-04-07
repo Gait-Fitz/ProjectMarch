@@ -43,9 +43,13 @@ protected:
 
     void processRealSenseDepthFrames(const ros::TimerEvent&);
 
+    void updateDesiredPointCallback(const ros::TimerEvent&);
+
+    void resetAllPointsCallback(const ros::TimerEvent&);
+
     void updateDesiredPoint();
 
-    void resetAllPoints(const ros::TimerEvent&);
+    void resetAllPoints();
 
     void resetHeight(const ros::TimerEvent&);
 
@@ -75,7 +79,8 @@ protected:
 
     ros::Timer realsense_timer_;
     ros::Timer height_reset_timer_;
-    ros::Timer point_reset_timer_;
+    ros::Timer delayed_reset_timer_;
+    ros::Timer desired_point_reset_timer_;
 
     clock_t last_frame_time_;
     int frame_wait_counter_;

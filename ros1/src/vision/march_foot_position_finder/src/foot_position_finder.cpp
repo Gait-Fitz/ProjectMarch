@@ -82,6 +82,9 @@ FootPositionFinder::FootPositionFinder(ros::NodeHandle* n,
         = n_->subscribe<march_shared_msgs::CurrentState>(topic_current_state_,
             /*queue_size=*/1, &FootPositionFinder::currentStateCallback, this);
 
+    desired_point_reset_timer_ = n_->createTimer(ros::Duration(/*t=*/0.050),
+            &FootPositionFinder::updateDesiredPointCallback, this);
+
     running_ = false;
 }
 
@@ -141,13 +144,21 @@ void FootPositionFinder::readParameters(
             left_or_right_.c_str());
     }
 
-    point_reset_timer_ = n_->createTimer(ros::Duration(/*t=*/0.0),
-            &FootPositionFinder::resetAllPoints, this, /*oneshot=*/true);
+    resetAllPoints();
 
     ROS_INFO("Parameters updated in %s foot position finder",
         left_or_right_.c_str());
 
     running_ = true;
+}
+
+void FootPositionFinder::updateDesiredPointCallback(const ros::TimerEvent&) {
+    updateDesiredPoint();
+}
+
+
+void FootPositionFinder::resetAllPointsCallback(const ros::TimerEvent&) {
+    resetAllPoints();
 }
 
 void FootPositionFinder::updateDesiredPoint()
@@ -169,7 +180,7 @@ void FootPositionFinder::updateDesiredPoint()
         transformPoint(desired_point_world_, current_frame_id_, base_frame_));
 }
 
-void FootPositionFinder::resetAllPoints(const ros::TimerEvent&)
+void FootPositionFinder::resetAllPoints()
 {
     // Initialize position of other foot in current frame
     // This position is equal to the last displacement in current frame
@@ -233,8 +244,8 @@ void FootPositionFinder::currentStateCallback(
     if (msg.state == "home_stand" || msg.state == "stand"
         || msg.state == "unknown"
         || msg.state.find("unnamed") != std::string::npos) {
-        point_reset_timer_ = n_->createTimer(ros::Duration(/*t=*/0.500),
-            &FootPositionFinder::resetAllPoints, this, /*oneshot=*/true);
+        delayed_reset_timer_ = n_->createTimer(ros::Duration(/*t=*/0.500),
+            &FootPositionFinder::resetAllPointsCallback, this, /*oneshot=*/true);
     }
 }
 

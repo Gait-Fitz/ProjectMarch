@@ -20,12 +20,13 @@ def main():
     listener = tf.TransformListener()
     broadcaster = tf.TransformBroadcaster()
     rate = rospy.Rate(RATE)
+    last_published_timestamp = rospy.Time(0)
 
     while not rospy.is_shutdown():
         try:
-            (trans_left, rot_left) = listener.lookupTransform("/foot_left", "/world", rospy.Time(0))
-            (trans_right, rot_right) = listener.lookupTransform("/foot_right", "/world", rospy.Time(0))
-            (trans_hip, rot_hip) = listener.lookupTransform("/hip_base", "/world", rospy.Time(0))
+            (_, rot_left) = listener.lookupTransform("/foot_left", "/world", rospy.Time(0))
+            (_, rot_right) = listener.lookupTransform("/foot_right", "/world", rospy.Time(0))
+            (_, rot_hip) = listener.lookupTransform("/hip_base", "/world", rospy.Time(0))
         except (
             tf.LookupException,
             tf.ConnectivityException,
@@ -33,44 +34,49 @@ def main():
         ):
             continue
 
-        broadcaster.sendTransform(
-            (-FOOT_LENGTH, 0.0, -0.01),
-            Z_ROTATION,
-            rospy.Time.now(),
-            "toes_left",
-            "foot_left",
-        )
+        current_timestamp = rospy.Time.now()
 
-        broadcaster.sendTransform(
-            (0.0, 0.0, 0.0),
-            rot_left,
-            rospy.Time.now(),
-            "toes_left_aligned",
-            "toes_left",
-        )
+        if last_published_timestamp < current_timestamp:
+            broadcaster.sendTransform(
+                (-FOOT_LENGTH, 0.0, -0.01),
+                Z_ROTATION,
+                current_timestamp,
+                "toes_left",
+                "foot_left",
+            )
 
-        broadcaster.sendTransform(
-            (-FOOT_LENGTH, 0.0, -0.01),
-            Z_ROTATION,
-            rospy.Time.now(),
-            "toes_right",
-            "foot_right",
-        )
+            broadcaster.sendTransform(
+                (0.0, 0.0, 0.0),
+                rot_left,
+                current_timestamp,
+                "toes_left_aligned",
+                "toes_left",
+            )
 
-        broadcaster.sendTransform(
-            (0.0, 0.0, 0.0),
-            rot_right,
-            rospy.Time.now(),
-            "toes_right_aligned",
-            "toes_right",
-        )
+            broadcaster.sendTransform(
+                (-FOOT_LENGTH, 0.0, -0.01),
+                Z_ROTATION,
+                current_timestamp,
+                "toes_right",
+                "foot_right",
+            )
 
-        broadcaster.sendTransform(
-            (0.0, 0.0, 0.0),
-            rot_hip,
-            rospy.Time.now(),
-            "hip_base_aligned",
-            "hip_base",
-        )
+            broadcaster.sendTransform(
+                (0.0, 0.0, 0.0),
+                rot_right,
+                current_timestamp,
+                "toes_right_aligned",
+                "toes_right",
+            )
+
+            broadcaster.sendTransform(
+                (0.0, 0.0, 0.0),
+                rot_hip,
+                current_timestamp,
+                "hip_base_aligned",
+                "hip_base",
+            )
+
+            last_published_timestamp = current_timestamp
 
         rate.sleep()
