@@ -57,6 +57,7 @@ FootPositionFinder::FootPositionFinder(ros::NodeHandle* n,
     topic_other_chosen_point_
         = "/chosen_foot_position/" + other_side_; // in current_frame_id
     topic_current_chosen_point_ = "/chosen_foot_position/" + left_or_right_;
+    topic_current_state_ = "/march/gait_selection/current_state";
 
     point_publisher_ = n_->advertise<march_shared_msgs::FootPosition>(
         "/foot_position/" + left_or_right_, /*queue_size=*/1);
@@ -76,6 +77,10 @@ FootPositionFinder::FootPositionFinder(ros::NodeHandle* n,
             topic_current_chosen_point_,
             /*queue_size=*/1, &FootPositionFinder::chosenCurrentPointCallback,
             this);
+
+    current_state_subscriber_
+        = n_->subscribe<march_shared_msgs::CurrentState>(topic_current_state_,
+            /*queue_size=*/1, &FootPositionFinder::currentStateCallback, this);
 
     running_ = false;
 }
@@ -136,21 +141,17 @@ void FootPositionFinder::readParameters(
             left_or_right_.c_str());
     }
 
-    // Initialize position of other foot in current frame
-    // This position is equal to the last displacement in current frame
-    start_point_current_ = last_displacement_
-        = transformPoint(ORIGIN, other_frame_id_, current_frame_id_);
+    point_reset_timer_ = n_->createTimer(ros::Duration(/*t=*/0.0),
+            &FootPositionFinder::resetAllPoints, this, /*oneshot=*/true);
 
-    // Initialize position of other foot in base frame
-    last_chosen_point_world_
-        = transformPoint(start_point_current_, current_frame_id_, base_frame_);
+    ROS_INFO("Parameters updated in %s foot position finder",
+        left_or_right_.c_str());
 
-    // The last height is used to remember how high the previous step was of the
-    // other foot (relative to the hip base). Here is it initialized to the zero
-    // point in the base frame
-    Point height_init = transformPoint(ORIGIN, base_frame_, "hip_base_aligned");
-    last_height_ = height_init.z;
+    running_ = true;
+}
 
+void FootPositionFinder::updateDesiredPoint()
+{
     // Current start point in world frame (for visualization)
     start_point_world_
         = transformPoint(start_point_current_, current_frame_id_, base_frame_);
@@ -166,11 +167,26 @@ void FootPositionFinder::readParameters(
     // Rotation necessary for base_frame computation
     desired_point_world_ = rotateRight(
         transformPoint(desired_point_world_, current_frame_id_, base_frame_));
+}
 
-    ROS_INFO("Parameters updated in %s foot position finder",
-        left_or_right_.c_str());
+void FootPositionFinder::resetAllPoints(const ros::TimerEvent&)
+{
+    // Initialize position of other foot in current frame
+    // This position is equal to the last displacement in current frame
+    start_point_current_ = last_displacement_
+        = transformPoint(ORIGIN, other_frame_id_, current_frame_id_);
 
-    running_ = true;
+    // Initialize position of other foot in base frame
+    last_chosen_point_world_
+        = transformPoint(start_point_current_, current_frame_id_, base_frame_);
+
+    // The last height is used to remember how high the previous step was of the
+    // other foot (relative to the hip base). Here is it initialized to the zero
+    // point in the base frame
+    Point height_init = transformPoint(ORIGIN, base_frame_, "hip_base_aligned");
+    last_height_ = height_init.z;
+
+    updateDesiredPoint();
 }
 
 /**
@@ -204,18 +220,22 @@ void FootPositionFinder::chosenOtherPointCallback(
     start_point_world_
         = Point(msg.point_world.x, msg.point_world.y, msg.point_world.z);
 
-    // previous_start_point_world_ is the previous start point (for
-    // visualization)
-    previous_start_point_world_
-        = transformPoint(ORIGIN, current_frame_id_, base_frame_);
+    updateDesiredPoint();
+}
 
-    // Compute desired point in base_frame_
-    desired_point_world_ = addPoints(start_point_current_,
-        Point(-(float)step_distance_, (float)(switch_factor_ * foot_gap_),
-            /*_z=*/0));
-    // Rotation is necessary for visualization and computation in base frame
-    desired_point_world_ = rotateRight(
-        transformPoint(desired_point_world_, current_frame_id_, base_frame_));
+/**
+ * Callback that resets the covid points based on the exoskeleton state.
+ */
+// Suppress lint error "make reference of argument" (breaks callback)
+void FootPositionFinder::currentStateCallback(
+    const march_shared_msgs::CurrentState msg) // NOLINT
+{
+    if (msg.state == "home_stand" || msg.state == "stand"
+        || msg.state == "unknown"
+        || msg.state.find("unnamed") != std::string::npos) {
+        point_reset_timer_ = n_->createTimer(ros::Duration(/*t=*/0.500),
+            &FootPositionFinder::resetAllPoints, this, /*oneshot=*/true);
+    }
 }
 
 /**

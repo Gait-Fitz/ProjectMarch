@@ -5,6 +5,7 @@
 #ifndef MARCH_FOOT_POSITION_FINDER_H
 #define MARCH_FOOT_POSITION_FINDER_H
 
+#include "march_shared_msgs/CurrentState.h"
 #include "march_shared_msgs/FootPosition.h"
 #include <chrono>
 #include <cmath>
@@ -38,7 +39,13 @@ protected:
 
     void chosenOtherPointCallback(const march_shared_msgs::FootPosition msg);
 
+    void currentStateCallback(const march_shared_msgs::CurrentState msg);
+
     void processRealSenseDepthFrames(const ros::TimerEvent&);
+
+    void updateDesiredPoint();
+
+    void resetAllPoints(const ros::TimerEvent&);
 
     void resetHeight(const ros::TimerEvent&);
 
@@ -61,12 +68,14 @@ protected:
     ros::Publisher point_marker_publisher_;
     ros::Subscriber current_chosen_point_subscriber_;
     ros::Subscriber other_chosen_point_subscriber_;
+    ros::Subscriber current_state_subscriber_;
 
     std::unique_ptr<tf2_ros::Buffer> tfBuffer_;
     std::unique_ptr<tf2_ros::TransformListener> tfListener_;
 
     ros::Timer realsense_timer_;
     ros::Timer height_reset_timer_;
+    ros::Timer point_reset_timer_;
 
     clock_t last_frame_time_;
     int frame_wait_counter_;
@@ -83,6 +92,7 @@ protected:
     std::string topic_camera_front_;
     std::string topic_current_chosen_point_;
     std::string topic_other_chosen_point_;
+    std::string topic_current_state_;
 
     std::string left_or_right_;
     std::string other_side_;
