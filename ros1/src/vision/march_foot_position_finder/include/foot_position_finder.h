@@ -87,7 +87,6 @@ protected:
     float frame_timeout_;
 
     rs2::pipeline pipe_;
-    rs2::config config_;
     std::string serial_number_;
 
     rs2::decimation_filter dec_filter_;

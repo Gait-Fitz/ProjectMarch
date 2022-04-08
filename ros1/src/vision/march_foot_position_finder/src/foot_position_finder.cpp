@@ -7,7 +7,8 @@
 #include "preprocessor.h"
 #include "utilities/math_utilities.hpp"
 #include "utilities/publish_utilities.hpp"
-#include "utilities/realsense_to_pcl.hpp"
+#include "utilities/realsense_utilities.hpp"
+#include "utilities/transform_utilities.hpp"
 #include <iostream>
 #include <march_foot_position_finder/parametersConfig.h>
 #include <ros/console.h>
@@ -45,7 +46,6 @@ FootPositionFinder::FootPositionFinder(ros::NodeHandle* n,
     base_frame_ = "world";
     ORIGIN = Point(/*_x=*/0, /*_y=*/0, /*_z=*/0);
     last_height_ = 0;
-    refresh_last_height_ = 0;
     last_frame_time_ = std::clock();
     frame_wait_counter_ = 0;
     frame_timeout_ = 5.0;
@@ -83,7 +83,7 @@ FootPositionFinder::FootPositionFinder(ros::NodeHandle* n,
             /*queue_size=*/1, &FootPositionFinder::currentStateCallback, this);
 
     desired_point_reset_timer_ = n_->createTimer(ros::Duration(/*t=*/0.050),
-            &FootPositionFinder::updateDesiredPointCallback, this);
+        &FootPositionFinder::updateDesiredPointCallback, this);
 
     running_ = false;
 }
@@ -112,25 +112,16 @@ void FootPositionFinder::readParameters(
     // Connect the physical RealSense cameras
     if (!running_ && !realsense_simulation_) {
         while (true) {
-            try {
-                config_.enable_device(serial_number_);
-                config_.enable_stream(RS2_STREAM_DEPTH, /*width=*/640,
-                    /*height=*/480, RS2_FORMAT_Z16, /*framerate=*/15);
-                pipe_.start(config_);
-            } catch (const rs2::error& e) {
-                std::string error_message = e.what();
-                ROS_WARN("Error while initializing %s RealSense camera: %s",
-                    left_or_right_.c_str(), error_message.c_str());
-                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            bool success = connectToRealSenseDevice(serial_number_, pipe_);
+            if (!success) {
                 continue;
+            } else {
+                realsense_timer_ = n_->createTimer(ros::Duration(/*t=*/0.005),
+                    &FootPositionFinder::processRealSenseDepthFrames, this);
+                ROS_INFO("\033[1;36m%s RealSense connected (%s) \033[0m",
+                    left_or_right_.c_str(), serial_number_.c_str());
+                break;
             }
-
-            realsense_timer_ = n_->createTimer(ros::Duration(/*t=*/0.005),
-                &FootPositionFinder::processRealSenseDepthFrames, this);
-            ROS_INFO("\033[1;36m%s RealSense connected (%s) \033[0m",
-                left_or_right_.c_str(), serial_number_.c_str());
-
-            break;
         }
     }
 
@@ -152,15 +143,26 @@ void FootPositionFinder::readParameters(
     running_ = true;
 }
 
-void FootPositionFinder::updateDesiredPointCallback(const ros::TimerEvent&) {
+/**
+ * Callback version of updateDesiredPoint().
+ */
+void FootPositionFinder::updateDesiredPointCallback(const ros::TimerEvent&)
+{
     updateDesiredPoint();
 }
 
-
-void FootPositionFinder::resetAllPointsCallback(const ros::TimerEvent&) {
+/**
+ * Callback version of resetAllPoints().
+ */
+void FootPositionFinder::resetAllPointsCallback(const ros::TimerEvent&)
+{
     resetAllPoints();
 }
 
+/**
+ * Updates the expected position of the other leg, as well as the desired point
+ * of the current leg.
+ */
 void FootPositionFinder::updateDesiredPoint()
 {
     // Current start point in world frame (for visualization)
@@ -180,6 +182,10 @@ void FootPositionFinder::updateDesiredPoint()
         transformPoint(desired_point_world_, current_frame_id_, base_frame_));
 }
 
+/**
+ * Resets the last displacement using the current foot positions, and resets the
+ * last height with the height of the other foot.
+ */
 void FootPositionFinder::resetAllPoints()
 {
     // Initialize position of other foot in current frame
@@ -194,10 +200,9 @@ void FootPositionFinder::resetAllPoints()
     // The last height is used to remember how high the previous step was of the
     // other foot (relative to the hip base). Here is it initialized to the zero
     // point in the base frame
-    Point height_init = transformPoint(ORIGIN, base_frame_, "hip_base_aligned");
+    Point height_init
+        = transformPoint(ORIGIN, other_frame_id_, "hip_base_aligned");
     last_height_ = height_init.z;
-
-    updateDesiredPoint();
 }
 
 /**
@@ -243,9 +248,10 @@ void FootPositionFinder::currentStateCallback(
 {
     if (msg.state == "home_stand" || msg.state == "stand"
         || msg.state == "unknown"
-        || msg.state.find("unnamed") != std::string::npos) {
+        || msg.state.find(/*__s=*/"unnamed: Static:") != std::string::npos) {
         delayed_reset_timer_ = n_->createTimer(ros::Duration(/*t=*/0.500),
-            &FootPositionFinder::resetAllPointsCallback, this, /*oneshot=*/true);
+            &FootPositionFinder::resetAllPointsCallback, this,
+            /*oneshot=*/true);
     }
 }
 
@@ -262,19 +268,7 @@ void FootPositionFinder::processRealSenseDepthFrames(const ros::TimerEvent&)
             left_or_right_.c_str(), frame_wait_counter_ * (int)frame_timeout_);
     }
 
-    rs2::frameset frames = pipe_.wait_for_frames();
-    rs2::depth_frame depth = frames.get_depth_frame();
-
-    depth = dec_filter_.process(depth);
-    depth = spat_filter_.process(depth);
-    depth = temp_filter_.process(depth);
-
-    // Allow default constructor for pc
-    // NOLINTNEXTLINE
-    rs2::pointcloud pc;
-    rs2::points points = pc.calculate(depth);
-
-    PointCloud::Ptr pointcloud = points_to_pcl(points);
+    PointCloud::Ptr pointcloud = getNextRealsensePointcloud(pipe_);
     pointcloud->header.frame_id
         = "camera_front_" + left_or_right_ + "_depth_optical_frame";
     processPointCloud(pointcloud);
@@ -286,9 +280,9 @@ void FootPositionFinder::processRealSenseDepthFrames(const ros::TimerEvent&)
  */
 void FootPositionFinder::resetHeight(const ros::TimerEvent&)
 {
-    Point reset_zero
+    Point height_init
         = transformPoint(ORIGIN, other_frame_id_, "hip_base_aligned");
-    last_height_ = reset_zero.z;
+    last_height_ = height_init.z;
 }
 
 /**
@@ -430,25 +424,5 @@ Point FootPositionFinder::computeTemporalAveragePoint(const Point& new_point)
 Point FootPositionFinder::transformPoint(
     Point point, const std::string& frame_from, const std::string& frame_to)
 {
-    PointCloud::Ptr desired_point = boost::make_shared<PointCloud>();
-    desired_point->push_back(point);
-
-    geometry_msgs::TransformStamped transform_stamped;
-
-    try {
-        if (tfBuffer_->canTransform(frame_to, frame_from, ros::Time(/*t=*/0),
-                ros::Duration(/*t=*/1.0))) {
-            transform_stamped = tfBuffer_->lookupTransform(
-                frame_to, frame_from, ros::Time(/*t=*/0));
-        }
-    } catch (tf2::TransformException& ex) {
-        ROS_WARN_STREAM(
-            "Something went wrong when transforming the pointcloud: "
-            << ex.what());
-    }
-
-    pcl_ros::transformPointCloud(
-        *desired_point, *desired_point, transform_stamped.transform);
-
-    return desired_point->points[0];
+    return transformPointWithBuffer(point, frame_from, frame_to, tfBuffer_);
 }

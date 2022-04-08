@@ -173,21 +173,6 @@ void publishArrow2(ros::Publisher& publisher, const Point& p1, Point& p2)
     publisher.publish(marker);
 }
 
-// m = Marker()
-// m.action = Marker.ADD
-// m.header.frame_id = '/base_link'
-// m.header.stamp = rospy.Time.now()
-// m.ns = 'points_arrows'
-// m.id = idnum
-// m.type = Marker.ARROW
-// m.pose.orientation.y = 0
-// m.pose.orientation.w = 1
-// m.scale = scale
-// m.color.r = 0.2
-// m.color.g = 0.5
-// m.color.b = 1.0
-// m.color.a = 0.3
-
 /**
  * Publishes a marker point with a given publisher. A rotation around the z
  * axis is needed to correctly align the realsense and world coordinate systems.
