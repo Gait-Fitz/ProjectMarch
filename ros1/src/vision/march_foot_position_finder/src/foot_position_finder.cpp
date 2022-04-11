@@ -45,7 +45,6 @@ FootPositionFinder::FootPositionFinder(ros::NodeHandle* n,
     other_frame_id_ = "toes_" + other_side_ + "_aligned";
     base_frame_ = "world";
     ORIGIN = Point(/*_x=*/0, /*_y=*/0, /*_z=*/0);
-    last_height_ = 0;
     last_frame_time_ = std::clock();
     frame_wait_counter_ = 0;
     frame_timeout_ = 5.0;
@@ -200,9 +199,9 @@ void FootPositionFinder::resetAllPoints()
     // The last height is used to remember how high the previous step was of the
     // other foot (relative to the hip base). Here is it initialized to the zero
     // point in the base frame
-    // Point height_init
-    //     = transformPoint(ORIGIN, other_frame_id_, "hip_base_aligned");
-    // last_height_ = height_init.z;
+    Point height_init
+        = transformPoint(ORIGIN, other_frame_id_, "hip_base_aligned");
+    last_height_ = height_init.z;
 }
 
 /**
