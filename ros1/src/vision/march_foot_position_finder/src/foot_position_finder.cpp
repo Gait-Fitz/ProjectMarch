@@ -200,9 +200,9 @@ void FootPositionFinder::resetAllPoints()
     // The last height is used to remember how high the previous step was of the
     // other foot (relative to the hip base). Here is it initialized to the zero
     // point in the base frame
-    Point height_init
-        = transformPoint(ORIGIN, other_frame_id_, "hip_base_aligned");
-    last_height_ = height_init.z;
+    // Point height_init
+    //     = transformPoint(ORIGIN, other_frame_id_, "hip_base_aligned");
+    // last_height_ = height_init.z;
 }
 
 /**
@@ -235,6 +235,8 @@ void FootPositionFinder::chosenOtherPointCallback(
     // Store previous chosen point of other foot in world frame
     start_point_world_
         = Point(msg.point_world.x, msg.point_world.y, msg.point_world.z);
+
+    last_height_ = msg.point.z;
 
     updateDesiredPoint();
 }
@@ -280,9 +282,9 @@ void FootPositionFinder::processRealSenseDepthFrames(const ros::TimerEvent&)
  */
 void FootPositionFinder::resetHeight(const ros::TimerEvent&)
 {
-    Point height_init
-        = transformPoint(ORIGIN, other_frame_id_, "hip_base_aligned");
-    last_height_ = height_init.z;
+    // Point height_init
+    //     = transformPoint(ORIGIN, other_frame_id_, "hip_base_aligned");
+    // last_height_ = height_init.z;
 }
 
 /**
@@ -351,13 +353,17 @@ void FootPositionFinder::processPointCloud(const PointCloud::Ptr& pointcloud)
             found_covid_point_world, base_frame_, current_frame_id_);
         Point found_covid_point_hip_ = transformPoint(
             found_covid_point_world, base_frame_, "hip_base_aligned");
+        Point start_point_hip_ = transformPoint(
+            start_point_world_, base_frame_, "hip_base_aligned");
 
         // Compute new foot displacement for gait computation
         Point new_displacement
             = subtractPoints(found_covid_point_current_, start_point_current_);
         // Compute the z displacement with the z-values in hip frame.
         float displacement_z = found_covid_point_hip_.z - last_height_;
+        // float displacement_z = found_covid_point_hip_.z - start_point_hip_.z;
         new_displacement.z = displacement_z;
+        // new_displacement.z = 0;
 
         // Apply a threshold for the height of points to be different from 0
         if (std::abs(new_displacement.z) < height_zero_threshold_) {
@@ -380,7 +386,7 @@ void FootPositionFinder::processPointCloud(const PointCloud::Ptr& pointcloud)
             found_covid_point_world);
 
         // Publish final point for gait computation
-        publishPoint(point_publisher_, found_covid_point_current_,
+        publishPoint(point_publisher_, found_covid_point_hip_,
             found_covid_point_world, new_displacement, relative_track_points);
     }
 }
