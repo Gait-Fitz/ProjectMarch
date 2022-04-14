@@ -306,7 +306,7 @@ void MarchHardwareInterface::validate()
             std::rethrow_exception(last_exception);
         }
     } catch (const std::exception& e){
-        ROS_WARN(e.what())
+        ROS_WARN(e.what());
     }
 
     bool fault_state = false;
