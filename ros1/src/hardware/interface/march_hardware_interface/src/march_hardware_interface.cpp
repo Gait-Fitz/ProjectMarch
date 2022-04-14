@@ -212,16 +212,22 @@ void MarchHardwareInterface::call_and_wait_while_checking_for_each_joint(
         num_tries++;
     }
 
-    if (!all(is_ok)) {
-        if (maximum_tries_debug_f.has_value()) {
-            auto const& callable = maximum_tries_debug_f.value();
-            for (size_t i = 0; i < num_joints_; ++i) {
-                callable(march_robot_->getJoint(i));
+    try {
+        if (!all(is_ok)) {
+            if (maximum_tries_debug_f.has_value()) {
+                auto const& callable = maximum_tries_debug_f.value();
+                for (size_t i = 0; i < num_joints_; ++i) {
+                    callable(march_robot_->getJoint(i));
+                }
             }
-        }
 
-        throw march::error::HardwareException(march::error::ErrorType::
-                BUSY_WAITING_FUNCTION_MAXIMUM_TRIES_REACHED);
+
+            throw march::error::HardwareException(march::error::ErrorType::
+                    BUSY_WAITING_FUNCTION_MAXIMUM_TRIES_REACHED);
+        }
+    } catch (const march::error::HardwareException& e) {
+        std::cout << e.what(); // information from error printed
+        is_in_diagnostic_mode = true;
     }
 }
 
@@ -302,9 +308,10 @@ void MarchHardwareInterface::validate()
         this->outsideLimitsCheck(i);
         if (!this->MotorControllerStateCheck(i)) {
             fault_state = true;
+            is_in_diagnostic_mode = true;
         }
     }
-    if (fault_state) {
+    if (fault_state && not is_in_diagnostic_mode) {
         this->march_robot_->stopEtherCAT();
         throw std::runtime_error("One or more IMC's are in fault state");
     }
@@ -400,6 +407,9 @@ void MarchHardwareInterface::write(
     }
 
     for (size_t i = 0; i < num_joints_; i++) {
+        if (is_in_diagnostic_mode) {
+            joint_effort_command_[i] = 0;
+        }
         march::Joint& joint = march_robot_->getJoint(i);
 
         joint_last_effort_command_[i] = joint_effort_command_[i];

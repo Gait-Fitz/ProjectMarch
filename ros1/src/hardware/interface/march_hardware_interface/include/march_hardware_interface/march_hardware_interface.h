@@ -162,6 +162,7 @@ private:
     bool enable_safety_controller_ = false;
 
     bool has_actuated_ = false;
+    bool is_in_diagnostic_mode = false;
 
     /* Real time safe publishers */
     RtPublisherPtr<march_shared_msgs::AfterLimitJointCommand>
