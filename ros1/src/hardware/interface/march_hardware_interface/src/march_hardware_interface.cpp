@@ -299,8 +299,14 @@ void MarchHardwareInterface::startJoints()
 void MarchHardwareInterface::validate()
 {
     const auto last_exception = this->march_robot_->getLastEthercatException();
-    if (last_exception) {
-        std::rethrow_exception(last_exception);
+    try {
+
+        if (last_exception) {
+            is_in_diagnostic_mode = true;
+            std::rethrow_exception(last_exception);
+        }
+    } catch (const std::exception& e){
+        ROS_WARN(e.what())
     }
 
     bool fault_state = false;
