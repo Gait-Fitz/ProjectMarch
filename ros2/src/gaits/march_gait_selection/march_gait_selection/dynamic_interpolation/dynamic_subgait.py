@@ -94,12 +94,14 @@ class DynamicSubgait:
             location.duration,
         ]
 
-        self.starting_position_dict = self._from_list_to_setpoint(
-            self.all_joint_names, list(self.starting_position.values()), None, self.time[SetpointTime.START_INDEX]
-        )
-
         self.start = start
         self.stop = stop
+
+        self.starting_position_dict = self._add_hfe_offset(
+            self._from_list_to_setpoint(
+                self.all_joint_names, list(self.starting_position.values()), None, self.time[SetpointTime.START_INDEX]
+            )
+        )
 
     def get_joint_trajectory_msg(self, push_off: bool) -> JointTrajectory:
         """Return a joint_trajectory_msg containing the interpolated trajectories for each joint.
@@ -133,6 +135,12 @@ class DynamicSubgait:
 
         return joint_trajectory_msg
 
+    def _add_hfe_offset(self, setpoint_dict: Dict[str, Setpoint]) -> Dict[str, Setpoint]:
+        if not self.stop or not self.start:
+            setpoint_dict["right_hip_fe"].position += 0.4
+            setpoint_dict["left_hip_fe"].position += 0.4
+        return setpoint_dict
+
     def _get_extra_ankle_setpoint(self) -> Setpoint:
         """Returns an extra setpoint for the swing leg ankle that can be used to create a push off.
 
@@ -156,11 +164,13 @@ class DynamicSubgait:
             self.subgait_id,
         )
 
-        self.middle_setpoint_dict = self._from_list_to_setpoint(
-            self.all_joint_names,
-            middle_position,
-            None,
-            self.time[SetpointTime.MIDDLE_POINT_INDEX],
+        self.middle_setpoint_dict = self._add_hfe_offset(
+            self._from_list_to_setpoint(
+                self.all_joint_names,
+                middle_position,
+                None,
+                self.time[SetpointTime.MIDDLE_POINT_INDEX],
+            )
         )
 
     def _solve_desired_setpoint(self) -> None:
@@ -172,11 +182,13 @@ class DynamicSubgait:
                 self.location.x, self.location.y, self.location.z, self.subgait_id
             )
 
-        self.desired_setpoint_dict = self._from_list_to_setpoint(
-            self.all_joint_names,
-            self.desired_position,
-            None,
-            self.time[SetpointTime.END_POINT_INDEX],
+        self.desired_setpoint_dict = self._add_hfe_offset(
+            self._from_list_to_setpoint(
+                self.all_joint_names,
+                self.desired_position,
+                None,
+                self.time[SetpointTime.END_POINT_INDEX],
+            )
         )
 
     def _to_joint_trajectory_class(self, push_off: bool) -> None:
