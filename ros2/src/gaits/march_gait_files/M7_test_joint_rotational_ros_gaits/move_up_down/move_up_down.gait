@@ -1,0 +1,6 @@
+name: move_up_down
+subgaits:
+  perform_test:
+    to: end
+  start:
+    to: perform_test 

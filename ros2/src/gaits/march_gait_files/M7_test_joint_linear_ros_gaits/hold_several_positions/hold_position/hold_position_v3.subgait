@@ -1,0 +1,12 @@
+description: Wait 60 seconds before moving on to the next section
+duration: 60000000000
+gait_type: walk_like
+joints:
+  linear_joint:
+  - position: 0.0
+    time_from_start: 0
+    velocity: 0.0
+  - position: 0.0
+    time_from_start: 60000000000
+    velocity: 0.0
+name: hold_position

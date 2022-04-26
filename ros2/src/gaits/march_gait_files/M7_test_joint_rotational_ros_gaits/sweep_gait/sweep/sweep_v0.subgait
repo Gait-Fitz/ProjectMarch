@@ -1,0 +1,19 @@
+description: Testjoint subgait with constant velocity of 0.5 deg/s or 0.0087 rad/s,
+  ranging from 0 to ~50 degrees
+duration: 99000000000
+gait_type: walk_like
+joints:
+  rotational_joint:
+  - position: 0.0
+    time_from_start: 0
+    velocity: 0.0
+  - position: 0.0087
+    time_from_start: 1000000000
+    velocity: 0.0087
+  - position: 0.8552
+    time_from_start: 98000000000
+    velocity: 0.0087
+  - position: 0.8727
+    time_from_start: 99000000000
+    velocity: 0.0
+name: sweep

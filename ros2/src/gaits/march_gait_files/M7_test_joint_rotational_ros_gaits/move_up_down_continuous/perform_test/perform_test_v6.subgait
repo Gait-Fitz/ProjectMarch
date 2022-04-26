@@ -1,0 +1,30 @@
+description: Testjoint subgait with maximum velocity of ~ 1.43 rad/s
+duration: 2200000000
+gait_type: walk_like
+joints:
+  rotational_joint:
+  - position: 0.0
+    time_from_start: 0
+    velocity: 0.0
+  - position: 0.4477
+    time_from_start: 496600000
+    velocity: 1.4147
+  - position: 0.5016
+    time_from_start: 534500000
+    velocity: 1.4266
+  - position: 0.5357
+    time_from_start: 558400000
+    velocity: 1.4277
+  - position: 0.5841
+    time_from_start: 592400000
+    velocity: 1.4195
+  - position: 0.6402
+    time_from_start: 632300000
+    velocity: 1.396
+  - position: 1.0472
+    time_from_start: 1100000000
+    velocity: 0.0
+  - position: 0.0
+    time_from_start: 2200000000
+    velocity: 0.0
+name: perform_test

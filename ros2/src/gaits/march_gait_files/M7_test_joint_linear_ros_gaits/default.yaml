@@ -1,0 +1,10 @@
+gaits:
+  move_front_back:
+    perform_test: perform_test_v0
+  move_front_back_continuous:
+    perform_test: perform_test_v0
+positions:
+  setup:
+    gait_type: ''
+    joints:
+      linear_joint: 0.0

@@ -1,0 +1,11 @@
+gaits:
+  move_up_down:
+    perform_test: perform_test_v6
+  move_up_down_continuous:
+    perform_test: perform_test_v6
+    wait_test: wait_test_v6
+positions:
+  setup:
+    gait_type: ''
+    joints:
+      rotational_joint: 0.0

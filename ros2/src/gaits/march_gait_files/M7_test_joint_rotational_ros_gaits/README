@@ -1,0 +1,15 @@
+README rotational gaits
+
+sweep_gait
+Contains a gait that makes the joint move from one end (slightly away from the endstop) to the other end (also slightly away from the endstop). It does this with a constant velocity over the entire range. The versions contain different speeds, starting at 0.5 degrees per second and ending with a whopping 35 degrees per second. Start slow, it is not know which ones are safe.
+
+move_up_down
+Contains a gait that moves the testjoint up and then back to home position. Version 0 is the medium speed with 2 seconds for the entire movement. Version 5 is the fastest with 1 second for the entire movement. Version 6 starts with 2.2 seconds, the versions above increase with 0.2 every step until version 9 with 2.8 seconds.
+
+move_up_down_continuous
+Contains the same gait versions as move_up_down, and also with a delay so it can be run continuously
+
+hold_several_positions
+Each of the move_to_position versions moves from the previous position to a position 11.7 degrees higher. The final subgait (move_to_position_v6) ends at 70 degrees.
+hold_position holds the position for 1 minute, and then moves on to the next position. Example: hold_position_v3 holds the position that move_to_position_v3 ended on.
+

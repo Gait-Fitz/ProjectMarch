@@ -1,0 +1,12 @@
+description: Testjoint subgait that moves linear joint from 2 deg to 4 degs
+duration: 2000000000
+gait_type: walk_like
+joints:
+  linear_joint:
+  - position: 0.0349
+    time_from_start: 0
+    velocity: -0.0
+  - position: 0.0698
+    time_from_start: 2000000000
+    velocity: -0.0
+name: move_to_position

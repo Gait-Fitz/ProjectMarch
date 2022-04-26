@@ -1,0 +1,13 @@
+description: Testjoint subgait that moves rotational joint from 11.7 deg to 23.3 degs
+  in two seconds
+duration: 2000000000
+gait_type: walk_like
+joints:
+  rotational_joint:
+  - position: 0.2042
+    time_from_start: 0
+    velocity: -0.0
+  - position: 0.4067
+    time_from_start: 2000000000
+    velocity: -0.0
+name: move_to_position

@@ -1,0 +1,18 @@
+description: Testjoint subgait with velocity of ~ 0.0062 rad/s in 35 seconds
+duration: 35000000000
+gait_type: walk_like
+joints:
+  linear_joint:
+  - position: 0.0
+    time_from_start: 0
+    velocity: 0.0
+  - position: 0.1047
+    time_from_start: 564500000
+    velocity: -0.0062
+  - position: -0.1047
+    time_from_start: 34435500000
+    velocity: -0.0062
+  - position: 0.0
+    time_from_start: 35000000000
+    velocity: 0.0
+name: sweep

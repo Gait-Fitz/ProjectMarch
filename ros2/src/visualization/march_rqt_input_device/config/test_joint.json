@@ -10,6 +10,14 @@
          "name": "test_joint_gait_continuous"
       },
       {
+         "name": "move_up_down"
+      },
+      {
+         "name": "move_up_down_continuous"
+      }
+   ],
+   [
+      {
          "name":"stop",
          "callback":"publish_stop",
          "always_enabled":true

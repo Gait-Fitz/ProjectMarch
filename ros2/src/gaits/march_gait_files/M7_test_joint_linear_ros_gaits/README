@@ -1,0 +1,15 @@
+README linear joint gaits
+
+sweep_gait
+Contains a gait that makes the joint move from one end (slightly away from the endstop, -6 degrees) to the other end (also slightly away from the endstop, 6 degrees). It does this with a constant velocity over the entire range. The versions contain different speeds, starting at 0.1 degrees per second and ending with a whopping 25 degrees per second. Start slow, it is not known which ones are safe.
+
+move_front_back
+Contains a gait that moves the testjoint outwards, and then returns, moving inward. It ends with returning to the home position. Version 0 is the medium speed with 6 seconds for the entire movement. Version 5 is the fastest with 3 seconds for the entire movement. Version 6 starts with 6.6 seconds, the versions above increase with 0.6 every step until version 9 with 8.4 seconds.
+
+move_up_down_continuous
+Contains the same gait versions as move_up_down, but will not stop until the stop button is pressed
+
+hold_several_positions
+Each of the move_to_position versions moves from the previous position to a position 2 degrees higher. The final subgait (move_to_position_v7) returns from 6 to 0 degrees, ending in the home setup again.
+hold_position holds the position for 1 minute, and then moves on to the next position. Example: hold_position_v3 holds the position that move_to_position_v3 ended on.
+

@@ -14,6 +14,8 @@ install(DIRECTORY
         training_vi
         test_joint_rotational_gaits
         test_joint_linear_gaits
+        M7_test_joint_linear_ros_gaits
+        M7_test_joint_rotational_ros_gaits
     DESTINATION share/${PROJECT_NAME}
 )
 
