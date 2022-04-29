@@ -116,8 +116,8 @@ joint_limits:
     resolution: 14
   right_haa:
     unit: iu
-    lower_limit: 3272
-    upper_limit: 4178
+    lower_limit: 12206
+    upper_limit: 13112
     zero_position: 3666
     resolution: 14
 safety:  # This is still copied from MV
