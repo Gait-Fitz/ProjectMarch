@@ -109,8 +109,8 @@ march6:
           absoluteEncoder:
             resolution: 14
             direction: -1
-            minPositionIU: 11433
-            maxPositionIU: 12337
+            minPositionIU: 3272
+            maxPositionIU: 4178
           incrementalEncoder:
             resolution: 13
             transmission: 240
