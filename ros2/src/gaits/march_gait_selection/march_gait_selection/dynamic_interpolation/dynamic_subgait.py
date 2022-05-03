@@ -18,6 +18,7 @@ from march_goniometric_ik_solver.ik_solver import Pose
 
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from march_shared_msgs.msg import FootPosition
+from geometry_msgs.msg import Point
 
 from typing import List, Dict, Optional
 from enum import IntEnum
@@ -80,7 +81,10 @@ class DynamicSubgait:
 
         self.home_stand_position = home_stand_position
         self.starting_position = starting_position
-        self.location = location.processed_point
+        if stop:
+            self.location = Point(x=0.4, y=0.1, z=0.45)
+        else:
+            self.location = location.processed_point
         self.actuating_joint_names = joint_names
         self.all_joint_names = list(starting_position.keys())
         self.subgait_id = subgait_id
