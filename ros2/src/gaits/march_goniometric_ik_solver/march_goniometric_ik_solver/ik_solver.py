@@ -330,13 +330,13 @@ class Pose:
     def reduce_swing_dorsi_flexion_update_pose(
         self, rotation_point: str, rotation: float, angle_knee2: float, angle_hip: float
     ) -> None:
-        """Updates the pose based on a certain dorsi flexion reduction of the swing leg.
+        """Updates the pose based on a certain dorsiflexion reduction of the swing leg.
 
         Args:
-            rotation_point (str): the point we rotate around to reduce dorsi flexion.
-            rotation (float): the amount of rotation we apply to reduce dorsi flexion.
+            rotation_point (str): the point we rotate around to reduce dorsiflexion.
+            rotation (float): the amount of rotation we apply to reduce dorsiflexion.
             angle_knee2 (float): the angle of knee2 calculated with the reduce_swing_dorsi_flexion_calculate_angles() method.
-            angle_knee2 (float): the angle of hip calculated with the reduce_swing_dorsi_flexion_calculate_angles() method.
+            angle_hip (float): the angle of hip calculated with the reduce_swing_dorsi_flexion_calculate_angles() method.
         """
         if rotation_point == "toes":
             self.rot_foot1 -= rotation

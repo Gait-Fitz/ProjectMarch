@@ -13,6 +13,7 @@ from march_gait_selection.dynamic_interpolation.dynamic_setpoint_gait_step_and_c
 )
 from march_gait_selection.dynamic_interpolation.dynamic_subgait import DynamicSubgait
 from march_gait_selection.state_machine.trajectory_scheduler import TrajectoryCommand
+from march_utility.utilities.node_utils import DEFAULT_HISTORY_DEPTH
 from march_utility.utilities.utility_functions import get_position_from_yaml
 from march_utility.utilities.logger import Logger
 
@@ -37,6 +38,13 @@ class DynamicSetpointGaitStepAndHold(DynamicSetpointGaitStepAndClose):
         self.update_parameter()
         if self._use_position_queue:
             self._create_position_queue()
+
+        self.gait_selection.create_subscription(
+            Point,
+            "/march/step_and_hold/add_point_to_queue",
+            self._add_point_to_queue,
+            DEFAULT_HISTORY_DEPTH,
+        )
 
         self._end_position_right = get_position_from_yaml("stand")
         self._end_position_right["right_hip_aa"] = 0
@@ -102,6 +110,7 @@ class DynamicSetpointGaitStepAndHold(DynamicSetpointGaitStepAndClose):
             self.joint_soft_limits,
             start,
             stop,
+            hold_subgait=True,
         )
 
     def _get_trajectory_command(self, start=False, stop=False) -> Optional[TrajectoryCommand]:
@@ -121,6 +130,8 @@ class DynamicSetpointGaitStepAndHold(DynamicSetpointGaitStepAndClose):
                 if not self.position_queue.empty():
                     self.foot_location = self._get_foot_location_from_queue()
                 else:
+                    self.logger.warn("Queue is empty. Resetting queue.")
+                    self._fill_queue()
                     return None
             else:
                 try:
@@ -137,6 +148,12 @@ class DynamicSetpointGaitStepAndHold(DynamicSetpointGaitStepAndClose):
             )
 
         return self._get_first_feasible_trajectory(start, stop)
+
+    def _try_to_get_second_step(self, is_final_iteration: bool) -> bool:
+        return True
+
+    def _get_stop_gait(self) -> Optional[TrajectoryCommand]:
+        return None
 
     def _get_foot_location_from_queue(self) -> FootPosition:
         """Get FootPosition message from the position queue.
