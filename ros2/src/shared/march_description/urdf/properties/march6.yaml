@@ -106,7 +106,7 @@ joint_limits:
     unit: iu
     lower_limit: 3842
     upper_limit: 5970
-    zero_position: 4200
+    zero_position: 5609
     resolution: 14
   left_haa:
     unit: iu
