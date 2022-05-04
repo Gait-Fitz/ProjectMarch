@@ -9,3 +9,6 @@ Flask==2.0.3
 scipy==1.7.1
 parameterized==0.8.1 
 numpy==1.21.2
+mne==0.23.4  # For EEG
+scikit-learn==1.0.2  # For EEG
+pyriemann==0.2.7  # For EEG
