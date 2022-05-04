@@ -4,6 +4,23 @@ gaits:
   move_up_down_continuous:
     perform_test: perform_test_v6
     wait_test: wait_test_v6
+  sweep_gait:
+    sweep: sweep_v0
+  hold_several_positions:
+    hold_position_0: hold_position_0_v0
+    hold_position_1: hold_position_1_v0
+    hold_position_2: hold_position_2_v0
+    hold_position_3: hold_position_3_v0
+    hold_position_4: hold_position_4_v0
+    hold_position_5: hold_position_5_v0
+    hold_position_6: hold_position_6_v0
+    move_to_position_0: move_to_position_0_v0
+    move_to_position_1: move_to_position_1_v0
+    move_to_position_2: move_to_position_2_v0
+    move_to_position_3: move_to_position_3_v0
+    move_to_position_4: move_to_position_4_v0
+    move_to_position_5: move_to_position_5_v0
+    move_to_position_6: move_to_position_6_v0
 positions:
   setup:
     gait_type: ''
