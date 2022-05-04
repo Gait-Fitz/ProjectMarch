@@ -104,8 +104,8 @@ joint_limits:
     resolution: 14
   right_ankle:
     unit: iu
-    min_pos_abs: 3842
-    max_pos_abs: 5970
+    lower_limit: 3842
+    upper_limit: 5970
     zero_position: 4200
     resolution: 14
   left_haa:
