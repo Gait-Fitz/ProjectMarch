@@ -1,0 +1,48 @@
+[
+  [
+    {
+      "name": "home_setup"
+    },
+    {
+      "name": "test_joint_gait"
+    },
+    {
+      "name": "test_joint_gait_continuous"
+    },
+    {
+      "name":"stop",
+      "callback":"publish_stop",
+      "always_enabled":true
+    },
+    {
+      "name":"error",
+      "callback":"publish_error",
+      "always_enabled":true
+    },
+    {
+      "name":"force unknown",
+      "callback":"publish_sm_to_unknown",
+      "always_enabled":true
+    }
+  ],
+  [
+    {
+      "name": "move_up_down"
+    },
+    {
+      "name": "move_up_down_continuous"
+    },
+    {
+      "name": "move_front_back"
+    },
+    {
+      "name": "move_front_back_continuous"
+    },
+    {
+      "name": "hold_several_positions"
+    },
+    {
+      "name": "sweep_gait"
+    }
+  ]
+]
