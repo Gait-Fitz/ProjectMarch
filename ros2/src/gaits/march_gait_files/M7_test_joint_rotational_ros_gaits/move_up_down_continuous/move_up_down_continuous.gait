@@ -1,6 +1,9 @@
 name: move_up_down_continuous
 subgaits:
   perform_test:
+    to: wait_test
+    stop: end
+  wait_test:
     to: perform_test
     stop: end
   start:

@@ -1,33 +1,33 @@
 name: hold_several_positions
 subgaits:
-  move_to_position_v0 
-    to: hold_position_v0
-  hold_position_v0:
-    to: move_to_position_v1
-  move_to_position_v1
-    to: hold_position_v1
-  hold_position_v1:
-    to: move_to_position_v2
-  move_to_position_v2
-    to: hold_position_v2
-  hold_position_v2:
-    to: move_to_position_v3
-  move_to_position_v3
-    to: hold_position_v3
-  hold_position_v3:
-    to: move_to_position_v4
-  move_to_position_v4
-    to: hold_position_v4
-  hold_position_v4:
-    to: move_to_position_v5
-  move_to_position_v5
-    to: hold_position_v5
-  hold_position_v5:
-    to: move_to_position_v6
-  move_to_position_v6
-    to: hold_position_v6
-  hold_position_v6
+  move_to_position_0 
+    to: hold_position_0
+  hold_position_0:
+    to: move_to_position_1
+  move_to_position_1
+    to: hold_position_1
+  hold_position_1:
+    to: move_to_position_2
+  move_to_position_2
+    to: hold_position_2
+  hold_position_2:
+    to: move_to_position_3
+  move_to_position_3
+    to: hold_position_3
+  hold_position_3:
+    to: move_to_position_4
+  move_to_position_4
+    to: hold_position_4
+  hold_position_4:
+    to: move_to_position_5
+  move_to_position_5
+    to: hold_position_5
+  hold_position_5:
+    to: move_to_position_6
+  move_to_position_6
+    to: hold_position_6
+  hold_position_6
     to: end
   start:
-    to: move_to_position_v0 
+    to: move_to_position_0 
 

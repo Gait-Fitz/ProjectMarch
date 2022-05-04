@@ -1,6 +1,6 @@
 name: sweep_gait
 subgaits:
-  perform_test:
+  sweep:
     to: end
   start:
-    to: perform_test 
+    to: sweep 
