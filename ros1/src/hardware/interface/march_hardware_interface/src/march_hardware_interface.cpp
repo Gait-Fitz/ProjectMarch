@@ -404,6 +404,8 @@ void MarchHardwareInterface::write(
 
         joint_last_effort_command_[i] = joint_effort_command_[i];
 
+        check_and_warn_max_effort(joint_effort_command_[i]);
+
         auto actuation_mode = joint.getMotorController()->getActuationMode();
         if (actuation_mode == march::ActuationMode::position) {
             joint.actuate(joint_position_command_[i]);
@@ -683,4 +685,16 @@ void MarchHardwareInterface::updatePowerDistributionBoardData()
 
     power_distribution_board_data_pub_->msg_ = pdb_state_msg;
     power_distribution_board_data_pub_->unlockAndPublish();
+}
+
+void MarchHardwareInterface::check_and_warn_max_effort(double effort)
+{
+    if (std::abs(effort) >= max_effort_threshold) {
+        max_effort_count++;
+        ROS_WARN_COND(max_effort_count > 60,
+            "The hardware limit of %f is reached for %f seconds.",
+            max_effort_threshold, 0.008 * 60);
+    } else {
+        max_effort_count = 0;
+    }
 }

@@ -117,6 +117,8 @@ private:
             maximum_tries_debug_f,
         const ros::Duration, const unsigned maximum_tries);
 
+    void check_and_warn_max_effort(double effort);
+
     /* Limit of the change in effort command over one cycle, can be overridden
      * by safety controller */
     static constexpr double MAX_EFFORT_CHANGE = 5000;
@@ -139,6 +141,8 @@ private:
 
     /* Shared memory */
     size_t num_joints_ = 0;
+    int16_t max_effort_count = 0;
+    double max_effort_threshold = 28.0;
 
     std::vector<double> joint_position_;
     std::vector<double> joint_position_command_;
