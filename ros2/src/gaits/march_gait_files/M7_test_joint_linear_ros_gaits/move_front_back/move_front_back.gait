@@ -1,4 +1,4 @@
-name: test_joint_gait_continuous
+name: move_front_back
 subgaits:
   perform_test:
     to: end

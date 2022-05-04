@@ -3,8 +3,27 @@ gaits:
     perform_test: perform_test_v0
   move_front_back_continuous:
     perform_test: perform_test_v0
+  sweep_gait:
+    sweep: sweep_v0
+  hold_several_positions:
+    hold_position_0: hold_position_0_v0
+    hold_position_1: hold_position_1_v0
+    hold_position_2: hold_position_2_v0
+    hold_position_3: hold_position_3_v0
+    hold_position_4: hold_position_4_v0
+    hold_position_5: hold_position_5_v0
+    hold_position_6: hold_position_6_v0
+    move_to_position_0: move_to_position_0_v0
+    move_to_position_1: move_to_position_1_v0
+    move_to_position_2: move_to_position_2_v0
+    move_to_position_3: move_to_position_3_v0
+    move_to_position_4: move_to_position_4_v0
+    move_to_position_5: move_to_position_5_v0
+    move_to_position_6: move_to_position_6_v0
+    move_to_position_7: move_to_position_7_v0
 positions:
   setup:
     gait_type: ''
     joints:
       linear_joint: 0.0
+      

@@ -1,4 +1,4 @@
-name: test_joint_gait
+name: hold_several_positions
 subgaits:
   move_to_position_0 
     to: hold_position_0
