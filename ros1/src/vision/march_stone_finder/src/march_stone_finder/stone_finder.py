@@ -94,7 +94,7 @@ class StoneFinder:
                 displacement.header.frame_id = self._other_frame_id
                 self._listener.waitForTransform(self._other_frame_id, "world", rospy.Time.now(), rospy.Duration(1.0))
                 displacement = self._listener.transformPoint("world", displacement)
-                publish_point_marker(self._marker_publisher, displacement, "world")
+                publish_point_marker(self._marker_publisher, displacement, "world", self._left_or_right)
 
                 self._last_time_point_found = rospy.Time.now()
                 self._not_found_counter = 0

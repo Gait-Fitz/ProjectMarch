@@ -49,7 +49,7 @@ def publish_point(publisher: Publisher, point: np.ndarray) -> None:
     publisher.publish(point_msg)
 
 
-def publish_point_marker(publisher: Publisher, point: np.ndarray, frame: str) -> None:
+def publish_point_marker(publisher: Publisher, point: np.ndarray, frame: str, left_or_right: str) -> None:
     """Publish a visualization marker for the center of an ellipse.
 
     Args:
@@ -77,10 +77,16 @@ def publish_point_marker(publisher: Publisher, point: np.ndarray, frame: str) ->
     marker.scale.y = 0.02
     marker.scale.z = 0.02
 
-    marker.color.r = 1.0
-    marker.color.g = 1.0
-    marker.color.b = 0.0
-    marker.color.a = 1.0
+    if left_or_right == "right":
+        marker.color.r = 1.0
+        marker.color.g = 1.0
+        marker.color.b = 0.0
+        marker.color.a = 1.0
+    else:
+        marker.color.r = 0.0
+        marker.color.g = 0.0
+        marker.color.b = 1.0
+        marker.color.a = 0.0
 
     marker.lifetime = rospy.Duration(0.3)
 
