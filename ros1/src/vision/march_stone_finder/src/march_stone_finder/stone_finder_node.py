@@ -20,19 +20,23 @@ def main():
 
     context = rs.context()
     pipelines = [None, None]
+    serial_numbers = ["944622074337", "944622071535"]
 
     for dev in context.query_devices():
+        serial_number = dev.get_info(rs.camera_info.serial_number)
+        if serial_number not in serial_numbers:
+            continue
         dev.hardware_reset()
         pipe = rs.pipeline(context)
         cfg = rs.config()
         cfg.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 15)
         cfg.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 15)
-        cfg.enable_device(dev.get_info(rs.camera_info.serial_number))
+        cfg.enable_device(serial_number)
         pipe.start(cfg)
 
-        if dev.get_info(rs.camera_info.serial_number) == "944622074337":
+        if serial_number == "944622074337":
             pipelines[0] = pipe
-        elif dev.get_info(rs.camera_info.serial_number) == "944622071535":
+        elif serial_number == "944622071535":
             pipelines[1] = pipe
 
     if pipelines[0] is None or pipelines[1] is None:
