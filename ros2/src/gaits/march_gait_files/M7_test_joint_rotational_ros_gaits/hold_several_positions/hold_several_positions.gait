@@ -1,6 +1,8 @@
 name: hold_several_positions
 subgaits:
-  move_to_position_0 
+  start:
+    to: move_to_position_0
+  move_to_position_0
     to: hold_position_0
   hold_position_0:
     to: move_to_position_1
