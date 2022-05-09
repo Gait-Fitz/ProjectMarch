@@ -15,7 +15,7 @@ def callback(config, _):
 
 def main():
     """Connect to realsense devices and run stone finding algorithm on the received frames."""
-    rospy.init_node("march_stone_finder", anonymous=True)
+    rospy.init_node("march_stone_finder")
     Server(parametersConfig, callback)
 
     context = rs.context()
@@ -29,7 +29,6 @@ def main():
         cfg.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 15)
         cfg.enable_device(dev.get_info(rs.camera_info.serial_number))
         pipe.start(cfg)
-        pipelines.append(pipe)
 
         if dev.get_info(rs.camera_info.serial_number) == "944622074337":
             pipelines[0] = pipe
@@ -53,8 +52,8 @@ def main():
             right_frame = pipelines[1].wait_for_frames()
             right_stone_finder.find_points(right_frame)
 
-    rospy.Timer(rospy.Duration(0.010), left_callback, True)
-    rospy.Timer(rospy.Duration(0.010), right_callback, True)
+    rospy.Timer(rospy.Duration(1.0), left_callback, oneshot=True)
+    rospy.Timer(rospy.Duration(1.0), right_callback, oneshot=True)
 
     rospy.spin()
 
