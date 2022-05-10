@@ -72,7 +72,7 @@ class StoneFinder:
         self._marker_publisher = rospy.Publisher(
             "/camera_" + left_or_right + "/found_points", MarkerArray, queue_size=1
         )
-        self._pointcloud_publisher = rospy.Publisher("/stone_finder_pointcloud", PointCloud2, queue_size=1)
+        self._pointcloud_publisher = rospy.Publisher("/stone_finder_pointcloud/" + left_or_right, PointCloud2, queue_size=1)
 
     def _retrieve_parameters(self) -> None:
         """Retrieve parameters from the ros parameter server."""
