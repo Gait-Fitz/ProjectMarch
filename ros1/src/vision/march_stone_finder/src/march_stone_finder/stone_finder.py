@@ -91,8 +91,9 @@ class StoneFinder:
 
         color_hsv_image, pointcloud = self._preprocess_frames(frames)
         color_segmented = self._color_segment(color_hsv_image)
+        components = self.find_connected_components(color_segmented)
 
-        contours, _ = cv2.findContours(color_segmented, 1, 2)
+        contours, _ = cv2.findContours(components, 1, 2)
         ellipses = self._find_ellipses(contours)
         closest_points = self._find_closest_points(ellipses, pointcloud)
         visualize_points = []
@@ -181,6 +182,18 @@ class StoneFinder:
         white = np.full(self._dimensions, 255, np.uint8)
         filtered = cv2.bitwise_and(white, white, mask=mask_gray)
         return cv2.bitwise_and(filtered, cv2.bitwise_not(white, white, mask=mask_wood))
+
+    def find_connected_components(self, color_segmented):
+        result = np.full(self.dimensions, 0, np.uint8)
+        n_components, output, _, _ = cv2.connectedComponentsWithStats(color_segmented, 8, cv2.CV_32S)
+
+        for i in range(1, n_components + 1):
+            pts = np.where(output == i)
+            if len(pts[0]) >= self.minimum_connected_component_size:
+                result[output == i] = 255
+
+        return result
+
 
     def _find_ellipses(self, contours: List[np.ndarray]) -> List[cv2.ellipse]:
         """Find ellipse shapes from contours in a given image.
