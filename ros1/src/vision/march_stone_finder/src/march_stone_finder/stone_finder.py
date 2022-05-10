@@ -184,12 +184,12 @@ class StoneFinder:
         return cv2.bitwise_and(filtered, cv2.bitwise_not(white, white, mask=mask_wood))
 
     def find_connected_components(self, color_segmented):
-        result = np.full(self.dimensions, 0, np.uint8)
+        result = np.full(self._dimensions, 0, np.uint8)
         n_components, output, _, _ = cv2.connectedComponentsWithStats(color_segmented, 8, cv2.CV_32S)
 
         for i in range(1, n_components + 1):
             pts = np.where(output == i)
-            if len(pts[0]) >= self.minimum_connected_component_size:
+            if len(pts[0]) >= 1000:
                 result[output == i] = 255
 
         return result
