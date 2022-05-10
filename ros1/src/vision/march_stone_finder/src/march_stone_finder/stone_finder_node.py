@@ -20,7 +20,7 @@ def main():
     Server(parametersConfig, callback)
 
     context = rs.context()
-    pipelines = [None, None]
+    pipelines = []
     serial_numbers = ["944622074337", "944622071535"]
 
     # Perform hardware resets on cameras
@@ -50,7 +50,7 @@ def main():
                 continue
 
             rospy.loginfo(f"[march_stone_finder] \033[1;36m{side} RealSense connected ({serial}) \033[0m")
-            pipelines[index] = pipe
+            pipelines.append(pipe)
             break
 
     left_stone_finder = StoneFinder("left")
