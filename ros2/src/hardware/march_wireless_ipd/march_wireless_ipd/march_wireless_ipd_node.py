@@ -27,7 +27,9 @@ def main():
             if "addr" in interface_info:
                 address = interface_info["addr"]
                 if address[0:3] == "192":
-                    ip = address
+                    pass
+                    # ip = address
+    print("IP: ", ip)
 
     rclpy.init()
 
