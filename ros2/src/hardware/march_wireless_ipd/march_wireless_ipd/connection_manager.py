@@ -9,6 +9,9 @@ from march_shared_msgs.msg import CurrentGait, CurrentState
 from march_utility.utilities.logger import Logger
 from march_utility.utilities.duration import Duration
 from .wireless_ipd_controller import WirelessInputDeviceController
+from march_shared_msgs.msg import FootPosition
+from std_msgs.msg import String
+from march_utility.utilities.node_utils import DEFAULT_HISTORY_DEPTH
 from rclpy.node import Node
 
 HEARTBEAT_TIMEOUT = Duration(0.5)
@@ -40,6 +43,8 @@ class ConnectionManager:
         _current_gait (str): The current gait of the exoskeleton, runnin or just finished.
         _last_heartbeat (Time): Last time a message has been received from the wireless IPD.
         _stopped (bool): Whether stop was pressed on the IPD.
+        _last_left_displacement (List): Last displacement found for the left foot with the cameras.
+        _last_right_displacement (List): Last displacement found for the right foot with the cameras.
     """
 
     def __init__(self, host: str, port: int, controller: WirelessInputDeviceController, node: Node, logger: Logger):
@@ -58,10 +63,30 @@ class ConnectionManager:
         self._current_gait = "unknown"
         self._last_heartbeat = self._node.get_clock().now()
         self._stopped = False
+        self._last_left_displacement = [0, 0, 0]
+        self._last_right_displacement = [0, 0, 0]
         self._controller.accepted_cb = partial(self._send_message_till_confirm, "Accepted", True)
         self._controller.rejected_cb = partial(self._send_message_till_confirm, "Reject")
         self._controller.current_gait_cb = self._current_gait_cb
         self._controller.current_state_cb = self._current_state_cb
+
+        self._subscription_left = self._node.create_subscription(
+            FootPosition,
+            "/march/foot_position/left",
+            self._callback_left,
+            DEFAULT_HISTORY_DEPTH,
+        )
+        self._subscription_right = self._node.create_subscription(
+            FootPosition,
+            "/march/foot_position/right",
+            self._callback_right,
+            DEFAULT_HISTORY_DEPTH,
+        )
+        self._step_size_publisher = self._node.create_publisher(
+            String,
+            "/march/step_and_hold/step_size",
+            DEFAULT_HISTORY_DEPTH,
+        )
 
     def _current_gait_cb(self, msg: CurrentGait):
         """Callback when the exoskeleton gait is updated."""
@@ -75,6 +100,14 @@ class ConnectionManager:
         """Callback when the exoskeleton state is updated."""
         if msg.state == "unknown" or "home" in msg.state:
             self._current_gait = msg.state
+
+    def _callback_left(self, msg: FootPosition):
+        """Callback when a new left foot position is found."""
+        self._last_left_displacement = [msg.displacement.x, msg.displacement.y, msg.displacement.z]
+
+    def _callback_right(self, msg: FootPosition):
+        """Callback when a new right foot position is found."""
+        self._last_right_displacement = [msg.displacement.x, msg.displacement.y, msg.displacement.z]
 
     def _validate_received_data(self, msg: str):
         """Check if a received message is valid or is empty, meaning the connection is broken.
@@ -164,6 +197,14 @@ class ConnectionManager:
             counter += 1
 
         self._requested_gait = req["gait"]["gaitName"]
+
+        if self._requested_gait in ["small_narrow", "small_wide", "large_narrow", "large_wide"]:
+            self._step_size_publisher.publish(String(data=self._requested_gait))
+            time.sleep(0.200)
+            self._requested_gait = "dynamic_step_and_hold"
+            self._controller.publish_gait(self._requested_gait)
+            return
+
         if self._requested_gait in future.result().gaits:
             self._controller.publish_gait(self._requested_gait)
         else:
