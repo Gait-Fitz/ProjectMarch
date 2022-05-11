@@ -45,6 +45,8 @@ class ConnectionManager:
         _stopped (bool): Whether stop was pressed on the IPD.
         _last_left_displacement (List): Last displacement found for the left foot with the cameras.
         _last_right_displacement (List): Last displacement found for the right foot with the cameras.
+        _last_left_point_timestamp (Time): Last time a left point has been found.
+        _last_right_point_timestamp (Time): Last time a right point has been found.
     """
 
     def __init__(self, host: str, port: int, controller: WirelessInputDeviceController, node: Node, logger: Logger):
@@ -65,6 +67,8 @@ class ConnectionManager:
         self._stopped = False
         self._last_left_displacement = [0, 0, 0]
         self._last_right_displacement = [0, 0, 0]
+        self._last_left_point_timestamp = self._node.get_clock().now()
+        self._last_right_point_timestamp = self._node.get_clock().now()
         self._controller.accepted_cb = partial(self._send_message_till_confirm, "Accepted", True)
         self._controller.rejected_cb = partial(self._send_message_till_confirm, "Reject")
         self._controller.current_gait_cb = self._current_gait_cb
@@ -104,10 +108,12 @@ class ConnectionManager:
     def _callback_left(self, msg: FootPosition):
         """Callback when a new left foot position is found."""
         self._last_left_displacement = [msg.displacement.x, msg.displacement.y, msg.displacement.z]
+        self._last_left_point_timestamp = self._node.get_clock().now()
 
     def _callback_right(self, msg: FootPosition):
         """Callback when a new right foot position is found."""
         self._last_right_displacement = [msg.displacement.x, msg.displacement.y, msg.displacement.z]
+        self._last_right_point_timestamp = self._node.get_clock().now()
 
     def _validate_received_data(self, msg: str):
         """Check if a received message is valid or is empty, meaning the connection is broken.
@@ -257,7 +263,24 @@ class ConnectionManager:
         if self._connection is None:
             return
 
-        msg = {"type": msg_type, "currentGait": send_gait, "message": message, "seq": self._seq}
+        if (self._node.get_clock().now() - self._last_left_point_timestamp) > Duration(0.5):
+            point_left = None
+        else:
+            point_left = self._last_left_displacement
+
+        if (self._node.get_clock().now() - self._last_right_point_timestamp) > Duration(0.5):
+            point_right = None
+        else:
+            point_right = self._last_right_displacement            
+
+        msg = {
+            "type": msg_type,
+            "currentGait": send_gait,
+            "message": message,
+            "seq": self._seq,
+            "point_left": point_left,
+            "point_right": point_right,
+        }
 
         while True:
             try:
