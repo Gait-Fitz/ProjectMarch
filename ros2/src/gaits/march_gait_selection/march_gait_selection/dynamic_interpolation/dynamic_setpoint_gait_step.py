@@ -15,6 +15,7 @@ from march_gait_selection.dynamic_interpolation.dynamic_setpoint_gait import (
 from march_gait_selection.state_machine.gait_update import GaitUpdate
 from march_gait_selection.state_machine.trajectory_scheduler import TrajectoryCommand
 from march_utility.utilities.duration import Duration
+from march_utility.utilities.logger import Logger
 from march_utility.utilities.node_utils import DEFAULT_HISTORY_DEPTH
 from march_utility.utilities.utility_functions import get_position_from_yaml
 
@@ -41,9 +42,9 @@ class DynamicSetpointGaitStep(DynamicSetpointGait):
 
     def __init__(self, gait_selection_node: Node):
         super().__init__(gait_selection_node)
+        self.logger = Logger(gait_selection_node, __class__.__name__)
         self.subgait_id = "right_swing"
         self.gait_name = "dynamic_step"
-        self.gait_selection = gait_selection_node
         self.update_parameter()
 
         if self._use_position_queue:
@@ -51,7 +52,7 @@ class DynamicSetpointGaitStep(DynamicSetpointGait):
 
         self.gait_selection.create_subscription(
             Point,
-            "/march/add_point_to_queue",
+            "/march/step/add_point_to_queue",
             self._add_point_to_queue,
             DEFAULT_HISTORY_DEPTH,
         )
@@ -136,19 +137,16 @@ class DynamicSetpointGaitStep(DynamicSetpointGait):
             else:
                 try:
                     self.foot_location = self._get_foot_location(self.subgait_id)
+                    stop = self._check_msg_time(self.foot_location)
                 except AttributeError:
                     self.logger.info("No FootLocation found. Connect the camera or use simulated points.")
                     self._end = True
                     return None
-                stop = self._check_msg_time(self.foot_location)
 
             self.logger.warn(
                 f"Stepping to location ({self.foot_location.processed_point.x}, "
                 f"{self.foot_location.processed_point.y}, {self.foot_location.processed_point.z})"
             )
-
-        if start and stop:
-            return None
 
         return self._get_first_feasible_trajectory(start, stop)
 
@@ -163,8 +161,7 @@ class DynamicSetpointGaitStep(DynamicSetpointGait):
         point = Point(x=point_from_queue["x"], y=point_from_queue["y"], z=point_from_queue["z"])
 
         if self.position_queue.empty():
-            msg = "Next step will be a close gait."
-            self.logger.warn(msg)
+            self.logger.warn("Next step will be a close gait.")
 
         return FootPosition(header=header, processed_point=point, duration=self.duration_from_yaml)
 
