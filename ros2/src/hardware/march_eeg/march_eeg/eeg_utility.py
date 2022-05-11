@@ -24,8 +24,8 @@ def nmf(data, manual_scaled_weights):
 
 
 def feature_extraction(nmf_ata, c_ref):
-    sw_cov_matrix_train = Covariances('lwf').transform(
-        np.array([nmf_ata, nmf_ata]))  # how to make sure always positive definitive?
+    sw_cov_matrix_train = Covariances().transform(
+        np.array([nmf_ata, nmf_ata]))
 
     t_train = tangent_space(sw_cov_matrix_train, c_ref)
 
@@ -47,36 +47,4 @@ def lda(ncfs_data, lda_model):
     output = lda_model.predict([ncfs_data])
 
     return output
-#
-#
-# def main():
-#     headset = Headset('NAUTILUS')
-#
-#     manual_scaled_weights = np.loadtxt('manual_scaled_weights.csv', delimiter=',')
-#     Cref = np.loadtxt('Cref.csv', delimiter=',')
-#     feature_select_coefs = np.loadtxt('feature_select_coefs.csv', delimiter=',')
-#     LDAmodel = load('LDAmodel.pkl')
-#
-#     i = 0
-#     while i == 0:
-#         try:
-#             start = timeit.default_timer()
-#
-#             data = headset.get_data(250)
-#             data = headset.preprocessing(data)
-#             NMFdata = nmf(data, manual_scaled_weights)
-#             featureExtractionData = feature_extraction(NMFdata, Cref)
-#             NCFSdata = ncfs(featureExtractionData, feature_select_coefs)
-#             output = lda(NCFSdata, LDAmodel)
-#             print(output)
-#
-#             end = timeit.default_timer()
-#             print('Processing time 1 sec data:', end - start)  # 1.06 - 1.09 sec
-#
-#         except:
-#             print('Error')
-#             continue
 
-#
-# if __name__ == '__main__':
-#     main()
