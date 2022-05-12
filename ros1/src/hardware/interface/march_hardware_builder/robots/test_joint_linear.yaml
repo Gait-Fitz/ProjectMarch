@@ -11,6 +11,6 @@ testsetup:
           axis: 0
           motorKV: 355
           incrementalEncoder:
-            resolution: 13
+            countsPerRotation: 6500
             transmission: 240
             direction: 1
