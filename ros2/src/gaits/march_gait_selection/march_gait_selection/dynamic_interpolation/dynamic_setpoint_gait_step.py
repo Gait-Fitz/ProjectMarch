@@ -1,6 +1,8 @@
 """Author: Marten Haitjema, MVII."""
 
 import os
+from copy import copy
+
 import yaml
 
 from queue import Queue
@@ -8,6 +10,7 @@ from rclpy.node import Node
 from rclpy.time import Time
 from typing import Optional
 from ament_index_python.packages import get_package_share_path
+from sensor_msgs.msg import JointState
 
 from march_gait_selection.dynamic_interpolation.dynamic_setpoint_gait import (
     DynamicSetpointGait,
@@ -17,7 +20,6 @@ from march_gait_selection.state_machine.trajectory_scheduler import TrajectoryCo
 from march_utility.utilities.duration import Duration
 from march_utility.utilities.logger import Logger
 from march_utility.utilities.node_utils import DEFAULT_HISTORY_DEPTH
-from march_utility.utilities.utility_functions import get_position_from_yaml
 
 from std_msgs.msg import Header
 from geometry_msgs.msg import Point
@@ -56,9 +58,23 @@ class DynamicSetpointGaitStep(DynamicSetpointGait):
             self._add_point_to_queue,
             DEFAULT_HISTORY_DEPTH,
         )
+        self.gait_selection.create_subscription(
+            JointState,
+            "/march/close/final_position",
+            self._update_start_position_idle_state,
+            DEFAULT_HISTORY_DEPTH,
+        )
+        self._final_position_pub = self.gait_selection.create_publisher(
+            JointState,
+            "/march/step/final_position",
+            DEFAULT_HISTORY_DEPTH,
+        )
 
     def _reset(self) -> None:
         """Reset all attributes of the gait."""
+        if self.start_position_actuating_joints == self.home_stand_position_actuating_joints:
+            self.subgait_id = "right_swing"
+
         self._should_stop = False
         self._end = False
 
@@ -94,6 +110,7 @@ class DynamicSetpointGaitStep(DynamicSetpointGait):
                 return GaitUpdate.empty()
 
         if current_time >= self._start_time_next_command:
+            self._final_position_pub.publish(JointState(position=self.dynamic_subgait.get_final_position().values()))
             return self._update_state_machine()
 
         return GaitUpdate.empty()
@@ -125,28 +142,25 @@ class DynamicSetpointGaitStep(DynamicSetpointGait):
         Returns:
             TrajectoryCommand: command with the current subgait and start time
         """
-        if stop:
-            self.logger.info("Stopping dynamic gait.")
+        if self._use_position_queue and not self.position_queue.empty():
+            self.foot_location = self._get_foot_location_from_queue()
+        elif self._use_position_queue and self.position_queue.empty():
+            stop = True
+            self._end = True
         else:
-            if self._use_position_queue:
-                if not self.position_queue.empty():
-                    self.foot_location = self._get_foot_location_from_queue()
-                else:
-                    stop = True
-                    self._end = True
-            else:
-                try:
-                    self.foot_location = self._get_foot_location(self.subgait_id)
-                    stop = self._check_msg_time(self.foot_location)
-                except AttributeError:
-                    self.logger.info("No FootLocation found. Connect the camera or use simulated points.")
-                    self._end = True
-                    return None
+            try:
+                self.foot_location = self._get_foot_location(self.subgait_id)
+            except AttributeError:
+                self.logger.info("No FootLocation found. Connect the camera or use simulated points.")
+                self._end = True
+                return None
+            stop = self._check_msg_time(self.foot_location)
+            self._publish_chosen_foot_position(self.subgait_id, self.foot_location)
 
-            self.logger.warn(
-                f"Stepping to location ({self.foot_location.processed_point.x}, "
-                f"{self.foot_location.processed_point.y}, {self.foot_location.processed_point.z})"
-            )
+        self.logger.info(
+            f"Stepping to location ({self.foot_location.processed_point.x}, "
+            f"{self.foot_location.processed_point.y}, {self.foot_location.processed_point.z})"
+        )
 
         return self._get_first_feasible_trajectory(start, stop)
 
@@ -199,6 +213,10 @@ class DynamicSetpointGaitStep(DynamicSetpointGait):
         self.position_queue.put(point_dict)
         self.logger.info(f"Point added to position queue. Current queue is: {list(self.position_queue.queue)}")
 
+    def _try_to_get_second_step(self, final_iteration: bool) -> bool:
+        """Returns true if second step is possible, always true for single step."""
+        return True
+
     def _callback_force_unknown(self, msg: GaitInstruction) -> None:
         """Resets the subgait_id, _trajectory_failed and position_queue after a force unknown.
 
@@ -207,13 +225,19 @@ class DynamicSetpointGaitStep(DynamicSetpointGait):
         """
         if msg.type == GaitInstruction.UNKNOWN:
             # TODO: Refactor such that _reset method can be used
-            self.start_position_actuating_joints = self.gait_selection.get_named_position("stand")
-            self.start_position_all_joints = get_position_from_yaml("stand")
+            self.start_position_all_joints = copy(self.home_stand_position_all_joints)
+            self.start_position_actuating_joints = {
+                name: self.start_position_all_joints[name] for name in self.actuating_joint_names
+            }
             self.subgait_id = "right_swing"
             self._trajectory_failed = False
             self.position_queue = Queue()
             self._fill_queue()
 
-    def _try_to_get_second_step(self, final_iteration: bool) -> bool:
-        """Returns true if second step is possible, always true for single step."""
-        return True
+    def _update_start_position_idle_state(self, joint_state: JointState) -> None:
+        """Update the start position of the next subgait to be the last position of the previous gait."""
+        for i, name in enumerate(self.all_joint_names):
+            self.start_position_all_joints[name] = joint_state.position[i]
+        self.start_position_actuating_joints = {
+            name: self.start_position_all_joints[name] for name in self.actuating_joint_names
+        }

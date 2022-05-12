@@ -8,26 +8,36 @@ from queue import Queue
 from typing import Dict, Optional
 from ament_index_python import get_package_share_path
 from rclpy.node import Node
+from sensor_msgs.msg import JointState
 
 from march_gait_selection.dynamic_interpolation.dynamic_setpoint_gait_step_and_close import (
     DynamicSetpointGaitStepAndClose,
 )
 from march_gait_selection.dynamic_interpolation.dynamic_subgait import DynamicSubgait
+from march_gait_selection.state_machine.gait_update import GaitUpdate
 from march_gait_selection.state_machine.trajectory_scheduler import TrajectoryCommand
 from march_utility.utilities.node_utils import DEFAULT_HISTORY_DEPTH
 from march_utility.utilities.logger import Logger
 from march_utility.exceptions.gait_exceptions import WrongStartPositionError
+from march_utility.utilities.utility_functions import get_position_from_yaml
 
-from march_shared_msgs.msg import FootPosition, GaitInstruction
+from march_shared_msgs.msg import FootPosition
 from geometry_msgs.msg import Point
 from std_msgs.msg import Header, String
 
 PREDETERMINED_FOOT_LOCATIONS = {
-    "small_narrow": FootPosition(duration=1.5, processed_point=Point(x=0.3, y=0.0, z=0.44699999999999995)),
-    "small_wide": FootPosition(duration=1.5, processed_point=Point(x=0.4, y=0.0, z=0.44699999999999995)),
-    "large_narrow": FootPosition(duration=1.5, processed_point=Point(x=0.7, y=0.0, z=0.44699999999999995)),
-    "large_wide": FootPosition(duration=1.5, processed_point=Point(x=0.8, y=0.0, z=0.44699999999999995)),
+    "small_narrow": FootPosition(duration=1.5, processed_point=Point(x=0.45, y=0.0, z=0.44699999999999995)),
+    "small_wide": FootPosition(duration=1.5, processed_point=Point(x=0.55, y=0.0, z=0.44699999999999995)),
+    "large_narrow": FootPosition(duration=1.5, processed_point=Point(x=0.65, y=0.0, z=0.44699999999999995)),
+    "large_wide": FootPosition(duration=1.5, processed_point=Point(x=0.75, y=0.0, z=0.44699999999999995)),
 }
+
+END_POSITION_RIGHT = get_position_from_yaml("stand")
+END_POSITION_RIGHT = dict.fromkeys(END_POSITION_RIGHT, 0)
+END_POSITION_LEFT = copy(END_POSITION_RIGHT)
+
+END_POSITION_RIGHT["right_knee"] = 1
+END_POSITION_LEFT["left_knee"] = 1
 
 
 class DynamicSetpointGaitStepAndHold(DynamicSetpointGaitStepAndClose):
@@ -37,12 +47,11 @@ class DynamicSetpointGaitStepAndHold(DynamicSetpointGaitStepAndClose):
 
     def __init__(self, gait_selection_node: Node):
         self.subgait_id = "right_swing"
-        self._end_position_right = {}
-        self._end_position_left = {}
+        self._use_predetermined_foot_location = False
+        self._start_from_left_side = False
         super().__init__(gait_selection_node)
         self.logger = Logger(gait_selection_node, __class__.__name__)
         self.gait_name = "dynamic_step_and_hold"
-        self._use_predetermined_foot_location = False
 
         self.update_parameter()
         if self._use_position_queue:
@@ -66,20 +75,17 @@ class DynamicSetpointGaitStepAndHold(DynamicSetpointGaitStepAndClose):
             self._predetermined_foot_location_callback,
             DEFAULT_HISTORY_DEPTH,
         )
-
-        self._end_position_right = copy(self.home_stand_position_all_joints)
-        self._end_position_right["right_hip_aa"] = 0
-        self._end_position_right["left_hip_aa"] = 0
-        self._end_position_right["right_hip_fe"] = 0
-        self._end_position_right["left_hip_fe"] = 0
-        self._end_position_right["right_knee"] = 1
-
-        self._end_position_left = copy(self.home_stand_position_all_joints)
-        self._end_position_left["right_hip_aa"] = 0
-        self._end_position_left["left_hip_aa"] = 0
-        self._end_position_left["right_hip_fe"] = 0
-        self._end_position_left["left_hip_fe"] = 0
-        self._end_position_left["left_knee"] = 1
+        self.gait_selection.create_subscription(
+            JointState,
+            "/march/close/final_position",
+            self._update_start_position_idle_state,
+            DEFAULT_HISTORY_DEPTH,
+        )
+        self._final_position_pub = self.gait_selection.create_publisher(
+            JointState,
+            "/march/step_and_hold/final_position",
+            DEFAULT_HISTORY_DEPTH,
+        )
 
     def _reset(self) -> None:
         """Reset all attributes of the gait."""
@@ -94,10 +100,29 @@ class DynamicSetpointGaitStepAndHold(DynamicSetpointGaitStepAndClose):
         self._start_is_delayed = True
         self._scheduled_early = False
 
-        if self.start_position_all_joints == self._end_position_right:
+        if (
+            self.start_position_all_joints == self.home_stand_position_all_joints and not self._start_from_left_side
+        ) or (self.start_position_all_joints == END_POSITION_RIGHT):
             self.subgait_id = "right_swing"
-        elif self.start_position_all_joints == self._end_position_left:
+        elif self.start_position_all_joints == END_POSITION_LEFT:
             self.subgait_id = "left_swing"
+        else:
+            self.subgait_id = "left_swing"
+
+    def _update_state_machine(self) -> GaitUpdate:
+        """Update the state machine that the new subgait has begun. Also updates time stamps for the next subgait.
+
+        Returns:
+            GaitUpdate: a GaitUpdate for the state machine
+        """
+        self._final_position_pub.publish(JointState(position=self.dynamic_subgait.get_final_position().values()))
+        if self._next_command is None:
+            return GaitUpdate.finished()
+
+        self._update_time_stamps(self._next_command.duration)
+        self._scheduled_early = False
+
+        return GaitUpdate.subgait_updated()
 
     def _create_subgait_instance(
         self,
@@ -117,16 +142,19 @@ class DynamicSetpointGaitStepAndHold(DynamicSetpointGaitStepAndClose):
             DynamicSubgait: DynamicSubgait instance for the desired step
         """
         if subgait_id == "right_swing":
-            end_position = self._end_position_right
+            end_position = END_POSITION_RIGHT
         else:
-            end_position = self._end_position_left
+            end_position = END_POSITION_LEFT
+
+        # reset _start_from_left_side attribute
+        self._start_from_left_side = False
 
         return DynamicSubgait(
             self.gait_selection,
             end_position,
             start_position,
             subgait_id,
-            self.joint_names,
+            self.actuating_joint_names,
             self.foot_location,
             self.joint_soft_limits,
             start,
@@ -167,11 +195,12 @@ class DynamicSetpointGaitStepAndHold(DynamicSetpointGaitStepAndClose):
                         self.logger.info("No FootLocation found. Connect the camera or use simulated points.")
                         self._end = True
                         return None
-
-            self.logger.info(
-                f"Stepping to location ({self.foot_location.processed_point.x}, "
-                f"{self.foot_location.processed_point.y}, {self.foot_location.processed_point.z})"
-            )
+            if not stop:
+                self._publish_chosen_foot_position(self.subgait_id, self.foot_location)
+                self.logger.info(
+                    f"Stepping to location ({self.foot_location.processed_point.x}, "
+                    f"{self.foot_location.processed_point.y}, {self.foot_location.processed_point.z})"
+                )
 
         return self._get_first_feasible_trajectory(start, stop)
 
@@ -235,6 +264,10 @@ class DynamicSetpointGaitStepAndHold(DynamicSetpointGaitStepAndClose):
         try:
             if self.start_position_all_joints == self.home_stand_position_all_joints:
                 self.subgait_id = start_side.data
+                if self.subgait_id == "left_swing":
+                    self._start_from_left_side = True
+                else:
+                    self._start_from_left_side = False
                 self.logger.info(f"Starting subgait set to {self.subgait_id}")
             else:
                 raise WrongStartPositionError(self.home_stand_position_all_joints, self.start_position_all_joints)
@@ -246,17 +279,10 @@ class DynamicSetpointGaitStepAndHold(DynamicSetpointGaitStepAndClose):
         self._predetermined_foot_location = PREDETERMINED_FOOT_LOCATIONS[msg.data]
         self.logger.info(f"Stepping to stone {msg.data}")
 
-    def _callback_force_unknown(self, msg: GaitInstruction) -> None:
-        """Reset start position to home stand after force unknown.
-
-        Args:
-            msg (GaitInstruction): message containing a gait_instruction from the IPD
-        """
-        if msg.type == GaitInstruction.UNKNOWN:
-            self.start_position_all_joints = self.home_stand_position_all_joints
-            self.start_position_actuating_joints = {
-                name: self.start_position_all_joints[name] for name in self.joint_names
-            }
-            self.subgait_id = "right_swing"
-            self._trajectory_failed = False
-            self._use_predetermined_foot_location = False
+    def _update_start_position_idle_state(self, joint_state: JointState) -> None:
+        """Update the start position of the next subgait to be the last position of the previous gait."""
+        for i, name in enumerate(self.all_joint_names):
+            self.start_position_all_joints[name] = joint_state.position[i]
+        self.start_position_actuating_joints = {
+            name: self.start_position_all_joints[name] for name in self.actuating_joint_names
+        }
