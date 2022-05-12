@@ -26,10 +26,10 @@ from geometry_msgs.msg import Point
 from std_msgs.msg import Header, String
 
 PREDETERMINED_FOOT_LOCATIONS = {
-    "small_narrow": FootPosition(duration=1.5, processed_point=Point(x=0.45, y=0.0, z=0.44699999999999995)),
-    "small_wide": FootPosition(duration=1.5, processed_point=Point(x=0.55, y=0.0, z=0.44699999999999995)),
-    "large_narrow": FootPosition(duration=1.5, processed_point=Point(x=0.65, y=0.0, z=0.44699999999999995)),
-    "large_wide": FootPosition(duration=1.5, processed_point=Point(x=0.75, y=0.0, z=0.44699999999999995)),
+    "small_narrow": FootPosition(duration=1.5, processed_point=Point(x=0.55, y=0.03, z=0.44699999999999995)),
+    "small_wide": FootPosition(duration=1.5, processed_point=Point(x=0.65, y=0.03, z=0.44699999999999995)),
+    "large_narrow": FootPosition(duration=1.5, processed_point=Point(x=0.75, y=0.03, z=0.44699999999999995)),
+    "large_wide": FootPosition(duration=1.5, processed_point=Point(x=0.85, y=0.03, z=0.44699999999999995)),
 }
 
 END_POSITION_RIGHT = get_position_from_yaml("stand")
@@ -188,6 +188,8 @@ class DynamicSetpointGaitStepAndHold(DynamicSetpointGaitStepAndClose):
                 else:
                     try:
                         self.foot_location = self._get_foot_location(self.subgait_id)
+                        if self.start_position_all_joints == self.home_stand_position_all_joints:
+                            self.foot_location.processed_point.x += 0.07
                         stop = self._check_msg_time(self.foot_location)
                         if stop:
                             return None
@@ -195,6 +197,10 @@ class DynamicSetpointGaitStepAndHold(DynamicSetpointGaitStepAndClose):
                         self.logger.info("No FootLocation found. Connect the camera or use simulated points.")
                         self._end = True
                         return None
+            
+            if self.start_position_all_joints == self.home_stand_position_all_joints:
+                            self.foot_location.processed_point.x += 0.07
+
             if not stop:
                 self._publish_chosen_foot_position(self.subgait_id, self.foot_location)
                 self.logger.info(
