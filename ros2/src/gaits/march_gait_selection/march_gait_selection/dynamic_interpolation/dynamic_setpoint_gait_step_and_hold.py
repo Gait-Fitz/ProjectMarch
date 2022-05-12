@@ -188,8 +188,6 @@ class DynamicSetpointGaitStepAndHold(DynamicSetpointGaitStepAndClose):
                 else:
                     try:
                         self.foot_location = self._get_foot_location(self.subgait_id)
-                        if self.start_position_all_joints == self.home_stand_position_all_joints:
-                            self.foot_location.processed_point.x += 0.07
                         stop = self._check_msg_time(self.foot_location)
                         if stop:
                             return None
@@ -199,7 +197,8 @@ class DynamicSetpointGaitStepAndHold(DynamicSetpointGaitStepAndClose):
                         return None
             
             if self.start_position_all_joints == self.home_stand_position_all_joints:
-                            self.foot_location.processed_point.x += 0.07
+                 self.foot_location.processed_point.x += (0.07 / 2)
+                 self.foot_location.processed_point.y += (0.06 / 2)
 
             if not stop:
                 self._publish_chosen_foot_position(self.subgait_id, self.foot_location)

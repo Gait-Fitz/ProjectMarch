@@ -10,7 +10,7 @@ NODE_NAME = "gait_preprocessor_node"
 DURATION_SCALING_FACTOR = 5
 # Offsets are used to account for the difference in points between
 # covid (middle of foot) and gait (at the heel)
-X_OFFSET = 0.08
+X_OFFSET = 0.12
 Y_OFFSET = -0.01
 Z_OFFSET = 0.22
 

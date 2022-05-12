@@ -1,5 +1,6 @@
 """Author: Tuhin Das, MVII."""
 
+import sys
 import select
 import socket
 import json
@@ -327,6 +328,7 @@ class ConnectionManager:
             except (socket.timeout, socket.error) as e:
                 self._logger.warning(repr(e))
                 self._logger.warning("Reconnecting Wireless IPD")
+                sys.exit(0)
 
     def _empty_socket(self):
         """Empty all remaining messages on the socket connection."""

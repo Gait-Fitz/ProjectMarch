@@ -103,17 +103,17 @@ class StoneFinder:
             if point is not None and np.sum(np.abs(point)) > 0.02:  # check if point is not [0, 0, 0]
 
                 if self._left_or_right == "left" and (
-                    point[0] > self._margin_inside or point[0] < -self._margin_outside
+                    point[1] > self._margin_inside or point[1] < -self._margin_outside
                 ):
                     continue
                 if self._left_or_right == "right" and (
-                    point[0] < -self._margin_inside or point[0] > self._margin_outside
+                    point[1] > self._margin_outside or point[1] < -self._margin_inside 
                 ):
                     continue
 
                 try:
                     displacement = self._compute_displacement(point)
-                    if not point_published:
+                    if not point_published and displacement.point.x < -0.15 and displacement.point.x > -0.9:
                         publish_point(self._point_publisher, displacement)
                         point_published = True
                     visualize_points.append(displacement)
