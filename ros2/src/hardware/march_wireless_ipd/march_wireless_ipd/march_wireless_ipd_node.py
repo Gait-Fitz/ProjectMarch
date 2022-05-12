@@ -8,6 +8,7 @@ import threading
 import signal
 import sys
 from contextlib import suppress
+from netifaces import interfaces, ifaddresses, AF_INET
 
 
 def sys_exit(*_):
@@ -17,7 +18,19 @@ def sys_exit(*_):
 
 def main():
     """Initialize wireless IPD node."""
+
     ip = "192.168.0.100"
+    for iface in interfaces():
+        iface_details = ifaddresses(iface)
+        if AF_INET in iface_details:
+            interface_info = iface_details[AF_INET][0]
+            if "addr" in interface_info:
+                address = interface_info["addr"]
+                if address[0:3] == "192":
+                    pass
+                    # ip = address
+    print("IP: ", ip)
+
     rclpy.init()
 
     node = rclpy.create_node("march_wireless_ipd_node")
