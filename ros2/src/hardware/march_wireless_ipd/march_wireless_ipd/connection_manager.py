@@ -327,7 +327,6 @@ class ConnectionManager:
             except (socket.timeout, socket.error) as e:
                 self._logger.warning(repr(e))
                 self._logger.warning("Reconnecting Wireless IPD")
-            self._connection.close()
 
     def _empty_socket(self):
         """Empty all remaining messages on the socket connection."""
