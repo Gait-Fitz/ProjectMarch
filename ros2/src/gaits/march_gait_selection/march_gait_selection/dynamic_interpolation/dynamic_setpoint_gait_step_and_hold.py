@@ -3,7 +3,7 @@
 import os
 import yaml
 
-from copy import copy
+from copy import copy, deepcopy
 from queue import Queue
 from typing import Dict, Optional
 from ament_index_python import get_package_share_path
@@ -175,7 +175,7 @@ class DynamicSetpointGaitStepAndHold(DynamicSetpointGaitStepAndClose):
             self.logger.info("Stopping dynamic gait.")
         else:
             if self._use_predetermined_foot_location:
-                self.foot_location = self._predetermined_foot_location
+                self.foot_location = deepcopy(self._predetermined_foot_location)
                 self._use_predetermined_foot_location = False
             else:
                 if self._use_position_queue:
@@ -195,10 +195,11 @@ class DynamicSetpointGaitStepAndHold(DynamicSetpointGaitStepAndClose):
                         self.logger.info("No FootLocation found. Connect the camera or use simulated points.")
                         self._end = True
                         return None
-            
+
+            #  Add x and y values for open gait because exo needs to step onto the obstacle.
             if self.start_position_all_joints == self.home_stand_position_all_joints:
-                 self.foot_location.processed_point.x += (0.07 / 2)
-                 self.foot_location.processed_point.y += (0.06 / 2)
+                self.foot_location.processed_point.x += 0.07
+                self.foot_location.processed_point.y += 0.06
 
             if not stop:
                 self._publish_chosen_foot_position(self.subgait_id, self.foot_location)
