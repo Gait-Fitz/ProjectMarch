@@ -3,8 +3,10 @@ import getpass
 import socket
 
 from rclpy import Future
-from std_msgs.msg import Header, String
+from std_msgs.msg import Header, String, Bool
 from rosgraph_msgs.msg import Clock
+
+from march_utility.utilities.node_utils import DEFAULT_HISTORY_DEPTH
 from march_shared_msgs.msg import Alive, Error, GaitInstruction, GaitInstructionResponse
 from march_shared_msgs.srv import PossibleGaits
 from rclpy.node import Node
@@ -30,6 +32,13 @@ class InputDeviceController:
         self._node = node
 
         self._ping = self._node.get_parameter("ping_safety_node").get_parameter_value().bool_value
+        self._eeg_on = False
+
+        self._eeg_publisher = self._node.create_publisher(
+            msg_type=Bool,
+            topic="/march/eeg/on_off",
+            qos_profile=DEFAULT_HISTORY_DEPTH,
+        )
 
         self._instruction_gait_pub = self._node.create_publisher(
             msg_type=GaitInstruction,
@@ -236,3 +245,9 @@ class InputDeviceController:
                 id=str(self._id),
             )
         )
+
+    def publish_eeg(self) -> None:
+        """Flips and publishes the value of `self._eeg_on` boolean on `/march/eeg/on_off`."""
+        self._eeg_on = not self._eeg_on
+        self._node.get_logger().debug(f"Turned EEG {'on' if self._eeg_on else 'off'}")
+        self._eeg_publisher.publish(Bool(data=self._eeg_on))

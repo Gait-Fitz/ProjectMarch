@@ -7,7 +7,7 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     launch_arguments = [
-        DeclareLaunchArgument(name="headset", default_value="MOCK_Unicorn",
+        DeclareLaunchArgument(name="eeg_headset", default_value="MOCK_Unicorn",
                               description="The headset used to gather the eeg data.",
                               choices=["NAUTILUS", "UNICORN", "MOCK_Unicorn"]),
 
@@ -20,7 +20,7 @@ def generate_launch_description():
     ]
 
     node_params = [{
-        "headset": LaunchConfiguration("headset"),
+        "headset": LaunchConfiguration("eeg_headset"),
         "file_name": LaunchConfiguration("eeg_data_file_name"),
     }]
 
