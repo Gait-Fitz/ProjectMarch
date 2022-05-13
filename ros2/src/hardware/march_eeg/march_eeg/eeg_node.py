@@ -43,9 +43,9 @@ class EEGNode(Node):
 
     def update(self) -> None:
         if self.active:
-            if self.previous_walking_thought != self.eeg.walking_thought:
-                self.previous_walking_thought = self.eeg.walking_thought
-                if self.previous_walking_thought:
+            current_walking_thought = self.eeg.walking_thought
+            if self.previous_walking_thought != current_walking_thought:
+                if current_walking_thought:
                     self.publish_start_walking()
                 else:
                     self.publish_stop_walking()
@@ -53,6 +53,7 @@ class EEGNode(Node):
     def publish_start_walking(self) -> None:
         """Publish on `/march/input_device/instruction` to start walking."""
         self._logger.info("Start walking")
+        self.previous_walking_thought = True
         self._instruction_gait_pub.publish(
             GaitInstruction(
                 header=Header(stamp=self._clock.now().to_msg()),
@@ -65,6 +66,7 @@ class EEGNode(Node):
     def publish_stop_walking(self) -> None:
         """Publish a message on `/march/input_device/instruction` to stop the gait."""
         self._logger.info("Stop walking")
+        self.previous_walking_thought = False
         self._instruction_gait_pub.publish(
             GaitInstruction(
                 header=Header(stamp=self._clock.now().to_msg()),
