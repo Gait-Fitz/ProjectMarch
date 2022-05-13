@@ -9,6 +9,8 @@ import signal
 import sys
 from contextlib import suppress
 from netifaces import interfaces, ifaddresses, AF_INET
+from rclpy.node import Node
+from rclpy.executors import MultiThreadedExecutor
 
 
 def sys_exit(*_):
@@ -27,9 +29,7 @@ def main():
             if "addr" in interface_info:
                 address = interface_info["addr"]
                 if address[0:3] == "192":
-                    pass
-                    # ip = address
-    print("IP: ", ip)
+                    ip = address
 
     rclpy.init()
 
@@ -37,14 +37,18 @@ def main():
     logger = Logger(node, "march_wireless_ipd_node")
     controller = WirelessInputDeviceController(node, logger)
     manager = ConnectionManager(ip, 4000, controller, node, logger)
-    thr = threading.Thread(target=manager.establish_connection)
+    executor = MultiThreadedExecutor()
+
+    def spin_thread():
+        rclpy.spin(node, executor)
+
+    thr = threading.Thread(target=spin_thread)
     thr.daemon = True
     thr.start()
 
-    signal.signal(signal.SIGTERM, sys_exit)
+    manager.establish_connection()
 
-    with suppress(KeyboardInterrupt):
-        rclpy.spin(node)
+    signal.signal(signal.SIGTERM, sys_exit)
 
     rclpy.shutdown()
 

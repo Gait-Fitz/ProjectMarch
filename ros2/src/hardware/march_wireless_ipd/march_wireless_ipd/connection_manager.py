@@ -1,10 +1,13 @@
 """Author: Tuhin Das, MVII."""
 
+from cv2 import trace
+from builtins import OSError, RuntimeError
 import sys
 import select
 import socket
 import json
 import time
+import rclpy
 from functools import partial
 from march_shared_msgs.msg import CurrentGait, CurrentState
 from march_utility.utilities.logger import Logger
@@ -124,7 +127,6 @@ class ConnectionManager:
         """
         if msg == "":
             self._logger.warning("Connection lost with wireless IPD (empty message)")
-            self._empty_socket()
             raise socket.error
         else:
             self._last_heartbeat = self._node.get_clock().now()
@@ -141,7 +143,6 @@ class ConnectionManager:
                     counter += 1
 
                 req = self._wait_for_message(5.0)
-                self._empty_socket()
 
                 req = json.loads(req)
                 self._seq = req["seq"]
@@ -163,7 +164,6 @@ class ConnectionManager:
                 elif msg_type == "Information" and "swing" in req["message"]:
                     self._controller.publish_start_side(req["message"])
                     self._send_message_till_confirm(msg_type="Information", message=req["message"])
-                    self._logger.info("Switch side to " + req["message"])
 
             except (json.JSONDecodeError, BlockingIOError):
                 continue
@@ -211,7 +211,7 @@ class ConnectionManager:
             self._controller.publish_gait(self._requested_gait)
             return
 
-        if self._requested_gait in future.result().gaits:
+        if future.result() is not None and self._requested_gait in future.result().gaits:
             self._controller.publish_gait(self._requested_gait)
         else:
             self._logger.warning("Failed gait: " + self._requested_gait)
@@ -271,7 +271,7 @@ class ConnectionManager:
         if (self._node.get_clock().now() - self._last_right_point_timestamp) > Duration(0.5):
             point_right = None
         else:
-            point_right = self._last_right_displacement            
+            point_right = self._last_right_displacement
 
         msg = {
             "type": msg_type,
@@ -296,9 +296,10 @@ class ConnectionManager:
                         self._empty_socket()
                         return
                     else:
-                        raise socket.error
+                        self._empty_socket()
+                        self._seq = seq
+                        continue
 
-                self._empty_socket()
             except (json.JSONDecodeError, BlockingIOError):
                 continue
 
@@ -306,11 +307,9 @@ class ConnectionManager:
             except socket.timeout as e:
                 if (self._node.get_clock().now() - self._last_heartbeat) > HEARTBEAT_TIMEOUT:
                     self._logger.warning("Connection lost with wireless IPD (no heartbeat)")
-                    self._empty_socket()
                     raise e
 
             except socket.error as e:
-                self._empty_socket()
                 raise e
 
     def establish_connection(self):
@@ -328,12 +327,14 @@ class ConnectionManager:
             except (socket.timeout, socket.error) as e:
                 self._logger.warning(repr(e))
                 self._logger.warning("Reconnecting Wireless IPD")
-                sys.exit(0)
+
+            self._connection.close()
 
     def _empty_socket(self):
         """Empty all remaining messages on the socket connection."""
+        # return
         while True:
-            input_ready, _, _ = select.select([self._socket], [], [], 0.0)
+            input_ready, _, _ = select.select([self._connection], [], [], 0.0)
             if len(input_ready) == 0:
                 break
             for s in input_ready:
