@@ -29,15 +29,16 @@ class Headset:
         return self.preprocessing(self.get_data(number_of_samples))
 
 
-def headset_factory(name: str) -> Headset:
+def headset_factory(name: str, file_loc: str) -> Headset:
     if name == Nautilus.NAME:
-        obj = Nautilus()
-        return obj
+        return Nautilus()
     elif name == Unicorn.NAME:
-        obj = Unicorn()
-        return obj
+        return Unicorn(file_loc)
+    elif name == MockUnicorn.NAME:
+        return MockUnicorn(file_loc)
     else:
-        TypeError(f"The Headset: {name} is not an headset type. Choose from: [{Nautilus.NAME}, {Unicorn.NAME}].")
+        TypeError(f"The Headset: {name} is not an headset type. Choose from: [{Nautilus.NAME}, {Unicorn.NAME}, "
+                  f"{MockUnicorn.NAME}].")
 
 
 class Nautilus(Headset):
@@ -54,28 +55,47 @@ class Nautilus(Headset):
 class Unicorn(Headset):
     NAME = 'UNICORN'
 
-    def __init__(self):
+    def __init__(self, data_file_loc: str):
         self.amountOfChannels = 8
         self.sfreq = 250
+        self.data_file_loc = data_file_loc  # /home/george/repos/eeg/realtime/Unicorn Linux C API/x64/data.bin'
+
+    def get_data(self, number_of_samples: int):
+        sample_list = []
+        bin_proces = subprocess.Popen(['tail', '-f', self.data_file_loc]
+                                      , stdout=subprocess.PIPE, close_fds=True)
+        convert_proces = subprocess.Popen(['unicorn_converter', '-'], stdin=bin_proces.stdout,
+                                          stdout=subprocess.PIPE, close_fds=True, universal_newlines=True)
+        for i, stdout_line in enumerate(iter(convert_proces.stdout.readline, "")):
+            if len(sample_list) < number_of_samples:
+                sample_list.append(convert_to_list_of_floats(stdout_line))
+            else:
+                bin_proces.terminate()
+                convert_proces.terminate()
+                break
+
+        return np.array(sample_list)
+
+
+class MockUnicorn(Unicorn):
+    NAME = 'MOCK_Unicorn'
+
+    def __init__(self, data_file_loc: str):
+        super().__init__(data_file_loc)
         self.start_line = 0
 
-    def get_data(self, number_of_samples):
+    def get_data(self, number_of_samples: int):
         sample_list = []
-        # bin_proces = subprocess.Popen(['tail', '-f', '/home/george/repos/eeg/realtime/Unicorn Linux C API/x64/data.bin']
-        #                               , stdout=subprocess.PIPE, close_fds=True)
-        # convert_proces = subprocess.Popen(['unicorn_converter', '-'], stdin=bin_proces.stdout,
-        #                                   stdout=subprocess.PIPE, close_fds=True, universal_newlines=True)
-        convert_proces = subprocess.Popen(['cat', '/home/george/tmp_koen_data/epochdata.csv'],
+        convert_proces = subprocess.Popen(['cat', self.data_file_loc],
                                           stdout=subprocess.PIPE, close_fds=True, universal_newlines=True)
         for i, stdout_line in enumerate(iter(convert_proces.stdout.readline, "")):
             if i >= self.start_line:
                 if len(sample_list) < number_of_samples:
                     sample_list.append(convert_to_list_of_floats(stdout_line))
                 else:
-                    # bin_proces.terminate()
                     convert_proces.terminate()
                     break
 
         self.start_line += number_of_samples
-        # sleep(0.1)
+        sleep(3)
         return np.array(sample_list)

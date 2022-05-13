@@ -19,7 +19,7 @@ class EEGNode(Node):
     NODE_NAME_ID = "MARCH EEG Node"
 
     def __init__(self, action_gait_name):
-        super().__init__("march_eeg")
+        super().__init__("march_eeg", automatically_declare_parameters_from_overrides=True)
         self._logger.info("Created node 'march_eeg'")
         self.active = False
         self._instruction_gait_pub = self.create_publisher(
@@ -35,8 +35,9 @@ class EEGNode(Node):
             callback=self.callback_activate_toggle
         )
         self.gait_name = action_gait_name
-        # self.eeg = Eeg(self.get_parameter("headset").get_parameter_value().string_value)
-        self.eeg = Eeg("tmp", self._logger)
+        headset_name = self.get_parameter("headset").get_parameter_value().string_value
+        file_name = self.get_parameter("file_name").get_parameter_value().string_value
+        self.eeg = Eeg(headset_name, file_name, self._logger)
         self.previous_walking_thought = False
         self.update_timer = self.create_timer(UPDATE_SPEED, self.update)
 
@@ -83,6 +84,7 @@ class EEGNode(Node):
             self._logger.info("---------------------------------------------- Here OFFFFFFFFFFFFF")
             self.eeg.stop()
             self.active = False
+            self.publish_stop_walking()
 
 
 def main():

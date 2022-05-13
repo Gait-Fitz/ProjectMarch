@@ -9,7 +9,6 @@ from ament_index_python import get_package_share_directory
 from march_eeg import headset
 from joblib import load
 
-from march_eeg.headset import Unicorn
 from march_eeg.eeg_utility import nmf, feature_extraction, ncfs, lda
 
 SAMPLE_SIZE = 729
@@ -19,12 +18,18 @@ class Eeg:
 
     def __init__(self,
                  headset_name: str,
+                 data_file_name: str,
                  logger,
                  weights_file_name: str = 'manual_scaled_weights.csv',
                  cref_file_name: str = 'Cref.csv',
                  features_file_name: str = 'feature_select_coefs.csv',
                  ):
-        self.headset = Unicorn()
+        file_loc = os.path.join(
+            get_package_share_directory("march_eeg"),
+            "resource",
+            data_file_name
+        )
+        self.headset = headset.headset_factory(headset_name, file_loc)
         self.manual_scaled_weights = np.loadtxt(get_config_file_loc(weights_file_name), delimiter=',')
         self.cref = np.loadtxt(get_config_file_loc(cref_file_name), delimiter=',')
         self.feature_select_coefs = np.loadtxt(get_config_file_loc(features_file_name), delimiter=',')
@@ -60,7 +65,10 @@ class Eeg:
                 feature_extraction_data = feature_extraction(nmf_data, self.cref)
                 ncfs_data = ncfs(feature_extraction_data, self.feature_select_coefs)
                 self.walking_thought = bool(lda(ncfs_data, self.lda_model))
-                self._logger.info(f"Walking thought: {self.walking_thought} | lines ({self.headset.start_line - SAMPLE_SIZE} - {self.headset.start_line})")
+                logger_msg = f"Walking thought: {self.walking_thought}"
+                if type(self.headset) == headset.MockUnicorn:
+                    logger_msg += f" | lines ({self.headset.start_line - SAMPLE_SIZE} - {self.headset.start_line})"
+                self._logger.info(logger_msg)
             except (ValueError, IndexError):
                 self._logger.info("Value error")
 
