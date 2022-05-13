@@ -1,8 +1,6 @@
 import os
 import threading
 
-
-
 import numpy as np
 from ament_index_python import get_package_share_directory
 
@@ -43,35 +41,40 @@ class Eeg:
         thread.start()
         self.count = 0
         self._logger = logger
+        self._running = False
 
     def start(self):
         self.event_toggle.set()
+        self._running = True
 
     def stop(self):
         self.event_toggle.clear()
+        # To make sure that the walking_thought is not set to true in the async thread.
+        # TODO: Do this with wright lock.
+        self._running = False
         self.walking_thought = False
 
     def _loop(self) -> None:
         while self.event_toggle.wait():
             try:
-            # self.count += 1
-            # if self.count > 10000000:
-            #     print(f"count reached switching: {self.count} -> {self.walking_thought}")
-            #     self.count = 0
-            #     self.walking_thought = not self.walking_thought
+                # self.count += 1
+                # if self.count > 10000000:
+                #     print(f"count reached switching: {self.count} -> {self.walking_thought}")
+                #     self.count = 0
+                #     self.walking_thought = not self.walking_thought
                 data = self.headset.get_data(SAMPLE_SIZE)
                 data = self.headset.preprocessing(data)
                 nmf_data = nmf(data, self.manual_scaled_weights)
                 feature_extraction_data = feature_extraction(nmf_data, self.cref)
                 ncfs_data = ncfs(feature_extraction_data, self.feature_select_coefs)
-                self.walking_thought = bool(lda(ncfs_data, self.lda_model))
+                if self._running:
+                    self.walking_thought = bool(lda(ncfs_data, self.lda_model))
                 logger_msg = f"Walking thought: {self.walking_thought}"
                 if type(self.headset) == headset.MockUnicorn:
                     logger_msg += f" | lines ({self.headset.start_line - SAMPLE_SIZE} - {self.headset.start_line})"
                 self._logger.info(logger_msg)
             except (ValueError, IndexError):
                 self._logger.info("Value error")
-
 
 
 def get_config_file_loc(file: str):
