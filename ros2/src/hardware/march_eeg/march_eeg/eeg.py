@@ -50,7 +50,7 @@ class Eeg:
     def stop(self):
         self.event_toggle.clear()
         # To make sure that the walking_thought is not set to true in the async thread.
-        # TODO: Do this with wright lock.
+        # TODO: Do this with write lock.
         self._running = False
         self.walking_thought = False
 

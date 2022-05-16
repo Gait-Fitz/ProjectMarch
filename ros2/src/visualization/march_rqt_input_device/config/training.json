@@ -20,9 +20,8 @@
       "name": "dynamic_walk"
     },
     {
-      "name": "EEG",
-      "callback": "publish_eeg",
-      "always_enabled": true
+      "name": "eeg",
+      "callback": "publish_eeg"
     }
   ],
   [

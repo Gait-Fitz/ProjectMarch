@@ -191,6 +191,7 @@ class InputDeviceController:
     def publish_stop(self) -> None:
         """Publish a message on `/march/input_device/instruction` to stop the gait."""
         self._node.get_logger().debug("Mock input device published stop")
+        self.publish_eeg(turn_eeg_off=True)
         msg = GaitInstruction(
             header=Header(stamp=self._node.get_clock().now().to_msg()),
             type=GaitInstruction.STOP,
@@ -237,6 +238,7 @@ class InputDeviceController:
     def publish_sm_to_unknown(self) -> None:
         """Publish a message on `/march/input_device/instruction` that has an unknown instruction."""
         self._node.get_logger().debug("Mock Input Device published state machine to unknown")
+        self.publish_eeg(turn_eeg_off=True)
         self._instruction_gait_pub.publish(
             GaitInstruction(
                 header=Header(stamp=self._node.get_clock().now().to_msg()),
@@ -246,8 +248,18 @@ class InputDeviceController:
             )
         )
 
-    def publish_eeg(self) -> None:
-        """Flips and publishes the value of `self._eeg_on` boolean on `/march/eeg/on_off`."""
-        self._eeg_on = not self._eeg_on
+    def publish_eeg(self, turn_eeg_off: bool = False) -> None:
+        """Flips or turns eeg of, and publishes a message on `/march/eeg/on_off`.
+
+        Args:
+            turn_eeg_off (bool): If `True` and eeg is not already off it turns eeg off.
+                If `False` it flips the value for `eeg_on`.
+        """
+        if turn_eeg_off:
+            if not self._eeg_on:
+                return
+            self._eeg_on = False
+        else:
+            self._eeg_on = not self._eeg_on
         self._node.get_logger().debug(f"Turned EEG {'on' if self._eeg_on else 'off'}")
         self._eeg_publisher.publish(Bool(data=self._eeg_on))

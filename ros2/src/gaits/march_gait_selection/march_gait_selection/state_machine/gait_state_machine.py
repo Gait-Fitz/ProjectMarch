@@ -2,6 +2,8 @@
 
 from typing import Optional, Union, List
 from gazebo_msgs.msg import ContactsState
+
+from march_eeg.eeg_node import EEG_DEFAULT_WALK_GAIT, EEG_GAIT_NAME
 from march_gait_selection.state_machine.state_machine_input import StateMachineInput
 from march_shared_msgs.msg import CurrentState, CurrentGait, Error
 from march_shared_msgs.srv import PossibleGaits
@@ -18,7 +20,7 @@ from march_utility.utilities.node_utils import DEFAULT_HISTORY_DEPTH
 from march_utility.utilities.logger import Logger
 from rclpy.callback_groups import ReentrantCallbackGroup
 
-from std_msgs.msg import Header
+from std_msgs.msg import Header, Bool
 from .gait_update import GaitUpdate
 from .trajectory_scheduler import TrajectoryScheduler
 from ..gait_selection import GaitSelection
@@ -141,10 +143,22 @@ class GaitStateMachine:
 
         self.add_transition_callback(self._current_state_cb)
         self.add_gait_callback(self._current_gait_cb)
+        self._eeg_on = False
+        self._eeg_sub = self._gait_selection.create_subscription(
+            msg_type=Bool,
+            topic="/march/eeg/on_off",
+            qos_profile=DEFAULT_HISTORY_DEPTH,
+            callback=self._eeg_callback
+        )
+
         self.logger.debug("Initialized state machine")
 
     def _is_idle(self):
         return isinstance(self._current_state, EdgePosition)
+
+    def _eeg_callback(self, msg: Bool):
+        self._eeg_on = msg.data
+        self._input.gait_finished()
 
     def _update_foot_on_ground_cb(self, side: Side, msg: ContactsState) -> None:
         """Update the status of the feet on ground based on pressure sole data.
@@ -256,8 +270,13 @@ class GaitStateMachine:
         Returns:
             Union[List, set]: Set of names, or empty list when a gait is executing.
         """
+        if self._eeg_on:
+            return ["eeg"]
         if self._is_idle():
-            return self._gait_graph.possible_gaits_from_idle(self._current_state)
+            ret_gait_graph = self._gait_graph.possible_gaits_from_idle(self._current_state)
+            if EEG_DEFAULT_WALK_GAIT in ret_gait_graph:
+                ret_gait_graph.add(EEG_GAIT_NAME)
+            return ret_gait_graph
         else:
             return []
 

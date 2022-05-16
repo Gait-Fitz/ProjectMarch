@@ -11,7 +11,8 @@ from march_eeg.eeg import Eeg
 from march_utility.utilities.duration import NSEC_IN_SEC
 from march_shared_msgs.msg import GaitInstruction
 
-DEFAULT_GAIT_NAME = "dynamic_walk"
+EEG_DEFAULT_WALK_GAIT = "dynamic_walk"
+EEG_GAIT_NAME = "eeg"
 UPDATE_SPEED = 8 / NSEC_IN_SEC
 
 
@@ -92,7 +93,7 @@ class EEGNode(Node):
 def main():
     """Starts the "march_gain_scheduling_node" node and passes it to DynamicPIDReconfigurer."""
     rclpy.init(args=sys.argv)
-    node = EEGNode(DEFAULT_GAIT_NAME)
+    node = EEGNode(EEG_DEFAULT_WALK_GAIT)
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
