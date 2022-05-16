@@ -270,3 +270,7 @@ class InputDeviceController:
     def publish_start_with_right(self) -> None:
         """Publish that a step_and_hold starts from right_swing."""
         self._step_and_hold_start_side_pub.publish(String(data="right_swing"))
+
+    def publish_step_up_obstacle(self) -> None:
+        """Publish that a step_and_hold or step_and_close has to step onto the obstacle."""
+        self._step_and_hold_step_size_pub.publish(String(data="step_up_obstacle"))

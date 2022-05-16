@@ -55,6 +55,11 @@
   ],
   [
     {
+      "name": "step_up_obstacle",
+      "callback": "publish_step_up_obstacle",
+      "always_enabled": true
+    },
+    {
       "name": "start_with_right",
       "callback": "publish_start_with_right",
       "always_enabled": true
