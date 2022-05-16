@@ -37,8 +37,8 @@ def headset_factory(name: str, file_loc: str) -> Headset:
     elif name == MockUnicorn.NAME:
         return MockUnicorn(file_loc)
     else:
-        TypeError(f"The Headset: {name} is not an headset type. Choose from: [{Nautilus.NAME}, {Unicorn.NAME}, "
-                  f"{MockUnicorn.NAME}].")
+        raise TypeError(f"The Headset: {name} is not an headset type. Choose from: [{Nautilus.NAME}, {Unicorn.NAME}, "
+                        f"{MockUnicorn.NAME}].")
 
 
 class Nautilus(Headset):
@@ -54,6 +54,7 @@ class Nautilus(Headset):
 
 class Unicorn(Headset):
     NAME = 'UNICORN'
+    BIN_SINGLE_LINE_BYTE_SIZE = 68
 
     def __init__(self, data_file_loc: str):
         self.amountOfChannels = 8
@@ -62,7 +63,8 @@ class Unicorn(Headset):
 
     def get_data(self, number_of_samples: int):
         sample_list = []
-        bin_proces = subprocess.Popen(['tail', '-f', self.data_file_loc]
+        line_byte_size = self.BIN_SINGLE_LINE_BYTE_SIZE * number_of_samples
+        bin_proces = subprocess.Popen(['tail', '-c', str(line_byte_size), '-f', self.data_file_loc]
                                       , stdout=subprocess.PIPE, close_fds=True)
         convert_proces = subprocess.Popen(['unicorn_converter', '-'], stdin=bin_proces.stdout,
                                           stdout=subprocess.PIPE, close_fds=True, universal_newlines=True)
@@ -73,7 +75,6 @@ class Unicorn(Headset):
                 bin_proces.terminate()
                 convert_proces.terminate()
                 break
-
         return np.array(sample_list)
 
 
@@ -86,6 +87,7 @@ class MockUnicorn(Unicorn):
 
     def get_data(self, number_of_samples: int):
         sample_list = []
+        # TODO: Built in a check for that it doesn't take binary files.
         convert_proces = subprocess.Popen(['cat', self.data_file_loc],
                                           stdout=subprocess.PIPE, close_fds=True, universal_newlines=True)
         for i, stdout_line in enumerate(iter(convert_proces.stdout.readline, "")):
