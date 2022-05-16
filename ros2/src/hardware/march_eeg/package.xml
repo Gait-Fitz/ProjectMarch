@@ -8,6 +8,7 @@
   <license>TODO: License declaration</license>
 
   <buildtool_depend>python3-setuptools</buildtool_depend>
+  <buildtool_depend>march_utility</buildtool_depend>
   <test_depend>python3-pytest</test_depend>
 
   <depend>rclpy</depend>

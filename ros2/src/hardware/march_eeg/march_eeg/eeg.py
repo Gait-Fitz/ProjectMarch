@@ -18,6 +18,7 @@ class Eeg:
                  headset_name: str,
                  data_file_name: str,
                  logger,
+                 config_folder: str = 'koen',
                  weights_file_name: str = 'manual_scaled_weights.csv',
                  cref_file_name: str = 'Cref.csv',
                  features_file_name: str = 'feature_select_coefs.csv',
@@ -28,10 +29,10 @@ class Eeg:
             data_file_name
         )
         self.headset = headset.headset_factory(headset_name, file_loc)
-        self.manual_scaled_weights = np.loadtxt(get_config_file_loc(weights_file_name), delimiter=',')
-        self.cref = np.loadtxt(get_config_file_loc(cref_file_name), delimiter=',')
-        self.feature_select_coefs = np.loadtxt(get_config_file_loc(features_file_name), delimiter=',')
-        self.lda_model = load(get_config_file_loc('LDAmodel.pkl'))
+        self.manual_scaled_weights = np.loadtxt(get_config_file_loc(weights_file_name, config_folder), delimiter=',')
+        self.cref = np.loadtxt(get_config_file_loc(cref_file_name, config_folder), delimiter=',')
+        self.feature_select_coefs = np.loadtxt(get_config_file_loc(features_file_name, config_folder), delimiter=',')
+        self.lda_model = load(get_config_file_loc('LDAmodel.pkl', config_folder))
         self.walking_thought = False
         self.event_toggle = threading.Event()
         thread = threading.Thread(name='eeg_data_update_thread',
@@ -77,8 +78,9 @@ class Eeg:
                 self._logger.info("Value error")
 
 
-def get_config_file_loc(file: str):
+def get_config_file_loc(file: str, folder: str):
     return os.path.join(
         get_package_share_directory("march_eeg"),
         "config",
+        folder,
         file)
