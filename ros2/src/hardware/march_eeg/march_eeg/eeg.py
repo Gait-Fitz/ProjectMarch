@@ -9,7 +9,7 @@ from joblib import load
 
 from march_eeg.eeg_utility import nmf, feature_extraction, ncfs, lda
 
-SAMPLE_SIZE = 729
+SAMPLE_SIZE = 750
 
 
 class Eeg:
@@ -28,6 +28,7 @@ class Eeg:
             "resource",
             data_file_name
         )
+        logger.info(f"Created EEG with file: {file_loc} and headset: {headset_name}")
         self.headset = headset.headset_factory(headset_name, file_loc)
         self.manual_scaled_weights = np.loadtxt(get_config_file_loc(weights_file_name, config_folder), delimiter=',')
         self.cref = np.loadtxt(get_config_file_loc(cref_file_name, config_folder), delimiter=',')
@@ -64,6 +65,7 @@ class Eeg:
                 #     self.count = 0
                 #     self.walking_thought = not self.walking_thought
                 data = self.headset.get_data(SAMPLE_SIZE)
+                self._logger.info(f"data: {data[0]}")
                 data = self.headset.preprocessing(data)
                 nmf_data = nmf(data, self.manual_scaled_weights)
                 feature_extraction_data = feature_extraction(nmf_data, self.cref)
@@ -74,8 +76,10 @@ class Eeg:
                 if type(self.headset) == headset.MockUnicorn:
                     logger_msg += f" | lines ({self.headset.start_line - SAMPLE_SIZE} - {self.headset.start_line})"
                 self._logger.info(logger_msg)
-            except (ValueError, IndexError):
-                self._logger.info("Value error")
+            except ValueError as e:
+                self._logger.info(f"Value error: {e}")
+            except IndexError:
+                self._logger.info("Index error: ")
 
 
 def get_config_file_loc(file: str, folder: str):
