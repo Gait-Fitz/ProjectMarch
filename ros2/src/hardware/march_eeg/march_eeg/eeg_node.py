@@ -38,7 +38,8 @@ class EEGNode(Node):
         self.gait_name = action_gait_name
         headset_name = self.get_parameter("headset").get_parameter_value().string_value
         file_name = self.get_parameter("file_name").get_parameter_value().string_value
-        self.eeg = Eeg(headset_name, file_name, self._logger)
+        folder = self.get_parameter("folder_name").get_parameter_value().string_value
+        self.eeg = Eeg(headset_name, file_name, self._logger, config_folder=folder)
         self.previous_walking_thought = False
         self.update_timer = self.create_timer(UPDATE_SPEED, self.update)
 

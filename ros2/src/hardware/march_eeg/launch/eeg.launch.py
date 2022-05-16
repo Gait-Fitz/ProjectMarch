@@ -16,12 +16,19 @@ def generate_launch_description():
                                           "Should be located in '`package_share['march_eeg']`/resources/`file_name`'."
                                           "Note: if you use an actual headset it should be a live binary file,"
                                           "if you use a 'MOCK' then it should be a converted .csv file.",
-                              choices=["koen_data5.csv", "[binary_file].bin"])
+                              choices=["koen_data5.csv", "[binary_file].bin", "live_data.bin",
+                                       "TestEpochDataGeorge.csv"]),
+
+        DeclareLaunchArgument(name="eeg_user", default_value="koen",
+                              description="The person that uses the headset. This is the same as the folders in "
+                                          "'`package_share['march_eeg']`/config/...'",
+                              choices=["koen", "george"]),
     ]
 
     node_params = [{
         "headset": LaunchConfiguration("eeg_headset"),
         "file_name": LaunchConfiguration("eeg_data_file_name"),
+        "folder_name": LaunchConfiguration("eeg_user"),
     }]
 
     eeg_nodes = [Node(
