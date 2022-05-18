@@ -63,7 +63,7 @@ endif()
 #           test_joint_rotational
 #           test_joint_linear
 #           test_joint_rotational_MPC
-set(MODEL_NAME haa_airgait)
+set(MODEL_NAME test_joint_rotational)
 
 
 # Define a variable that points to the location of the chosen ACADO model_export directory. This
