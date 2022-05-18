@@ -144,19 +144,19 @@ void ModelPredictiveController::assignConstraints(
     for (int i = 0; i < ACADO_N; ++i) {
         // Assign lower bound of the effort
         std::copy(lb_effort.begin(), lb_effort.end(),
-            std::begin(acadoVariables.lbValues) + i * ACADO_NU);
+            std::begin(acadoVariables.lbValues) + (i * ACADO_NU));
 
         // Assign upper bound of the effort
         std::copy(constraints.effort.begin(), constraints.effort.end(),
-            std::begin(acadoVariables.ubValues) + i * ACADO_NU);
+            std::begin(acadoVariables.ubValues) + (i * ACADO_NU));
 
         // Assign the lower bound of the states
         std::copy(lb_states.begin(), lb_states.end(),
-            std::begin(acadoVariables.lbAValues) + i * ACADO_NX);
+            std::begin(acadoVariables.lbAValues) + (i * ACADO_NX));
 
         // Assign the upper bound of the states
         std::copy(ub_states.begin(), ub_states.end(),
-            std::begin(acadoVariables.ubAValues) + i * ACADO_NX);
+            std::begin(acadoVariables.ubAValues) + (i * ACADO_NX));
     }
 }
 
