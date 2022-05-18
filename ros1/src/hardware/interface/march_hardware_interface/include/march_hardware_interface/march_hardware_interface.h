@@ -1,9 +1,7 @@
 // Copyright 2019 Project March
 #ifndef MARCH_HARDWARE_INTERFACE_MARCH_HARDWARE_INTERFACE_H
 #define MARCH_HARDWARE_INTERFACE_MARCH_HARDWARE_INTERFACE_H
-#include "march_hardware_interface/march_pdb_state_interface.h"
 #include "march_hardware_interface/march_temperature_sensor_interface.h"
-#include "march_hardware_interface/power_net_type.h"
 
 #include <memory>
 #include <vector>
@@ -22,6 +20,7 @@
 #include <march_hardware_builder/hardware_builder.h>
 #include <march_shared_msgs/AfterLimitJointCommand.h>
 #include <march_shared_msgs/MotorControllerState.h>
+#include <march_shared_msgs/PowerDistributionBoardData.h>
 #include <march_shared_msgs/PressureSolesData.h>
 
 template <typename T>
@@ -34,8 +33,8 @@ using RtPublisherPtr = std::unique_ptr<realtime_tools::RealtimePublisher<T>>;
  */
 class MarchHardwareInterface : public hardware_interface::RobotHW {
 public:
-    MarchHardwareInterface(
-        std::unique_ptr<march::MarchRobot> robot, bool reset_imc);
+    MarchHardwareInterface(std::unique_ptr<march::MarchRobot> robot,
+        bool reset_motor_controllers, bool enable_safety_controller);
 
     /**
      * @brief Initialize the HardwareInterface by registering position
@@ -68,6 +67,11 @@ public:
         const ros::Time& time, const ros::Duration& elapsed_time) override;
 
     /**
+     * Perform the start up sequence of all joints
+     */
+    void startJoints();
+
+    /**
      * Returns the ethercat cycle time in milliseconds.
      */
     int getEthercatCycleTime() const;
@@ -78,23 +82,40 @@ public:
     void waitForPdo();
 
 private:
-    void uploadJointNames(ros::NodeHandle& nh) const;
     /**
      * Uses the num_joints_ member to resize all vectors
      * in order to avoid allocation at runtime.
      */
     void reserveMemory();
-    void updatePowerNet();
-    void updateHighVoltageEnable();
-    void updatePowerDistributionBoard();
     void updateAfterLimitJointCommand();
     void updateMotorControllerState();
     void updatePressureSoleData();
+    void updatePowerDistributionBoardData();
     void outsideLimitsCheck(size_t joint_index);
     bool MotorControllerStateCheck(size_t joint_index);
     static void getSoftJointLimitsError(const std::string& name,
         const urdf::JointConstSharedPtr& urdf_joint,
         joint_limits_interface::SoftJointLimits& error_soft_limits);
+
+    /**
+     * Call a function that returns an optional sleeping duration for each joint
+     * @param f Function to call
+     */
+    void call_and_wait_once_for_each_joint(
+        std::function<std::optional<ros::Duration>(march::Joint&)> const& f);
+
+    /**
+     * Call a function that returns true when successful for each joint
+     * Busy waits until all joints return true
+     * @param f Function to call
+     * @param maximum_tries_debug_f Function to call after maximum tries has
+     * been reached
+     */
+    void call_and_wait_while_checking_for_each_joint(
+        std::function<bool(march::Joint&)> const& f,
+        std::optional<std::function<void(march::Joint&)>> const&
+            maximum_tries_debug_f,
+        const ros::Duration, const unsigned maximum_tries);
 
     /* Limit of the change in effort command over one cycle, can be overridden
      * by safety controller */
@@ -115,7 +136,6 @@ private:
         effort_joint_soft_limits_interface_;
 
     MarchTemperatureSensorInterface march_temperature_interface_;
-    MarchPdbStateInterface march_pdb_interface_;
 
     /* Shared memory */
     size_t num_joints_ = 0;
@@ -136,10 +156,10 @@ private:
     std::vector<joint_limits_interface::SoftJointLimits> soft_limits_;
     std::vector<joint_limits_interface::SoftJointLimits> soft_limits_error_;
 
-    PowerNetOnOffCommand power_net_on_off_command_;
     bool master_shutdown_allowed_command_ = false;
     bool enable_high_voltage_command_ = true;
-    bool reset_imc_ = false;
+    bool reset_motor_controllers_ = false;
+    bool enable_safety_controller_ = false;
 
     bool has_actuated_ = false;
 
@@ -150,6 +170,8 @@ private:
         motor_controller_state_pub_;
     RtPublisherPtr<march_shared_msgs::PressureSolesData>
         pressure_sole_data_pub_;
+    RtPublisherPtr<march_shared_msgs::PowerDistributionBoardData>
+        power_distribution_board_data_pub_;
 };
 
 #endif // MARCH_HARDWARE_INTERFACE_MARCH_HARDWARE_INTERFACE_H

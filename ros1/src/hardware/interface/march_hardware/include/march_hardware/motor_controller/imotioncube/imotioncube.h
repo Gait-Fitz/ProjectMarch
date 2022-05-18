@@ -54,9 +54,12 @@ public:
     ~IMotionCube() noexcept override = default;
 
     // Override functions for actuating the IMotionCube
-    void prepareActuation() override;
+    std::optional<ros::Duration> prepareActuation() override;
+    void enableActuation() override;
     void actuateRadians(float target_position) override;
     void actuateTorque(float target_torque) override;
+
+    bool requiresUniqueSlaves() const override;
 
     // Transform the ActuationMode to a number that is understood by the
     // IMotionCube
@@ -71,11 +74,17 @@ public:
     float getMotorCurrent() override;
     float getMotorControllerVoltage() override;
     float getMotorVoltage() override;
+    float getActualEffort() override;
+
+    double effortMultiplicationConstant() override;
+    static constexpr double EFFORT_MULTIPLICATION_CONSTANT = 1000.0;
+
+    double getEffortLimit() override;
 
     constexpr static float MAX_TARGET_DIFFERENCE = 0.393;
     // This value is slightly larger than the current limit of the
     // linear joints defined in the URDF.
-    const static int16_t MAX_TARGET_TORQUE = 23500;
+    constexpr static int16_t MAX_TARGET_TORQUE = 23500;
 
     // Constant used for converting a fixed point 16.16 bit number to a float,
     // which is done by dividing by 2^16
@@ -87,7 +96,7 @@ public:
 protected:
     // Override protected functions from Slave class
     bool initSdo(SdoSlaveInterface& sdo, int cycle_time) override;
-    void reset(SdoSlaveInterface& sdo) override;
+    void resetSlave(SdoSlaveInterface& sdo) override;
 
     // Override protected functions from MotorController class
     float getAbsolutePositionUnchecked() override;

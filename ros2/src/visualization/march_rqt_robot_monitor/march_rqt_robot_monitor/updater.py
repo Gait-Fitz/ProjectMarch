@@ -2,7 +2,7 @@
 
 import diagnostic_updater
 import rclpy
-from march_utility.utilities.node_utils import get_joint_names
+from march_utility.utilities.node_utils import get_joint_names_from_service
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 
@@ -12,6 +12,9 @@ from .diagnostic_analyzers.check_input_device import CheckInputDevice
 from .diagnostic_analyzers.control import CheckJointValues
 from .diagnostic_analyzers.gait_state import CheckGaitStatus
 from .diagnostic_analyzers.motor_controller_state import CheckMotorControllerStatus
+from .diagnostic_analyzers.pdb_state import CheckPDBStatus
+
+from contextlib import suppress
 
 NODE_NAME = "rqt_robot_monitor"
 HARDWARE_ID = "MARCH VI"
@@ -28,19 +31,15 @@ class DiagnosticUpdater(Node):
         self.updater = diagnostic_updater.Updater(node=self, period=PERIOD)
         self.updater.setHardwareID(HARDWARE_ID)
 
-        joint_names = get_joint_names(self)
+        joint_names = get_joint_names_from_service(self)
 
         # Frequency checks
         CheckInputDevice(self, "/march/input_device/alive", Alive, self.updater, 4)
 
         # Control checks
         check_joint_states = CheckJointValues(self, "/march/joint_states", JointState)
-        self.updater.add(
-            "Control position values", check_joint_states.position_diagnostics
-        )
-        self.updater.add(
-            "Control velocity values", check_joint_states.velocity_diagnostics
-        )
+        self.updater.add("Control position values", check_joint_states.position_diagnostics)
+        self.updater.add("Control velocity values", check_joint_states.velocity_diagnostics)
         self.updater.add("Control effort values", check_joint_states.effort_diagnostics)
 
         # MotorController state check
@@ -48,6 +47,9 @@ class DiagnosticUpdater(Node):
 
         # Gait information
         CheckGaitStatus(self, self.updater)
+
+        # PDB checks
+        CheckPDBStatus(self, self.updater)
 
     def update(self):
         """Update the DiagnosticUpdater if there are more than 0 tasks."""
@@ -66,9 +68,7 @@ def main():
     node = DiagnosticUpdater()
     node.start()
 
-    try:
+    with suppress(KeyboardInterrupt):
         rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
 
     rclpy.shutdown()

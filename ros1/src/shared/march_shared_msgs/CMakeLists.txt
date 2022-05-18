@@ -14,26 +14,23 @@ add_message_files(
     FILES
     AfterLimitJointCommand.msg
     Alive.msg
+    BatteryState.msg
     CurrentGait.msg
     CurrentIPDState.msg
     CurrentState.msg
     Error.msg
+    FootPosition.msg
     GaitInstruction.msg
     GaitInstructionResponse.msg
     GaitParameters.msg
-    HighVoltageNet.msg
+    HighVoltageState.msg
     MotorControllerState.msg
     JointValues.msg
-    LowVoltageNet.msg
-    PowerDistributionBoardState.msg
+    LowVoltageState.msg
+    PowerDistributionBoardData.msg
     PressureSole.msg
     PressureSoleData.msg
     PressureSolesData.msg
-)
-add_message_files(
-#    DIRECTORY
-#    msg/mpc_msgs
-    FILES
     MpcArray.msg
     MpcStateVectors.msg
     MpcTuning.msg
@@ -49,22 +46,12 @@ add_service_files(
     ContainsGait.srv
     GetGaitParameters.srv
     GetMoveItTrajectory.srv
-    GetParamBool.srv
-    GetParamFloat.srv
-    GetParamInt.srv
-    GetParamString.srv
-    GetParamStringList.srv
     GetPossibleComLevels.srv
     PossibleGaits.srv
     PublishTestDataset.srv
     SetGaitVersion.srv
     SetObstacleSizeRampLike.srv
     SetObstacleSizeBlockLike.srv
-    SetParamBool.srv
-    SetParamFloat.srv
-    SetParamInt.srv
-    SetParamString.srv
-    SetParamStringList.srv
 )
 
 generate_messages(

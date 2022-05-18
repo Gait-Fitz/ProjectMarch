@@ -4,7 +4,7 @@
 #define MARCH_HARDWARE_MARCH_ROBOT_H
 #include "march_hardware/ethercat/ethercat_master.h"
 #include "march_hardware/joint.h"
-#include "march_hardware/power/power_distribution_board.h"
+#include "march_hardware/power_distribution_board/power_distribution_board.h"
 #include "march_hardware/pressure_sole/pressure_sole.h"
 
 #include <cstdint>
@@ -20,8 +20,8 @@ private:
     ::std::vector<Joint> jointList;
     urdf::Model urdf_;
     EthercatMaster ethercatMaster;
-    std::unique_ptr<PowerDistributionBoard> pdb_;
     std::vector<PressureSole> pressureSoles;
+    std::optional<PowerDistributionBoard> powerDistributionBoard;
 
 public:
     using iterator = std::vector<Joint>::iterator;
@@ -30,13 +30,13 @@ public:
         ::std::string if_name, int ecatCycleTime, int ecatSlaveTimeout);
 
     MarchRobot(::std::vector<Joint> jointList, urdf::Model urdf,
-        std::unique_ptr<PowerDistributionBoard> powerDistributionBoard,
-        ::std::string if_name, int ecatCycleTime, int ecatSlaveTimeout);
-
-    MarchRobot(::std::vector<Joint> jointList, urdf::Model urdf,
-        std::unique_ptr<PowerDistributionBoard> powerDistributionBoard,
         std::vector<PressureSole> pressureSoles, ::std::string if_name,
         int ecatCycleTime, int ecatSlaveTimeout);
+
+    MarchRobot(::std::vector<Joint> jointList, urdf::Model urdf,
+        std::vector<PressureSole> pressureSoles, ::std::string if_name,
+        int ecatCycleTime, int ecatSlaveTimeout,
+        std::optional<PowerDistributionBoard>);
 
     ~MarchRobot();
 
@@ -51,7 +51,7 @@ public:
 
     void resetMotorControllers();
 
-    void startEtherCAT(bool reset_imc);
+    void startEtherCAT(bool reset_motor_controllers);
 
     void stopEtherCAT();
 
@@ -76,13 +76,20 @@ public:
     iterator begin();
     iterator end();
 
-    bool hasPowerDistributionboard() const;
-    PowerDistributionBoard* getPowerDistributionBoard() const;
-
     bool hasPressureSoles() const;
     std::vector<PressureSole> getPressureSoles() const;
 
+    bool hasPowerDistributionBoard() const;
+    PowerDistributionBoard getPowerDistributionBoard() const;
+
     const urdf::Model& getUrdf() const;
+
+    /**
+     * Are the joints of the robot operational
+     * Calls the isOperational method of the MotorControler of the joint
+     * @return List of booleans, true when a joint is operational, false if not.
+     */
+    std::vector<bool> areJointsOperational();
 
     /** @brief Override comparison operator */
     friend bool operator==(const MarchRobot& lhs, const MarchRobot& rhs)

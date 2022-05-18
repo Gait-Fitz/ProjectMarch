@@ -3,7 +3,7 @@ from math import sqrt
 from march_shared_classes.exceptions.general_exceptions import IncorrectCoordinateError
 
 
-class Vector3d(object):
+class Vector3d:
     """A 3d vector class."""
 
     def __init__(self, x, y, z):
@@ -48,8 +48,7 @@ class Vector3d(object):
         return self.as_dictionary()[direction]
 
     def __iter__(self):
-        for element in [self.x, self.y, self.z]:
-            yield element
+        yield from [self.x, self.y, self.z]
 
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y and self.z == other.z
@@ -59,21 +58,41 @@ class Vector3d(object):
 
     @classmethod
     def from_dictionary(cls, dic):
-        """Creates a Vector3d object from a dictionary with keys 'x', 'y' and 'z'."""
+        """Creates a Vector3d object from a dictionary with keys 'x', 'y' and 'z'.
+
+        Args:
+          dic:
+
+        Returns:
+
+        """
         if {"x", "y", "z"} != set(dic.keys()):
             raise IncorrectCoordinateError()
         return cls(dic["x"], dic["y"], dic["z"])
 
     def as_dictionary(self):
+        """ """
         return {"x": self.x, "y": self.y, "z": self.z}
 
     def norm(self):
+        """ """
         return sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
 
     @staticmethod
     def is_close_enough(vector1, vector2, tolerance=0.0001):
+        """
+
+        Args:
+          vector1:
+          vector2:
+          tolerance: (Default value = 0.0001)
+
+        Returns:
+
+        """
         return (vector1 - vector2).norm() <= tolerance
 
     @staticmethod
     def size():
+        """ """
         return 3

@@ -1,3 +1,4 @@
+"""Author: Olav de Haas, MIV; MVI."""
 import launch
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
@@ -5,10 +6,7 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description() -> launch.LaunchDescription:
-    """
-    Launch file to launch rqt note taker.
-    """
-
+    """Launch file to launch rqt note taker."""
     return launch.LaunchDescription(
         [
             DeclareLaunchArgument(
@@ -21,7 +19,10 @@ def generate_launch_description() -> launch.LaunchDescription:
                 executable="note_taker",
                 output="screen",
                 name="note_taker",
-                parameters=[{"use_sim_time": LaunchConfiguration("use_sim_time")}],
+                namespace="march",
+                parameters=[
+                    {"use_sim_time": LaunchConfiguration("use_sim_time")},
+                ],
             ),
         ]
     )

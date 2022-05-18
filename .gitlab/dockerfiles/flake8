@@ -1,0 +1,24 @@
+FROM python:alpine
+
+# Some dependencies that are required for building plugins.
+RUN apk add --no-cache gcc musl-dev
+
+# All plugins that are executed in flake8.
+COPY requirements_flake8.txt march_tmp/requirements_flake8.txt
+RUN pip3 install -r march_tmp/requirements_flake8.txt
+RUN rm -rf march_tmp/
+
+COPY pyproject.toml .march_config/black/pyproject.toml
+ENV XDG_CONFIG_HOME .march_config
+
+# Remove the dependencies that were required for building plugins.
+RUN apk del gcc musl-dev
+
+# This copies the .flake8 file into the images.
+COPY .flake8 /.flake8
+
+WORKDIR /home/march
+
+ENTRYPOINT ["flake8", "--config", "/.flake8"]
+
+CMD ["ros1/src", "ros2/src", "utility_scripts/"]

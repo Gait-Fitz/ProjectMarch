@@ -1,8 +1,8 @@
 #include "pointcloud_processor/hull_finder.h"
+#include "utilities/linear_algebra_utilities.h"
+#include "utilities/output_utilities.h"
 #include <cmath>
 #include <ros/ros.h>
-#include <utilities/linear_algebra_utilities.h>
-#include <utilities/output_utilities.h>
 
 #include <pcl/filters/extract_indices.h>
 #include <pcl/filters/project_inliers.h>
@@ -29,12 +29,14 @@ HullFinder::HullFinder(bool debugging)
 // Construct a basic CHullFinder class
 CHullFinder::CHullFinder(bool debugging)
     : HullFinder(debugging)
+    , output_plane_information(false)
 {
 }
 
 bool CHullFinder::findHulls(PointCloud::Ptr pointcloud,
     Normals::Ptr pointcloud_normals,
-    boost::shared_ptr<RegionVector> region_vector,
+    boost::shared_ptr<PointsVector> points_vector,
+    boost::shared_ptr<NormalsVector> normals_vector,
     boost::shared_ptr<PlaneCoefficientsVector> plane_coefficients_vector,
     boost::shared_ptr<HullVector> hull_vector,
     boost::shared_ptr<PolygonVector> polygon_vector)
@@ -43,27 +45,41 @@ bool CHullFinder::findHulls(PointCloud::Ptr pointcloud,
 
     pointcloud_ = pointcloud;
     pointcloud_normals_ = pointcloud_normals;
-    region_vector_ = region_vector;
+    points_vector_ = points_vector;
+    normals_vector_ = normals_vector;
     plane_coefficients_vector_ = plane_coefficients_vector;
     hull_vector_ = hull_vector;
     polygon_vector_ = polygon_vector;
 
     ROS_DEBUG("Finding hulls with CHullFinder, C for convex or concave");
 
-    bool success = true;
-
-    for (region_index_ = 0; region_index_ < region_vector_->size();
+    for (region_index_ = 0; region_index_ < points_vector_->size();
          region_index_++) {
-        region_ = region_vector_->at(region_index_);
+        bool success = getCHullFromRegion();
 
-        success &= getCHullFromRegion();
+        // Add the hull to a vector together with its plane coefficients and
+        // polygons if it is valid
+        if (hull_->points.size() == 0) {
+            ROS_WARN_STREAM("Hull of region "
+                << region_index_
+                << " Consists of zero points, not adding it the the hull "
+                   "vector.");
+        } else if (!success) {
+            ROS_WARN_STREAM("Computation of hull of region "
+                << region_index_
+                << " went wrong, not adding it the the hull vector.");
+        } else {
+            addCHullToVector();
+        }
     }
 
+    ROS_DEBUG_STREAM("The number of hulls found is: " << hull_vector_->size());
     if (hull_vector_->size() != plane_coefficients_vector_->size()
         || hull_vector_->size() != polygon_vector_->size()) {
-        ROS_WARN_STREAM("The hull vector does not have the same size as either "
-                        "the plane coefficients vector or"
-                        "the polygon vector. Returning with false.");
+        ROS_ERROR_STREAM(
+            "The hull vector does not have the same size as either "
+            "the plane coefficients vector or"
+            "the polygon vector. Returning with false.");
         return false;
     } else if (hull_vector_->size() == 0) {
         ROS_ERROR_STREAM("No hulls were found. Returning with false.");
@@ -78,7 +94,7 @@ bool CHullFinder::findHulls(PointCloud::Ptr pointcloud,
         << std::fixed << time_taken << std::setprecision(5) << " sec "
         << std::endl);
 
-    return success;
+    return true;
 }
 void CHullFinder::readParameters(
     march_realsense_reader::pointcloud_parametersConfig& config)
@@ -86,6 +102,7 @@ void CHullFinder::readParameters(
     convex = config.hull_finder_convex;
     alpha = config.hull_finder_alpha;
     hull_dimension = config.hull_dimension;
+    output_plane_information = config.hull_finder_output_plane_information;
 
     debugging_ = config.debug;
 }
@@ -108,31 +125,18 @@ bool CHullFinder::getCHullFromRegion()
     // Create the hull
     success &= getCHullFromProjectedRegion();
 
-    // Add the hull to a vector together with its plane coefficients and
-    // polygons
-    success &= addCHullToVector();
-
-    if (hull_->points.size() == 0) {
-        ROS_ERROR_STREAM(
-            "Hull of region " << region_index_ << " Consists of zero points");
-        return false;
-    }
-
     return success;
 }
 
 // Get the points and normals of the region and initialize region variables
 bool CHullFinder::initializeRegionVariables()
 {
-    region_points_ = boost::make_shared<PointCloud>();
-    region_normals_ = boost::make_shared<Normals>();
+    region_points_ = points_vector_->at(region_index_);
+    region_normals_ = normals_vector_->at(region_index_);
     region_points_projected_ = boost::make_shared<PointCloud>();
     plane_coefficients_ = boost::make_shared<PlaneCoefficients>();
     hull_ = boost::make_shared<Hull>();
-
-    pcl::copyPointCloud(*pointcloud_, region_, *region_points_);
-    pcl::copyPointCloud(*pointcloud_normals_, region_, *region_normals_);
-
+    polygon_.clear();
     return true;
 }
 
@@ -158,7 +162,7 @@ bool CHullFinder::getPlaneCoefficientsRegion()
         -linear_algebra_utilities::dotProductVector<double>(
             average_point, average_normal));
 
-    if (success) {
+    if (success && debugging_ && output_plane_information) {
         ROS_DEBUG_STREAM("Region "
             << region_index_ << " has plane coefficients: "
             << output_utilities::vectorToString(plane_coefficients_->values));
@@ -183,6 +187,12 @@ bool CHullFinder::projectRegionToPlane()
 // corresponding polygons
 bool CHullFinder::getCHullFromProjectedRegion()
 {
+    if (region_points_projected_->size() < 3) {
+        ROS_WARN_STREAM("A minimum of 3 points are needed to construct a hull. "
+                        "The number of points projected to the region plane is "
+            << region_points_projected_->size() << ". Ignoring region.");
+        return false;
+    }
     if (convex) {
         pcl::ConvexHull<pcl::PointXYZ> convex_hull;
         convex_hull.setInputCloud(region_points_projected_);
@@ -199,19 +209,18 @@ bool CHullFinder::getCHullFromProjectedRegion()
 }
 
 // Add the hull to a vector together with its plane coefficients and polygons
-bool CHullFinder::addCHullToVector()
+void CHullFinder::addCHullToVector()
 {
     hull_vector_->push_back(hull_);
     polygon_vector_->push_back(polygon_);
     plane_coefficients_vector_->push_back(plane_coefficients_);
-
-    return true;
 }
 
 // Calculate the average normal and point of a region
 bool CHullFinder::getAveragePointAndNormal(
     std::vector<double>& average_point, std::vector<double>& average_normal)
 {
+    bool success = true;
     // Initialize the average point and normal to zero
     std::fill(average_point.begin(), average_point.end(), 0);
     std::fill(average_normal.begin(), average_normal.end(), 0);
@@ -227,35 +236,19 @@ bool CHullFinder::getAveragePointAndNormal(
             average_normal[0] += current_normal.normal_x;
             average_normal[1] += current_normal.normal_y;
             average_normal[2] += current_normal.normal_z;
+
             average_point[0] += current_point.x;
             average_point[1] += current_point.y;
             average_point[2] += current_point.z;
         }
-        average_normal[0] /= number_of_normals;
-        average_normal[1] /= number_of_normals;
-        average_normal[2] /= number_of_normals;
-
         average_point[0] /= number_of_points;
         average_point[1] /= number_of_points;
         average_point[2] /= number_of_points;
 
-        // If the normal is zero (<=> it has a norm of zero) it is invalid
-        // and it then cannot be used to calculate plane coefficients.
-        // The norm is generally close to 1, but this need not be the case
-        // e.g. if the orientation of the normals is not consistent.
-        float minimum_norm_allowed = 0.05;
-        if (linear_algebra_utilities::dotProductVector<double>(
-                average_normal, average_normal)
-            < minimum_norm_allowed) {
-            ROS_ERROR_STREAM("Computed average normal of region is too close "
-                             "to zero. Plane parameters will be inaccurate."
-                             "Average normal of region "
-                << region_index_ << " is "
-                << output_utilities::vectorToString(average_normal));
-            return false;
-        }
+        success &= linear_algebra_utilities::normalize3DVector<double>(
+            average_normal);
     } else {
-        ROS_ERROR_STREAM("Region with index "
+        ROS_WARN_STREAM("Region with index "
             << region_index_
             << " does not have the same number of points and normals, "
                " unable to calculate average point and normal. "
@@ -265,5 +258,5 @@ bool CHullFinder::getAveragePointAndNormal(
         return false;
     }
 
-    return true;
+    return success;
 }

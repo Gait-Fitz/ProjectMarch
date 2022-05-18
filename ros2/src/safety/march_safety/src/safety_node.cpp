@@ -11,7 +11,6 @@
 
 #include "march_shared_msgs/msg/error.hpp"
 #include "march_shared_msgs/msg/gait_instruction.hpp"
-#include "march_shared_msgs/srv/get_param_string_list.hpp"
 
 #include "march_utility/node_utils.hpp"
 
@@ -43,10 +42,9 @@ SafetyNode::SafetyNode()
     : Node("safety_node", "march",
         rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(
             /*automatically_declare_parameters_from_overrides=*/true))
+    , joint_names(node_utils::get_joint_names(*this))
+    , effort_warner_(EffortWarner(*this, joint_names))
 {
-    joint_names = node_utils::get_joint_names(*this);
-    RCLCPP_DEBUG(this->get_logger(), "Got joint names.");
-
     // Create an error publisher to notify the system (state machine) if
     // something is wrong
     error_publisher = this->create_publisher<march_shared_msgs::msg::Error>(

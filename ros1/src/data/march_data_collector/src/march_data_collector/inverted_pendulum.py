@@ -1,12 +1,28 @@
 import math
 
 
-class InvertedPendulum(object):
+class InvertedPendulum:
+    """ """
+
     G = 9.81
     EPSILON = 0.000001
 
     @classmethod
     def numeric_solve_to_t(cls, x, y, z, vx, vy, t, dt=0.01):
+        """
+
+        Args:
+          x:
+          y:
+          z:
+          vx:
+          vy:
+          t:
+          dt: (Default value = 0.01)
+
+        Returns:
+
+        """
         time = 0
         while time < t:
             x, y, z, vx, vy = cls.step_numeric_solve(x, y, z, vx, vy, dt)
@@ -19,6 +35,19 @@ class InvertedPendulum(object):
 
     @classmethod
     def step_numeric_solve(cls, x0, y0, z0, vx0, vy0, dt=0.01):
+        """
+
+        Args:
+          x0:
+          y0:
+          z0:
+          vx0:
+          vy0:
+          dt: (Default value = 0.01)
+
+        Returns:
+
+        """
         r = math.sqrt(x0 ** 2 + y0 ** 2 + z0 ** 2)
         if abs(z0) < cls.EPSILON:
             vz0 = 0
@@ -44,6 +73,19 @@ class InvertedPendulum(object):
 
     @classmethod
     def calculate_falling_time(cls, x, y, z, vx, vy, dt=0.01):
+        """
+
+        Args:
+          x:
+          y:
+          z:
+          vx:
+          vy:
+          dt: (Default value = 0.01)
+
+        Returns:
+
+        """
         time = 0
         while z > cls.EPSILON:
             x, y, z, vx, vy = cls.step_numeric_solve(x, y, z, vx, vy, dt)

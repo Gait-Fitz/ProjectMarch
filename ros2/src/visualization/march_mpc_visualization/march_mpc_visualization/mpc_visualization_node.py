@@ -1,10 +1,14 @@
+"""Author: Thijs Veen, MVI."""
 import rclpy
 from march_mpc_visualization.mpc_visualization_listener import MpcListener
 from march_mpc_visualization import app
 import threading
 
+from contextlib import suppress
+
 
 def main():
+    """Starts the mpc listener node."""
     rclpy.init()
     mpc_listener = MpcListener()
 
@@ -21,17 +25,14 @@ def main():
         methods=["GET", "OPTIONS", "POST"],
     )
 
-
-    # ROS Node and Flask app need to run in seperatie thread
-    flask_thread = threading.Thread(target=lambda: app.run(host="0.0.0.0"))
+    # We want to bind to all interfaces
+    flask_thread = threading.Thread(target=lambda: app.run(host="0.0.0.0"))  # noqa: S104
 
     # Daemon, so that it shuts down when main() finishes
     flask_thread.daemon = True
     flask_thread.start()
 
-    try:
+    with suppress(KeyboardInterrupt):
         rclpy.spin(mpc_listener)
-    except KeyboardInterrupt:
-        pass
 
     rclpy.shutdown()

@@ -1,68 +1,79 @@
 class GaitError(Exception):
-    def __init__(self, msg=None):
-        """Base class for exceptions in gait modules.
+    """Base class for exceptions in gait modules.
 
-        :param msg:
-            The message to display.
-        """
+    Args:
+        msg (str, optional): The error message to display.
+    """
+
+    def __init__(self, msg=None):
         if msg is None:
             msg = "An error occurred with a gait module."
         super(GaitError, self).__init__(msg)
 
 
-class GaitNameNotFound(GaitError):
-    def __init__(self, gait_name, msg=None):
-        """Class to raise an error when given gait name does not exists .
+class GaitNameNotFoundError(GaitError):
+    """Class to raise an error when given gait name does not exists .
 
-        :param msg:
-            The message to display.
-        """
+    Args:
+        gait_name (str): The name of the gait that could not be found.
+        msg (str, optional): The error message to display.
+    """
+
+    def __init__(self, gait_name, msg=None):
         if msg is None:
             msg = "Could not find gait name: {gait} in map.".format(gait=gait_name)
 
-        super(GaitNameNotFound, self).__init__(msg)
+        super(GaitNameNotFoundError, self).__init__(msg)
 
 
-class SubgaitNameNotFound(GaitError):
+class SubgaitNameNotFoundError(GaitError):
+    """Class to raise an error when given subgait name does not exists .
+
+    Args:
+        subgait_name (str): The name of the subgait that is not recognized within the gait.
+        gait_name (str): The name of the gait that could not be found.
+        msg (str, optional): The error message to display.
+    """
+
     def __init__(self, subgait_name, gait_name, msg=None):
-        """Class to raise an error when given subgait name does not exists .
-
-        :param msg:
-            The message to display.
-        """
         if msg is None:
             msg = "Could not find subgait name {subgait} of gait {gait} in map.".format(
                 subgait=subgait_name, gait=gait_name
             )
 
-        super(SubgaitNameNotFound, self).__init__(msg)
+        super(SubgaitNameNotFoundError, self).__init__(msg)
 
 
-class NonValidGaitContent(GaitError):
+class NonValidGaitContentError(GaitError):
+    """Class to raise an error when given gait has incorrect content .
+
+    Args:
+        gait_name (str): The name of the gait that could not be found.
+        msg (str, optional): The error message to display.
+    """
+
     def __init__(self, gait_name=None, msg=None):
-        """Class to raise an error when given gait has incorrect content .
-
-        :param msg:
-            The message to display.
-        """
         if msg is None:
             msg = "The given gait: {gn} has incorrect information".format(gn=gait_name)
 
-        super(NonValidGaitContent, self).__init__(msg)
+        super(NonValidGaitContentError, self).__init__(msg)
 
 
 class SubgaitGraphError(GaitError):
+    """Todo: Add docstring."""
+
     def __init__(self, msg):
         super(SubgaitGraphError, self).__init__(msg)
 
 
 class TransitionError(GaitError):
-    def __init__(self, msg=None):
-        """Class to raise an error when transition between two subgaits has an error .
+    """Class to raise an error when transition between two subgaits has an error.
 
-        :param msg:
-            The message to display.
-        """
+    Args:
+        msg (str, optional): The error message to display.
+    """
+
+    def __init__(self, msg=None):
         if msg is None:
             msg = "Subgaits can not transition"
 
@@ -70,8 +81,13 @@ class TransitionError(GaitError):
 
 
 class SubgaitInterpolationError(GaitError):
+    """Class to raise an error when it was not possible to interpolate between subgaits.
+
+    Args:
+        msg (str, optional): The error message to display.
+    """
+
     def __init__(self, msg=None):
-        """Class to raise an error when it was not possible to interpolate between subgaits."""
         if msg is None:
             msg = "An error occurred while trying to merge two subgaits."
 

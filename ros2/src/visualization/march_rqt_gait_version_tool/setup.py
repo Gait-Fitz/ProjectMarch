@@ -26,11 +26,7 @@ setup(
         (os.path.join("share", package_name), ["plugin.xml"]),
         (
             os.path.join("share", package_name),
-            [os.path.join("resource", "gait_selection.ui")],
-        ),
-        (
-            os.path.join("share", package_name),
-            [os.path.join("resource", "parametric_pop_up.ui")],
+            glob(os.path.join("resource", "*.ui")),
         ),
         (
             os.path.join("share", package_name, "resource", "img"),
@@ -45,8 +41,6 @@ setup(
     license="TODO: License declaration",
     tests_require=["pytest"],
     entry_points={
-        "console_scripts": [
-            "gait_version_tool = march_rqt_gait_version_tool.gait_version_tool_plugin:main"
-        ],
+        "console_scripts": ["gait_version_tool = march_rqt_gait_version_tool.gait_version_tool_plugin:main"],
     },
 )

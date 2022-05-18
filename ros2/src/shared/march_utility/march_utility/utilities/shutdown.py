@@ -1,6 +1,7 @@
+"""Author: Bas Volkers, MVI."""
 import os
 import signal
-import subprocess
+import subprocess  # noqa: S404
 import re
 
 # Find the process id (pid) of a process with the following regex
@@ -23,8 +24,8 @@ ROS_PROCESS_NAME_LENGTH = 15
 
 
 def shutdown_system():
-    """ Shutdown ROS1, the bridge and ROS2."""
-    result = subprocess.run(["ps", "-A"], capture_output=True)
+    """Shutdown ROS1, the bridge and ROS2."""
+    result = subprocess.run(["/usr/bin/ps", "-A"], capture_output=True)  # noqa: S603
     processes = result.stdout.decode("utf-8")
 
     for process_name in ROS_PROCESSES:

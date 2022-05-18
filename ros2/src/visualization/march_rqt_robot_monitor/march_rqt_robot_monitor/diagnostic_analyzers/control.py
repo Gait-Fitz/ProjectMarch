@@ -5,7 +5,7 @@ from typing import Optional, List
 from diagnostic_msgs.msg import DiagnosticStatus
 from rclpy.node import Node
 
-from march_utility.utilities.node_utils import get_robot_urdf
+from march_utility.utilities.node_utils import get_robot_urdf_from_service
 from rclpy.time import Time
 from sensor_msgs.msg import JointState
 from urdf_parser_py import urdf
@@ -13,7 +13,7 @@ from urdf_parser_py import urdf
 WARN_PERCENTAGE = 5
 
 
-class CheckJointValues(object):
+class CheckJointValues:
     """Base class to diagnose the joint movement values."""
 
     def __init__(self, node: Node, topic: str, msg_type: type):
@@ -32,7 +32,7 @@ class CheckJointValues(object):
         self._velocity_limits = {}
         self._effort_limits = {}
 
-        robot = get_robot_urdf(node)
+        robot = get_robot_urdf_from_service(node)
         for joint in robot.joints:
             self.set_joint_limits(joint)
 
@@ -42,12 +42,8 @@ class CheckJointValues(object):
         :param joint Joint urdf to get limits from.
         """
         try:
-            self._lower_soft_limits[
-                joint.name
-            ] = joint.safety_controller.soft_lower_limit
-            self._upper_soft_limits[
-                joint.name
-            ] = joint.safety_controller.soft_upper_limit
+            self._lower_soft_limits[joint.name] = joint.safety_controller.soft_lower_limit
+            self._upper_soft_limits[joint.name] = joint.safety_controller.soft_upper_limit
             self._velocity_limits[joint.name] = joint.limit.velocity
             self._effort_limits[joint.name] = joint.limit.effort
         except AttributeError:
@@ -79,16 +75,12 @@ class CheckJointValues(object):
 
             if self._position[index] >= self._upper_soft_limits[joint_name]:
                 joint_outside_soft_limits.append(self._joint_names[index])
-            elif self._position[index] >= (
-                self._upper_soft_limits[joint_name] * (1 - WARN_PERCENTAGE / 100)
-            ):
+            elif self._position[index] >= (self._upper_soft_limits[joint_name] * (1 - WARN_PERCENTAGE / 100)):
                 joint_in_warning_zone_soft_limits.append(self._joint_names[index])
 
             if self._position[index] <= self._lower_soft_limits[joint_name]:
                 joint_outside_soft_limits.append(self._joint_names[index])
-            elif self._position[index] <= (
-                self._lower_soft_limits[joint_name] * (1 - WARN_PERCENTAGE / 100)
-            ):
+            elif self._position[index] <= (self._lower_soft_limits[joint_name] * (1 - WARN_PERCENTAGE / 100)):
                 joint_in_warning_zone_soft_limits.append(self._joint_names[index])
 
         if joint_outside_soft_limits:
@@ -124,9 +116,7 @@ class CheckJointValues(object):
 
             if self._velocity[index] >= self._velocity_limits[joint_name]:
                 joints_at_velocity_limit.append(self._joint_names[index])
-            elif self._velocity[index] >= (
-                self._velocity_limits[joint_name] * (1 - WARN_PERCENTAGE / 100)
-            ):
+            elif self._velocity[index] >= (self._velocity_limits[joint_name] * (1 - WARN_PERCENTAGE / 100)):
                 joint_in_warning_zone_velocity_limit.append(self._joint_names[index])
 
         if joints_at_velocity_limit:
@@ -137,9 +127,7 @@ class CheckJointValues(object):
         elif joint_in_warning_zone_velocity_limit:
             stat.summary(
                 DiagnosticStatus.WARN,
-                "Close to velocity limit: {ls}".format(
-                    ls=str(joint_in_warning_zone_velocity_limit)
-                ),
+                "Close to velocity limit: {ls}".format(ls=str(joint_in_warning_zone_velocity_limit)),
             )
         else:
             stat.summary(DiagnosticStatus.OK, "OK")
@@ -164,9 +152,7 @@ class CheckJointValues(object):
 
             if self._effort[index] >= self._effort_limits[joint_name]:
                 joints_at_effort_limit.append(self._joint_names[index])
-            elif self._effort[index] >= (
-                self._effort_limits[joint_name] * (1 - WARN_PERCENTAGE / 100)
-            ):
+            elif self._effort[index] >= (self._effort_limits[joint_name] * (1 - WARN_PERCENTAGE / 100)):
                 joints_in_warning_zone_effort_limits.append(self._joint_names[index])
 
         if joints_at_effort_limit:
@@ -177,9 +163,7 @@ class CheckJointValues(object):
         elif joints_in_warning_zone_effort_limits:
             stat.summary(
                 DiagnosticStatus.WARN,
-                "Close to effort limit: {ls}".format(
-                    ls=str(joints_in_warning_zone_effort_limits)
-                ),
+                "Close to effort limit: {ls}".format(ls=str(joints_in_warning_zone_effort_limits)),
             )
         else:
             stat.summary(DiagnosticStatus.OK, "OK")

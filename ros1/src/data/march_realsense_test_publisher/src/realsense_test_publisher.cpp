@@ -19,7 +19,7 @@ std::string TOPIC_TEST_CLOUDS = "/test_clouds";
 std::string CAMERA_FRAME_ID_FRONT = "camera_front_depth_optical_frame";
 std::string CAMERA_FRAME_ID_BACK = "camera_back_depth_optical_frame";
 std::string PROCESS_POINTCLOUD_SERVICE_NAME = "/camera/process_pointcloud";
-std::string PUBLISH_POINTCLOUD_SERVICE_NAME = "/camera/publish_pointcloud";
+std::string PUBLISH_POINTCLOUD_SERVICE_NAME = "/camera/publish_test_cloud";
 std::string DATASET_CONFIGURATION_NAME = "pointcloud_information.yaml";
 std::string POINTCLOUD_EXTENSION = ".ply";
 ros::Duration POINTCLOUD_TIMEOUT = ros::Duration(/*t=*/1.0); // secs
@@ -41,22 +41,17 @@ RealsenseTestPublisher::RealsenseTestPublisher(ros::NodeHandle* n)
     path directory_path
         = ros::package::getPath("march_realsense_test_publisher");
     path relative_data_path(/*__source*/ "config/datasets/");
-    data_path = directory_path / relative_data_path;
 
     // The source directory should be two steps behind this source file
     path source_file_path(__FILE__);
     write_path
         = source_file_path.parent_path().parent_path() / relative_data_path;
 
-    for (const auto& entry : std::filesystem::directory_iterator(data_path)) {
-        if (std::filesystem::is_regular_file(entry)
-            && entry.path().extension() == POINTCLOUD_EXTENSION) {
-            file_names.push_back(entry.path().filename().string());
-        }
-    }
+    updateFileNamesVector();
+
     if (file_names.size() == 0) {
         ROS_ERROR_STREAM("There are no .ply files present under path "
-            << data_path << ". Shutting down the test publisher.");
+            << write_path << ". Shutting down the test publisher.");
         ros::shutdown();
     }
     publish_test_cloud_service
@@ -71,6 +66,16 @@ RealsenseTestPublisher::RealsenseTestPublisher(ros::NodeHandle* n)
             PROCESS_POINTCLOUD_SERVICE_NAME);
 
     config_tree = loadConfig(DATASET_CONFIGURATION_NAME);
+}
+
+void RealsenseTestPublisher::updateFileNamesVector()
+{
+    for (const auto& entry : std::filesystem::directory_iterator(write_path)) {
+        if (std::filesystem::is_regular_file(entry)
+            && entry.path().extension() == POINTCLOUD_EXTENSION) {
+            file_names.push_back(entry.path().filename().string());
+        }
+    }
 }
 
 YAML::Node RealsenseTestPublisher::loadConfig(const std::string& config_file)
@@ -117,9 +122,9 @@ void RealsenseTestPublisher::getProcessPointcloudInputs()
         from_back_camera = yaml_utilities::grabParameter<bool>(
             pointcloud_config, "from_back_camera")
                                .value();
-        frame_id_to_transform_to = yaml_utilities::grabParameter<std::string>(
-            pointcloud_config, "frame_id_to_transform_to")
-                                       .value();
+        subgait_name = yaml_utilities::grabParameter<std::string>(
+            pointcloud_config, "subgait_name")
+                           .value();
         from_realsense_viewer = yaml_utilities::grabParameter<bool>(
             pointcloud_config, "from_realsense_viewer")
                                     .value();
@@ -129,7 +134,8 @@ void RealsenseTestPublisher::getProcessPointcloudInputs()
             << pointcloud_file_name << ". Continuing with default parameters");
         realsense_category = 0;
         from_back_camera = false;
-        frame_id_to_transform_to = "foot_right";
+        subgait_name = "right_open";
+        from_realsense_viewer = false;
     }
 }
 
@@ -140,10 +146,10 @@ bool RealsenseTestPublisher::loadPointcloudToPublishFromFilename()
 
     pointcloud_to_publish = boost::make_shared<PointCloud>();
     if (pcl::io::loadPLYFile<pcl::PointXYZ>(
-            data_path.string() + pointcloud_file_name, *pointcloud_to_publish)
+            write_path.string() + pointcloud_file_name, *pointcloud_to_publish)
         == -1) {
         ROS_WARN_STREAM("Couldn't find file at "
-            << data_path.string() + pointcloud_file_name
+            << write_path.string() + pointcloud_file_name
             << ". file name must be one of " << getFileNamesString());
         return false;
     }
@@ -261,8 +267,10 @@ bool RealsenseTestPublisher::saveCurrentPointcloud()
         == -1) {
         return false;
     }
+    updateFileNamesVector();
     return true;
 }
+
 // Publish the right pointcloud based on the latest service call
 void RealsenseTestPublisher::updatePublishLoop(
     march_shared_msgs::PublishTestDataset::Response& res)
@@ -276,7 +284,7 @@ void RealsenseTestPublisher::updatePublishLoop(
         case SelectedMode::next: {
             if (should_publish = publishNextPointcloud()) {
                 info_message = "Now publishing a pointcloud with file name "
-                    + pointcloud_file_name + " and processing the cloud";
+                    + pointcloud_file_name + " and processing the cloud.";
                 makeProcessPointcloudCall();
             } else {
                 warn_message = "failed to publish a pointcloud with file name "
@@ -288,7 +296,7 @@ void RealsenseTestPublisher::updatePublishLoop(
         case SelectedMode::custom: {
             if (should_publish = loadPointcloudToPublishFromFilename()) {
                 info_message = "Now publishing a pointcloud with file name "
-                    + pointcloud_file_name + " and processing the cloud";
+                    + pointcloud_file_name + " and processing the cloud.";
                 makeProcessPointcloudCall();
             } else {
                 warn_message = "failed to publish a pointcloud with file name "
@@ -347,7 +355,7 @@ void RealsenseTestPublisher::makeProcessPointcloudCall()
 {
     march_shared_msgs::GetGaitParameters service;
     service.request.realsense_category = realsense_category;
-    service.request.frame_id_to_transform_to = frame_id_to_transform_to;
+    service.request.subgait_name = subgait_name;
 
     // The image always comes from simulated camera topic (enum value 2)
     service.request.camera_to_use = 2;

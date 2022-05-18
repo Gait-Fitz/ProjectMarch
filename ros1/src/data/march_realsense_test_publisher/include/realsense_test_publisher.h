@@ -69,6 +69,9 @@ private:
     // camera topic as a .ply file to test with later
     bool saveCurrentPointcloud();
 
+    // Update the currently available file names
+    void updateFileNamesVector();
+
     ros::NodeHandle* n_;
     ros::ServiceServer publish_test_cloud_service;
     ros::Publisher test_cloud_publisher;
@@ -80,7 +83,7 @@ private:
     path write_path;
     PointCloud::Ptr pointcloud_to_publish;
     std::string pointcloud_file_name;
-    std::string frame_id_to_transform_to;
+    std::string subgait_name;
     std::string save_pointcloud_name;
     std::string pointcloud_topic;
     bool should_publish;

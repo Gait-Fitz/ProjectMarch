@@ -19,35 +19,34 @@ MarchRobot::MarchRobot(::std::vector<Joint> jointList, urdf::Model urdf,
     , urdf_(std::move(urdf))
     , ethercatMaster(std::move(if_name), this->getMaxSlaveIndex(),
           ecatCycleTime, ecatSlaveTimeout)
-    , pdb_(nullptr)
 {
 }
 
 MarchRobot::MarchRobot(::std::vector<Joint> jointList, urdf::Model urdf,
-    std::unique_ptr<PowerDistributionBoard> powerDistributionBoard,
-    ::std::string if_name, int ecatCycleTime, int ecatSlaveTimeout)
-    : jointList(std::move(jointList))
-    , urdf_(std::move(urdf))
-    , ethercatMaster(std::move(if_name), this->getMaxSlaveIndex(),
-          ecatCycleTime, ecatSlaveTimeout)
-    , pdb_(std::move(powerDistributionBoard))
-{
-}
-
-MarchRobot::MarchRobot(::std::vector<Joint> jointList, urdf::Model urdf,
-    std::unique_ptr<PowerDistributionBoard> powerDistributionBoard,
     std::vector<PressureSole> pressureSoles, ::std::string if_name,
     int ecatCycleTime, int ecatSlaveTimeout)
     : jointList(std::move(jointList))
     , urdf_(std::move(urdf))
     , ethercatMaster(std::move(if_name), this->getMaxSlaveIndex(),
           ecatCycleTime, ecatSlaveTimeout)
-    , pdb_(std::move(powerDistributionBoard))
     , pressureSoles(std::move(pressureSoles))
 {
 }
 
-void MarchRobot::startEtherCAT(bool reset_imc)
+MarchRobot::MarchRobot(::std::vector<Joint> jointList, urdf::Model urdf,
+    std::vector<PressureSole> pressureSoles, ::std::string if_name,
+    int ecatCycleTime, int ecatSlaveTimeout,
+    std::optional<PowerDistributionBoard> power_distribution_board)
+    : jointList(std::move(jointList))
+    , urdf_(std::move(urdf))
+    , ethercatMaster(std::move(if_name), this->getMaxSlaveIndex(),
+          ecatCycleTime, ecatSlaveTimeout)
+    , pressureSoles(std::move(pressureSoles))
+    , powerDistributionBoard(std::move(power_distribution_board))
+{
+}
+
+void MarchRobot::startEtherCAT(bool reset_motor_controllers)
 {
     if (!hasValidSlaves()) {
         throw error::HardwareException(
@@ -63,10 +62,10 @@ void MarchRobot::startEtherCAT(bool reset_imc)
 
     bool sw_reset = ethercatMaster.start(this->jointList);
 
-    if (reset_imc || sw_reset) {
+    if (reset_motor_controllers || sw_reset) {
         ROS_DEBUG("Resetting all IMotionCubes due to either: reset arg: %d or "
-                  "downloading of .sw fie: %d",
-            reset_imc, sw_reset);
+                  "downloading of .sw file: %d",
+            reset_motor_controllers, sw_reset);
         resetMotorControllers();
 
         ROS_INFO("Restarting the EtherCAT Master");
@@ -88,7 +87,7 @@ void MarchRobot::stopEtherCAT()
 void MarchRobot::resetMotorControllers()
 {
     for (auto& joint : jointList) {
-        joint.getMotorController()->Slave::reset();
+        joint.getMotorController()->Slave::resetSlave();
     }
 }
 
@@ -111,6 +110,7 @@ bool MarchRobot::hasValidSlaves()
 {
     ::std::vector<int> motorControllerIndices;
     ::std::vector<int> temperatureSlaveIndices;
+    ::std::vector<int> pdbSlaveIndices;
 
     for (auto& joint : jointList) {
         if (joint.hasTemperatureGES()) {
@@ -123,6 +123,12 @@ bool MarchRobot::hasValidSlaves()
             = joint.getMotorController()->getSlaveIndex();
         motorControllerIndices.push_back(motorControllerSlaveIndex);
     }
+
+    if (hasPowerDistributionBoard()) {
+        int index = getPowerDistributionBoard().getSlaveIndex();
+        pdbSlaveIndices.push_back(index);
+    }
+
     // Multiple temperature sensors may be connected to the same slave.
     // Remove duplicate temperatureSlaveIndices so they don't trigger as
     // duplicates later.
@@ -140,6 +146,8 @@ bool MarchRobot::hasValidSlaves()
         motorControllerIndices.end());
     slaveIndices.insert(slaveIndices.end(), temperatureSlaveIndices.begin(),
         temperatureSlaveIndices.end());
+    slaveIndices.insert(
+        slaveIndices.end(), pdbSlaveIndices.begin(), pdbSlaveIndices.end());
 
     if (slaveIndices.size() == 1) {
         ROS_INFO("Found configuration for 1 slave.");
@@ -148,12 +156,16 @@ bool MarchRobot::hasValidSlaves()
 
     ROS_INFO("Found configuration for %lu slaves.", slaveIndices.size());
 
-    // Sort the indices and check for duplicates.
-    // If there are no duplicates, the configuration is valid.
+    // Sort the indices
     ::std::sort(slaveIndices.begin(), slaveIndices.end());
-    auto it = ::std::unique(slaveIndices.begin(), slaveIndices.end());
-    bool isUnique = (it == slaveIndices.end());
-    return isUnique;
+    if (jointList[0].getMotorController()->requiresUniqueSlaves()) {
+        // Check for duplicates depending on the motor controller
+        auto it = ::std::unique(slaveIndices.begin(), slaveIndices.end());
+        bool isUnique = (it == slaveIndices.end());
+        return isUnique;
+    } else {
+        return true;
+    }
 }
 
 bool MarchRobot::isEthercatOperational()
@@ -222,16 +234,6 @@ MarchRobot::iterator MarchRobot::end()
     return this->jointList.end();
 }
 
-bool MarchRobot::hasPowerDistributionboard() const
-{
-    return this->pdb_ != nullptr;
-}
-
-PowerDistributionBoard* MarchRobot::getPowerDistributionBoard() const
-{
-    return this->pdb_.get();
-}
-
 bool MarchRobot::hasPressureSoles() const
 {
     return pressureSoles.size() > 0;
@@ -242,6 +244,16 @@ std::vector<PressureSole> MarchRobot::getPressureSoles() const
     return pressureSoles;
 }
 
+bool MarchRobot::hasPowerDistributionBoard() const
+{
+    return powerDistributionBoard.has_value();
+}
+
+PowerDistributionBoard MarchRobot::getPowerDistributionBoard() const
+{
+    return powerDistributionBoard.value();
+}
+
 MarchRobot::~MarchRobot()
 {
     stopEtherCAT();
@@ -250,6 +262,17 @@ MarchRobot::~MarchRobot()
 const urdf::Model& MarchRobot::getUrdf() const
 {
     return this->urdf_;
+}
+
+std::vector<bool> MarchRobot::areJointsOperational()
+{
+    std::vector<bool> is_operational;
+    is_operational.resize(jointList.size());
+    for (size_t i = 0; i < jointList.size(); ++i) {
+        is_operational[i]
+            = jointList[i].getMotorController()->getState()->isOperational();
+    }
+    return is_operational;
 }
 
 } // namespace march

@@ -22,7 +22,7 @@ public:
 
     MOCK_METHOD0(getState, std::unique_ptr<march::MotorControllerState>());
 
-    MOCK_METHOD0(prepareActuation, void());
+    MOCK_METHOD0(prepareActuation, std::optional<ros::Duration>());
 
     MOCK_METHOD0(isIncrementalEncoderMorePrecise, bool());
 
@@ -39,5 +39,5 @@ public:
     MOCK_METHOD1(actuateTorque, void(float));
 
     MOCK_METHOD2(initSdo, bool(march::SdoSlaveInterface& sdo, int cycle_time));
-    MOCK_METHOD1(reset, void(march::SdoSlaveInterface&));
+    MOCK_METHOD1(resetSlave, void(march::SdoSlaveInterface&));
 };

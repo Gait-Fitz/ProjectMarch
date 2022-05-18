@@ -1,7 +1,7 @@
-class Limits(object):
-    def __init__(
-        self, lower, upper, velocity, effort=None, k_position=None, k_velocity=None
-    ):
+class Limits:
+    """ """
+
+    def __init__(self, lower, upper, velocity, effort=None, k_position=None, k_velocity=None):
         self.lower = lower
         self.upper = upper
         self.velocity = velocity
@@ -11,7 +11,14 @@ class Limits(object):
 
     @classmethod
     def from_urdf_joint(cls, urdf_joint):
-        """Creates limits from a given URDF joint."""
+        """Creates limits from a given URDF joint.
+
+        Args:
+          urdf_joint:
+
+        Returns:
+
+        """
         return cls(
             urdf_joint.safety_controller.soft_lower_limit,
             urdf_joint.safety_controller.soft_upper_limit,
@@ -32,4 +39,4 @@ class Limits(object):
         )
 
     def __ne__(self, other):
-        return not self == other
+        return not self == other  # noqa: SIM201
