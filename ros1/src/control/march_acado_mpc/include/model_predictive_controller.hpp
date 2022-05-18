@@ -17,7 +17,7 @@ struct ModelPredictiveControllerConstraints {
 class ModelPredictiveController {
 
 public:
-    ModelPredictiveController(
+    explicit ModelPredictiveController(
         std::vector<float> W, ModelPredictiveControllerConstraints constraints);
 
     /**
