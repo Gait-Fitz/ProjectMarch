@@ -28,7 +28,7 @@ def main():
             interface_info = iface_details[AF_INET][0]
             if "addr" in interface_info:
                 address = interface_info["addr"]
-                if address[0:3] == "192":
+                if "192.168.0." in address:
                     ip = address
 
     rclpy.init()

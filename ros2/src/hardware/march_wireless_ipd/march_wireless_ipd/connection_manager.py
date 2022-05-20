@@ -205,9 +205,9 @@ class ConnectionManager:
 
         self._requested_gait = req["gait"]["gaitName"]
 
-        if self._requested_gait in ["small_narrow", "small_wide", "large_narrow", "large_wide"]:
+        if self._requested_gait in ["small_narrow", "small_wide", "large_narrow", "large_wide", "step_up_obstacle"]:
             self._step_size_publisher.publish(String(data=self._requested_gait))
-            self._requested_gait = "dynamic_step_and_hold"
+            self._requested_gait = "dynamic_step_and_close"
             self._controller.publish_gait(self._requested_gait)
             return
 
