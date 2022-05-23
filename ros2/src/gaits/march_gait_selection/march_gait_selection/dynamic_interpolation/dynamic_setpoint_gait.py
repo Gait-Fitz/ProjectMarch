@@ -414,7 +414,7 @@ class DynamicSetpointGait(GaitInterface):
                 self.foot_location = self._get_foot_location(self.subgait_id)
                 stop = self._is_foot_location_too_old(self.foot_location)
             except AttributeError:
-                self.logger.warn("No FootLocation found. Connect the camera or use simulated points.")
+                self.logger.warn("No FootLocation found. Connect the camera or use a gait with a fixed step size.")
                 self._end = True
                 return None
             if not stop:
