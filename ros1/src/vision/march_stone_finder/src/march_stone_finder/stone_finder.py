@@ -74,10 +74,10 @@ class StoneFinder:
         self._listener = tf.TransformListener()
         self._point_publisher = rospy.Publisher("/march/foot_position/" + left_or_right, FootPosition, queue_size=1)
         self._marker_publisher = rospy.Publisher(
-            "/camera_" + left_or_right + "/found_points", MarkerArray, queue_size=1
+            "/march/stone_finder/camera_" + left_or_right + "/found_points", MarkerArray, queue_size=1
         )
         self._pointcloud_publisher = rospy.Publisher(
-            "/stone_finder_pointcloud/" + left_or_right, PointCloud2, queue_size=1
+            "/march/stone_finder/pointcloud/" + left_or_right, PointCloud2, queue_size=1
         )
 
     def _retrieve_parameters(self) -> None:
