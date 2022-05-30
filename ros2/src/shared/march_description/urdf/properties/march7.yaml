@@ -30,9 +30,10 @@ dimensions:
   ankle_plate:
     length: 0.115
     offset: 0.01
+    collision_offset: 0.07
   foot:
-    height_forward: 0.184
-    height_backward: 0.059
+    height_forward: 0.217
+    height_backward: 0.079
     mass: 0.789
 inertia:
   hip_base:

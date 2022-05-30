@@ -102,6 +102,8 @@
                     value="${dimensions['ankle_plate']['length'] - width}"/>
     <xacro:property name="ankle_plate_offset"
                     value="${dimensions['ankle_plate']['offset']}"/>
+    <xacro:property name="ankle_plate_collision_offset"
+                value="${dimensions['ankle_plate']['collision_offset']}"/>
 
     <xacro:property name="foot_height_forward"
                     value="${dimensions['foot']['height_forward']}"/>
@@ -233,7 +235,7 @@
                       direction="z"
                       mesh="march7/FootLeft.stl"
                       visual_origin="0 0 0"
-                      collision_origin="0 0 ${-ankle_plate_height/2}"
+                      collision_origin="0 ${ankle_plate_collision_offset} ${-ankle_plate_height/2}"
                       visual_rpy="0 0 0"
     />
 
@@ -305,7 +307,7 @@
                       direction="z"
                       mesh="march7/FootRight.stl"
                       visual_origin="0 0 0"
-                      collision_origin="0 0 ${-ankle_plate_height/2}"
+                      collision_origin="0 ${-ankle_plate_collision_offset} ${-ankle_plate_height/2}"
                       visual_rpy="0 0 0"
     />
 
@@ -396,7 +398,7 @@
     <joint name="left_foot_angle" type="fixed">
         <parent link="ankle_plate_left"/>
         <child link="foot_left"/>
-        <origin xyz="0 0 ${-ankle_plate_height-width/2}" rpy="0 0 0"/>
+        <origin xyz="0 ${ankle_plate_collision_offset} ${-ankle_plate_height-width/2}" rpy="0 0 0"/>
     </joint>
 
     <xacro:march_configurable_joint
@@ -452,7 +454,7 @@
     <joint name="right_foot_angle" type="fixed">
         <parent link="ankle_plate_right"/>
         <child link="foot_right"/>
-        <origin xyz="0 0 ${-ankle_plate_height-width/2}" rpy="0 0 0"/>
+        <origin xyz="0 ${-ankle_plate_collision_offset} ${-ankle_plate_height-width/2}" rpy="0 0 0"/>
     </joint>
 
 
